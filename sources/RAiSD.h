@@ -40,8 +40,8 @@
 #endif
 
 #define MAJOR_VERSION 4
-#define MINOR_VERSION 0
-#define RELEASE_MONTH "July"
+#define MINOR_VERSION 1
+#define RELEASE_MONTH "November"
 #define RELEASE_YEAR 2024
 
 /*Testing*/
@@ -203,11 +203,19 @@ extern double TotalMuTime;
 #define CLA_SWEEPNET 2
 #define PCLA_SWEEPNET 1
 
-#define ARC_SWEEPNET1D "FAST-NN"
-#define CLA_SWEEPNET1D 2
-#define PCLA_SWEEPNET1D 1
+#define ARC_FAST_NN "FAST-NN"
+#define CLA_FAST_NN 2
+#define PCLA_FAST_NN 1
 
-#define ARC_SWEEPNETRECOMB "SweepNetRecombination"
+#define ARC_FASTER_NN "FASTER-NN"
+#define CLA_FASTER_NN 2
+#define PCLA_FASTER_NN 1
+
+#define ARC_FASTER_NN_G "FASTER-NN-G"
+#define CLA_FASTER_NN_G 2
+#define PCLA_FASTER_NN_G 1
+
+#define ARC_SWEEPNETRECOMB "FASTER-NN-G"
 #define CLA_SWEEPNETRECOMB 4
 #define PCLA_SWEEPNETRECOMB 2
 
@@ -278,10 +286,11 @@ int 			split_string 			(char * src, char * str1, char * str2, char delimiter);
 void 			exec_command 			(char * cmd);
 void 			dir_exists_check 		(char * path);
 void			getIndicesFromImageName		(char * imgName, int * setIndex, int * gridPointIndex, int * gridPointDataIndex);
-int 			numOfClasses_NN_architecture		(char * arc);
-int 			numOfPositiveClasses_NN_architecture 	(char * arc);
+int 			numOfClasses_NN_architecture		(char * arc, int classification2x2En);
+int 			numOfPositiveClasses_NN_architecture 	(char * arc, int classification2x2En);
 int 			is_valid_NN_architecture 		(char * arc);
 char * 			getDataType_string 		(char * imgFormat, int imgDataType);
+int			getValidNumberOf_FASTER_NN_G_Groups 	(int imageHeight, int groups);
 #endif
 
 #ifndef _INTRINSIC_POPCOUNT
@@ -375,6 +384,7 @@ typedef struct
 	int		threads; // Flag: thr
 	int		useGPU; // Flag: gpu
 	char		networkArchitecture[STRING_SIZE]; // Flag: arc
+	int		classification2x2En;
 	
 	// IMG
 	uint64_t	imagesPerSimulation;
@@ -399,6 +409,7 @@ typedef struct
 	int		numOfPositiveClasses;
 	int * 		positiveClassIndex;
 	int		userWindowSize; // flag set if user provides the window size
+	int		fasterNNgroups;
 	
 	// Evaluation
 	double		tprThresNnPositiveClass0;

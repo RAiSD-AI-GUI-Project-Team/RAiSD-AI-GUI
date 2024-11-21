@@ -1368,7 +1368,13 @@ int is_valid_NN_architecture (char * arc)
 	if(!strcmp(arc, ARC_SWEEPNET))
 		return 1;
 		
-	if(!strcmp(arc, ARC_SWEEPNET1D))
+	if(!strcmp(arc, ARC_FAST_NN))
+		return 1;
+		
+	if(!strcmp(arc, ARC_FASTER_NN))
+		return 1;
+		
+	if(!strcmp(arc, ARC_FASTER_NN_G))
 		return 1;
 		
 	if(!strcmp(arc, ARC_SWEEPNETRECOMB))
@@ -1377,16 +1383,27 @@ int is_valid_NN_architecture (char * arc)
 	return 0;	
 }
 
-int numOfClasses_NN_architecture (char * arc)
+int numOfClasses_NN_architecture (char * arc, int classification2x2En)
 {
 	assert(arc!=NULL);
 	
 	if(!strcmp(arc, ARC_SWEEPNET))
 		return CLA_SWEEPNET;
 		
-	if(!strcmp(arc, ARC_SWEEPNET1D))
-		return CLA_SWEEPNET1D;
+	if(!strcmp(arc, ARC_FAST_NN))
+		return CLA_FAST_NN;
+	
+	if(!strcmp(arc, ARC_FASTER_NN))
+		return CLA_FASTER_NN;
 		
+	if(!strcmp(arc, ARC_FASTER_NN_G))
+	{
+		if(classification2x2En==1)
+			return CLA_SWEEPNETRECOMB;
+			
+		return CLA_FASTER_NN_G;
+	}	
+
 	if(!strcmp(arc, ARC_SWEEPNETRECOMB))
 		return CLA_SWEEPNETRECOMB;
 
@@ -1394,16 +1411,27 @@ int numOfClasses_NN_architecture (char * arc)
 	exit(0);
 }
 
-int numOfPositiveClasses_NN_architecture (char * arc)
+int numOfPositiveClasses_NN_architecture (char * arc, int classification2x2En)
 {
 	assert(arc!=NULL);
 	
 	if(!strcmp(arc, ARC_SWEEPNET))
 		return PCLA_SWEEPNET;
 		
-	if(!strcmp(arc, ARC_SWEEPNET1D))
-		return PCLA_SWEEPNET1D;
+	if(!strcmp(arc, ARC_FAST_NN))
+		return PCLA_FAST_NN;
 		
+	if(!strcmp(arc, ARC_FASTER_NN))
+		return PCLA_FASTER_NN;
+		
+	if(!strcmp(arc, ARC_FASTER_NN_G))
+	{
+		if(classification2x2En==1)
+			return PCLA_SWEEPNETRECOMB;
+		
+		return PCLA_FASTER_NN_G;
+	}	
+	
 	if(!strcmp(arc, ARC_SWEEPNETRECOMB))
 		return PCLA_SWEEPNETRECOMB;
 
@@ -1444,6 +1472,22 @@ char * getDataType_string (char * imgFormat, int imgDataType)
 	}
 	
 	return "unknown data type";
+}
+
+
+int getValidNumberOf_FASTER_NN_G_Groups (int imageHeight, int groups)
+{
+	assert(imageHeight>=1);
+	
+	int i=0;
+	
+	for(i=groups;i>=1;i--)
+	{
+		if(imageHeight%i==0)
+			return i;
+	}
+	
+	return 1;
 }
 #endif
 

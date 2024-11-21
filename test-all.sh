@@ -16,7 +16,7 @@ esac
 
 mode=$2
 
-epochs=10
+epochs=3
 
 TRAINING_NEUTRAL=datasets/train/msneutral1_100sims.out
 TRAINING_SWEEP=datasets/train/msselection1_100sims.out
@@ -117,7 +117,7 @@ case "$mode" in
     ;;
   "4")
     
-    	echo "TRAINING AND TESTING FAST-NN USING PYTORCH"
+    	echo "TRAINING AND TESTING FASTER-NN USING PYTORCH"
     
     	./$exec -n FAST-NN-PT-2DSNP -I RAiSD_Images.TrainingData2DSNP -f -op MDL-GEN -O -frm -e $epochs 
     	./$exec -n FAST-NN-PT-2DSNPPOS -I RAiSD_Images.TrainingData2DSNPPOS -f -op MDL-GEN -O -frm -e $epochs 
@@ -133,7 +133,7 @@ case "$mode" in
    
     ;;
   "5")
-    echo "GENERATING TRAINING DATA FOR SWEEPNETRECOMBINATION"
+    echo "GENERATING TRAINING DATA FOR FASTER-NN-G (2-factor)"
 
 	# Images - SNP data
 	./$exec -n TrainingData2DSNP-4x -I $TRAINING_NEUTRAL1 -L 100000 -its 50000 -op IMG-GEN -icl neutralTR1 -f -frm 
@@ -161,7 +161,7 @@ case "$mode" in
     
     ;;
   "6")
-    echo "GENERATING TEST DATA FOR SWEEPNETRECOMBINATION"    
+    echo "GENERATING TEST DATA FOR FASTER-NN-G (2-factor)"    
 
 	# Images - SNP data
 	./$exec -n TestData2DSNP-4x -I $TEST_NEUTRAL1 -L 100000 -its 50000 -op IMG-GEN -icl neutralTE1 -f -frm 
@@ -190,17 +190,17 @@ case "$mode" in
     ;;
   "7")
     
-    	echo "TRAINING AND TESTING SWEEPNETRECOMBINATION (PYTORCH-ONLY)"
+    	echo "TRAINING AND TESTING FASTER-NN-G (2-factor, PYTORCH ONLY)"
     
-    	./$exec -n SweepNetPT-2DSNP-4x -I RAiSD_Images.TrainingData2DSNP-4x -f -op MDL-GEN -O -frm -e $epochs -arc SweepNetRecombination -cl4 label00=neutralTR1 label01=sweepTR1 label10=neutralTR2 label11=sweepTR2
-    	./$exec -n SweepNetPT-2DSNPPOS-4x -I RAiSD_Images.TrainingData2DSNPPOS-4x -f -op MDL-GEN -O -frm -e $epochs -arc SweepNetRecombination -cl4 label00=neutralTR1 label01=sweepTR1 label10=neutralTR2 label11=sweepTR2
-    	./$exec -n SweepNetPT-2DSNPVAR-4x -I RAiSD_Images.TrainingData2DSNPVAR-4x -f -op MDL-GEN -O -frm -e $epochs -arc SweepNetRecombination -cl4 label00=neutralTR1 label01=sweepTR1 label10=neutralTR2 label11=sweepTR2
-    	./$exec -n SweepNetPT-BINSNPPOS-4x -I RAiSD_Images.TrainingDataBINSNPPOS-4x -f -op MDL-GEN -O -frm -e $epochs -arc SweepNetRecombination -cl4 label00=neutralTR1 label01=sweepTR1 label10=neutralTR2 label11=sweepTR2
+    	./$exec -n FASTER-NN-G-2DSNP-4x -I RAiSD_Images.TrainingData2DSNP-4x -f -op MDL-GEN -O -frm -e $epochs -arc FASTER-NN-G -cl4 label00=neutralTR1 label01=sweepTR1 label10=neutralTR2 label11=sweepTR2
+    	./$exec -n FASTER-NN-G-2DSNPPOS-4x -I RAiSD_Images.TrainingData2DSNPPOS-4x -f -op MDL-GEN -O -frm -e $epochs -arc FASTER-NN-G -cl4 label00=neutralTR1 label01=sweepTR1 label10=neutralTR2 label11=sweepTR2
+    	./$exec -n FASTER-NN-G-2DSNPVAR-4x -I RAiSD_Images.TrainingData2DSNPVAR-4x -f -op MDL-GEN -O -frm -e $epochs -arc FASTER-NN-G -cl4 label00=neutralTR1 label01=sweepTR1 label10=neutralTR2 label11=sweepTR2
+    	./$exec -n FASTER-NN-G-BINSNPPOS-4x -I RAiSD_Images.TrainingDataBINSNPPOS-4x -f -op MDL-GEN -O -frm -e $epochs -arc FASTER-NN-G -cl4 label00=neutralTR1 label01=sweepTR1 label10=neutralTR2 label11=sweepTR2
     	
-   	./$exec -n SweepNetPT-2DSNP-ModelTest-4x -mdl RAiSD_Model.SweepNetPT-2DSNP-4x -f -op MDL-TST -I RAiSD_Images.TestData2DSNP-4x -clp 4 sweepTR1=sweepTE1 neutralTR1=neutralTE1 sweepTR2=sweepTE2 neutralTR2=neutralTE2
-    	./$exec -n SweepNetPT-2DSNPPOS-ModelTest-4x -mdl RAiSD_Model.SweepNetPT-2DSNPPOS-4x -f -op MDL-TST -I RAiSD_Images.TestData2DSNPPOS-4x -clp 4 sweepTR1=sweepTE1 neutralTR1=neutralTE1 sweepTR2=sweepTE2 neutralTR2=neutralTE2
-    	./$exec -n SweepNetPT-2DSNPVAR-ModelTest-4x -mdl RAiSD_Model.SweepNetPT-2DSNPVAR-4x -f -op MDL-TST -I RAiSD_Images.TestData2DSNPVAR-4x -clp 4 sweepTR1=sweepTE1 neutralTR1=neutralTE1 sweepTR2=sweepTE2 neutralTR2=neutralTE2
-   	./$exec -n SweepNetPT-BINSNPPOS-ModelTest-4x -mdl RAiSD_Model.SweepNetPT-BINSNPPOS-4x -f -op MDL-TST -I RAiSD_Images.TestDataBINSNPPOS-4x -clp 4 sweepTR1=sweepTE1 neutralTR1=neutralTE1 sweepTR2=sweepTE2 neutralTR2=neutralTE2
+   	./$exec -n FASTER-NN-G-2DSNP-ModelTest-4x -mdl RAiSD_Model.FASTER-NN-G-2DSNP-4x -f -op MDL-TST -I RAiSD_Images.TestData2DSNP-4x -clp 4 sweepTR1=sweepTE1 neutralTR1=neutralTE1 sweepTR2=sweepTE2 neutralTR2=neutralTE2
+    	./$exec -n FASTER-NN-G-2DSNPPOS-ModelTest-4x -mdl RAiSD_Model.FASTER-NN-G-2DSNPPOS-4x -f -op MDL-TST -I RAiSD_Images.TestData2DSNPPOS-4x -clp 4 sweepTR1=sweepTE1 neutralTR1=neutralTE1 sweepTR2=sweepTE2 neutralTR2=neutralTE2
+    	./$exec -n FASTER-NN-G-2DSNPVAR-ModelTest-4x -mdl RAiSD_Model.FASTER-NN-G-2DSNPVAR-4x -f -op MDL-TST -I RAiSD_Images.TestData2DSNPVAR-4x -clp 4 sweepTR1=sweepTE1 neutralTR1=neutralTE1 sweepTR2=sweepTE2 neutralTR2=neutralTE2
+   	./$exec -n FASTER-NN-G-BINSNPPOS-ModelTest-4x -mdl RAiSD_Model.FASTER-NN-G-BINSNPPOS-4x -f -op MDL-TST -I RAiSD_Images.TestDataBINSNPPOS-4x -clp 4 sweepTR1=sweepTE1 neutralTR1=neutralTE1 sweepTR2=sweepTE2 neutralTR2=neutralTE2
 
    
     ;;
@@ -211,9 +211,9 @@ case "$mode" in
     	
     	TESTING_SWEEP_DATASET=../d1/msselectionNEW2.out
     	
-   	./$exec -n SweepNetTF-2DSNP-SCAN -mdl RAiSD_Model.SweepNetTF-2DSNP -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -P -O
-    	./$exec -n SweepNetTF-2DSNPPOS-SCAN -mdl RAiSD_Model.SweepNetTF-2DSNPPOS -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -P -O
-    	./$exec -n SweepNetTF-2DSNPVAR-SCAN -mdl RAiSD_Model.SweepNetTF-2DSNPVAR -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -P -O   
+   	./$exec -n SweepNetTF-2DSNP-SCAN -mdl RAiSD_Model.SweepNetTF-2DSNP -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O
+    	./$exec -n SweepNetTF-2DSNPPOS-SCAN -mdl RAiSD_Model.SweepNetTF-2DSNPPOS -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O
+    	./$exec -n SweepNetTF-2DSNPVAR-SCAN -mdl RAiSD_Model.SweepNetTF-2DSNPVAR -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O   
        
     ;;
     
@@ -221,33 +221,33 @@ case "$mode" in
     
     	echo "SCAN WITH SWEEPNET USING PYTORCH"
     	
-    	./$exec -n SweepNetPT-2DSNP-SCAN -mdl RAiSD_Model.SweepNetPT-2DSNP -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -P -O
-    	./$exec -n SweepNetPT-2DSNPPOS-SCAN -mdl RAiSD_Model.SweepNetPT-2DSNPPOS -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -P -O
-    	./$exec -n SweepNetPT-2DSNPVAR-SCAN -mdl RAiSD_Model.SweepNetPT-2DSNPVAR -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -P -O
-    	./$exec -n SweepNetPT-BINSNPPOS-SCAN -mdl RAiSD_Model.SweepNetPT-BINSNPPOS -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -P -O 
+    	./$exec -n SweepNetPT-2DSNP-SCAN -mdl RAiSD_Model.SweepNetPT-2DSNP -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O
+    	./$exec -n SweepNetPT-2DSNPPOS-SCAN -mdl RAiSD_Model.SweepNetPT-2DSNPPOS -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O
+    	./$exec -n SweepNetPT-2DSNPVAR-SCAN -mdl RAiSD_Model.SweepNetPT-2DSNPVAR -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O
+    	./$exec -n SweepNetPT-BINSNPPOS-SCAN -mdl RAiSD_Model.SweepNetPT-BINSNPPOS -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O 
    
     ;;
     
   "10")
     
-    	echo "SCAN WITH FAST-NN USING PYTORCH"
+    	echo "SCAN WITH FASTER-NN USING PYTORCH"
     	
-    	./$exec -n FAST-NN-PT-2DSNP-SCAN -mdl RAiSD_Model.FAST-NN-PT-2DSNP -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -P -O
-    	./$exec -n FAST-NN-PT-2DSNPPOS-SCAN -mdl RAiSD_Model.FAST-NN-PT-2DSNPPOS -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -P -O
-    	./$exec -n FAST-NN-PT-2DSNPVAR-SCAN -mdl RAiSD_Model.FAST-NN-PT-2DSNPVAR -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -P -O
-    	./$exec -n FAST-NN-PT-BINSNPPOS-SCAN -mdl RAiSD_Model.FAST-NN-PT-BINSNPPOS -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -P -O
-    	./$exec -n FAST-NN-PT-BINFRQPOS-SCAN -mdl RAiSD_Model.FAST-NN-PT-BINFRQPOS -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -P -O 
+    	./$exec -n FAST-NN-PT-2DSNP-SCAN -mdl RAiSD_Model.FAST-NN-PT-2DSNP -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O
+    	./$exec -n FAST-NN-PT-2DSNPPOS-SCAN -mdl RAiSD_Model.FAST-NN-PT-2DSNPPOS -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O
+    	./$exec -n FAST-NN-PT-2DSNPVAR-SCAN -mdl RAiSD_Model.FAST-NN-PT-2DSNPVAR -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O
+    	./$exec -n FAST-NN-PT-BINSNPPOS-SCAN -mdl RAiSD_Model.FAST-NN-PT-BINSNPPOS -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O
+    	./$exec -n FAST-NN-PT-BINFRQPOS-SCAN -mdl RAiSD_Model.FAST-NN-PT-BINFRQPOS -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O 
     
     ;;
     
   "11")
     
-    	echo "SCAN WITH SWEEPNETRECOMBINATION USING PYTORCH"
+    	echo "SCAN WITH FASTER-NN-G (2-factor) USING PYTORCH"
     	
-    	./$exec -n SweepNetPT-2DSNP-SCAN-4x -mdl RAiSD_Model.SweepNetPT-2DSNP-4x -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 2 1 3 -P -O
-    	./$exec -n SweepNetPT-2DSNPPOS-SCAN-4x -mdl RAiSD_Model.SweepNetPT-2DSNPPOS-4x -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 2 1 3 -P -O
-    	./$exec -n SweepNetPT-2DSNPVAR-SCAN-4x -mdl RAiSD_Model.SweepNetPT-2DSNPVAR-4x -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 2 1 3 -P -O
-    	./$exec -n SweepNetPT-BINSNPPOS-SCAN-4x -mdl RAiSD_Model.SweepNetPT-BINSNPPOS-4x -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 2 1 3 -P -O
+    	./$exec -n FASTER-NN-G-2DSNP-SCAN-4x -mdl RAiSD_Model.FASTER-NN-G-2DSNP-4x -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 2 1 3 -O
+    	./$exec -n FASTER-NN-G-2DSNPPOS-SCAN-4x -mdl RAiSD_Model.FASTER-NN-G-2DSNPPOS-4x -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 2 1 3 -O
+    	./$exec -n FASTER-NN-G-2DSNPVAR-SCAN-4x -mdl RAiSD_Model.FASTER-NN-G-2DSNPVAR-4x -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 2 1 3 -O
+    	./$exec -n FASTER-NN-G-BINSNPPOS-SCAN-4x -mdl RAiSD_Model.FASTER-NN-G-BINSNPPOS-4x -f -op SWP-SCN -I $TEST_SWEEP_DATASET -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 2 1 3 -O
    
     ;;
 
@@ -257,14 +257,14 @@ case "$mode" in
     echo "	1 -> Generates test data"
     echo "	2 -> Trains and tests the TensorFlow implementation of SweepNet"
     echo "	3 -> Trains and tests the PyTorch implementation of SweepNet"
-    echo "	4 -> Trains and tests FAST-NN (PyTorch)"
-    echo "	5 -> Generates training data for SweepNetRecombination"
-    echo "	6 -> Generates test data for SweepNetRecombination"
-    echo "	7 -> Trains and tests SweepNetRecombination (PyTorch)"
+    echo "	4 -> Trains and tests FASTER-NN (PyTorch)"
+    echo "	5 -> Generates training data for FASTER-NN-G (2-factor)"
+    echo "	6 -> Generates test data for FASTER-NN-G (2-factor)"
+    echo "	7 -> Trains and tests FASTER-NN-G (2-factor, PyTorch)"
     echo "	8 -> Full scan using the TensorFlow implementation of SweepNet"
     echo "	9 -> Full scan using the PyTorch implementation of SweepNet"
-    echo "       10 -> Full scan using FAST-NN (PyTorch)"  
-    echo "       11 -> Full scan using SweepNetRecombination (PyTorch)"
+    echo "       10 -> Full scan using FASTER-NN (PyTorch)"  
+    echo "       11 -> Full scan using FASTER-NN-G (2-factor, PyTorch)"
     ;;
 esac
 

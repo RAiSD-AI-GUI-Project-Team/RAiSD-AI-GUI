@@ -256,13 +256,13 @@ class FASTER_NN(torch.nn.Module):
         self.pool3 = torch.nn.MaxPool1d(pool3_kernel, pool3_stride)
         self.relu3 = torch.nn.ReLU()
         
-        self.conv4 = torch.nn.Conv1d(conv3_channels, conv4_channels, kernel_size=conv4_kernel, stride=conv4_stride, padding=0) # padding was 3
+        self.conv4 = torch.nn.Conv1d(conv3_channels, conv4_channels, kernel_size=conv4_kernel, stride=conv4_stride, padding=3) # padding was 3
         self.relu4 = torch.nn.ReLU()
         
-        self.conv5 = torch.nn.Conv1d(conv4_channels, conv5_channels, kernel_size=conv5_kernel, stride=conv5_stride, padding=0) # padding was 3
+        self.conv5 = torch.nn.Conv1d(conv4_channels, conv5_channels, kernel_size=conv5_kernel, stride=conv5_stride, padding=3) # padding was 3
         self.relu5 = torch.nn.ReLU()
         
-        self.conv6 = torch.nn.Conv1d(conv5_channels, conv6_channels, kernel_size=conv6_kernel, stride=conv6_stride, padding=0) # padding was 3
+        self.conv6 = torch.nn.Conv1d(conv5_channels, conv6_channels, kernel_size=conv6_kernel, stride=conv6_stride, padding=3) # padding was 3
         self.relu6 = torch.nn.ReLU()
         
         
@@ -273,9 +273,9 @@ class FASTER_NN(torch.nn.Module):
         out_pool2 = self.compute_out_shape(out_conv2, (pool2_kernel, pool2_kernel), (pool2_stride, pool2_stride))
         out_conv3 = self.compute_out_shape(out_pool2, (conv3_kernel, conv3_kernel), (conv3_stride, conv3_stride))
         out_pool3 = self.compute_out_shape(out_conv3, (pool3_kernel, pool3_kernel), (pool3_stride, pool3_stride))
-        out_conv4 = self.compute_out_shape((out_pool3[0], out_pool3[1]), (conv4_kernel, conv4_kernel), (conv4_stride, conv4_stride))
-        out_conv5 = self.compute_out_shape((out_conv4[0], out_conv4[1]), (conv5_kernel, conv5_kernel), (conv5_stride, conv5_stride))
-        out_conv6 = self.compute_out_shape((out_conv5[0], out_conv5[1]), (conv5_kernel, conv5_kernel), (conv5_stride, conv5_stride))
+        out_conv4 = self.compute_out_shape((out_pool3[0], out_pool3[1]+6), (conv4_kernel, conv4_kernel), (conv4_stride, conv4_stride))
+        out_conv5 = self.compute_out_shape((out_conv4[0], out_conv4[1]+6), (conv5_kernel, conv5_kernel), (conv5_stride, conv5_stride))
+        out_conv6 = self.compute_out_shape((out_conv5[0], out_conv5[1]+6), (conv5_kernel, conv5_kernel), (conv5_stride, conv5_stride))
         
         # init output layer
         self.fc = torch.nn.Linear(out_conv6[1]*32, 2*self.outputs)
@@ -327,7 +327,7 @@ class FASTER_NN(torch.nn.Module):
     
     
 class FASTER_NN_grouped(torch.nn.Module):
-    def __init__(self, H, W, outputs, channels):
+    def __init__(self, H, W, outputs, channels, groups):
         super(FASTER_NN_grouped, self).__init__()
         
         conv1_kernel = 3
@@ -362,8 +362,13 @@ class FASTER_NN_grouped(torch.nn.Module):
                 
         self.outputs = outputs
         self.channels = channels
-        self.groups = 16
-        self.group_size = 8
+
+        if groups == 0:
+            self.groups = H
+        else:
+            self.groups = groups
+
+        self.group_size = H // self.groups
         self.height = H
         self.conv1 = torch.nn.Conv1d(channels, conv1_channels, kernel_size=conv1_kernel, stride=conv1_stride, padding=0)
         self.pool1 = torch.nn.MaxPool1d(pool1_kernel, pool1_stride)
@@ -377,13 +382,13 @@ class FASTER_NN_grouped(torch.nn.Module):
         self.pool3 = torch.nn.MaxPool1d(pool3_kernel, pool3_stride)
         self.relu3 = torch.nn.ReLU()
         
-        self.conv4 = torch.nn.Conv1d(8+conv3_channels, conv4_channels, kernel_size=conv4_kernel, stride=conv4_stride, padding=0) # padding was 3
+        self.conv4 = torch.nn.Conv1d(8+conv3_channels, conv4_channels, kernel_size=conv4_kernel, stride=conv4_stride, padding=3) # padding was 3
         self.relu4 = torch.nn.ReLU()
         
-        self.conv5 = torch.nn.Conv1d(8+conv4_channels, conv5_channels, kernel_size=conv5_kernel, stride=conv5_stride, padding=0) # padding was 3
+        self.conv5 = torch.nn.Conv1d(8+conv4_channels, conv5_channels, kernel_size=conv5_kernel, stride=conv5_stride, padding=3) # padding was 3
         self.relu5 = torch.nn.ReLU()
          
-        self.conv6 = torch.nn.Conv1d(8+conv5_channels, conv6_channels, kernel_size=conv6_kernel, stride=conv6_stride, padding=0) # padding was 3
+        self.conv6 = torch.nn.Conv1d(8+conv5_channels, conv6_channels, kernel_size=conv6_kernel, stride=conv6_stride, padding=3) # padding was 3
         self.relu6 = torch.nn.ReLU()
         
         # average pooling for groups
@@ -397,9 +402,9 @@ class FASTER_NN_grouped(torch.nn.Module):
         out_pool2 = self.compute_out_shape(out_conv2, (pool2_kernel, pool2_kernel), (pool2_stride, pool2_stride))
         out_conv3 = self.compute_out_shape(out_pool2, (conv3_kernel, conv3_kernel), (conv3_stride, conv3_stride))
         out_pool3 = self.compute_out_shape(out_conv3, (pool3_kernel, pool3_kernel), (pool3_stride, pool3_stride))
-        out_conv4 = self.compute_out_shape((out_pool3[0], out_pool3[1]), (conv4_kernel, conv4_kernel), (conv4_stride, conv4_stride))
-        out_conv5 = self.compute_out_shape((out_conv4[0], out_conv4[1]), (conv5_kernel, conv5_kernel), (conv5_stride, conv5_stride))
-        out_conv6 = self.compute_out_shape((out_conv5[0], out_conv5[1]), (conv5_kernel, conv5_kernel), (conv5_stride, conv5_stride))
+        out_conv4 = self.compute_out_shape((out_pool3[0], out_pool3[1]+6), (conv4_kernel, conv4_kernel), (conv4_stride, conv4_stride))
+        out_conv5 = self.compute_out_shape((out_conv4[0], out_conv4[1]+6), (conv5_kernel, conv5_kernel), (conv5_stride, conv5_stride))
+        out_conv6 = self.compute_out_shape((out_conv5[0], out_conv5[1]+6), (conv5_kernel, conv5_kernel), (conv5_stride, conv5_stride))
         
         # init output layer
         self.fc = torch.nn.Linear(out_conv6[1]*conv6_channels, 2*self.outputs)
@@ -415,7 +420,6 @@ class FASTER_NN_grouped(torch.nn.Module):
         self.m4 = torch.nn.BatchNorm1d(self.conv4.out_channels)
         self.m5 = torch.nn.BatchNorm1d(self.conv5.out_channels)
         self.m6 = torch.nn.BatchNorm1d(self.conv6.out_channels)
-        self.d1 = torch.nn.Dropout1d(p=0.3)
         
         
     def compute_out_shape(self, I, k, s):
@@ -440,10 +444,13 @@ class FASTER_NN_grouped(torch.nn.Module):
             x = x[:,1:3,:,:] 
         else:
             x = x[:,0:3,:,:] 
-   
+
         x = self.avg_group_pool(x)
+
         x = torch.permute(x, (0, 2, 1, 3))
-        x = torch.reshape(x, (x.shape[0]*self.groups, x.shape[2], x.shape[3]))       
+
+        x = torch.reshape(x, (x.shape[0]*self.groups, x.shape[2], x.shape[3]))    
+ 
 
         
         x = self.conv1(x)

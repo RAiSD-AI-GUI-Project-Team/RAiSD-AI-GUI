@@ -211,9 +211,18 @@ RSD-DEF: Standard RAiSD execution using only the mu-statistic (no CNN)\n");
 	
 	fprintf(fp, "\n\t-- RAiSD-AI TRAINING (MODE: MDL-GEN) \n\n");
 	fprintf(fp, "\t-I\tIn this mode (Training), -I provides the path to the directory where the training data is stored. This can be\n\t\tdirectory RAiSD_Images.some-runID, where some-runID is the run ID of some previous run in data generation mode.\n\t\tThe trained model will be stored in RAiSD_Model.runID, where runID is provided through -n.\n");
-	fprintf(fp, "\t-arc\tSpecifies the neural network architecture: SweepNet (TF default) | FAST-NN (PyTorch default) | SweepNetRecomb (4-class model).\n");
+	fprintf(fp, "\t-arc\tSpecifies the neural network architecture (default: FASTER-NN): SweepNet | FAST-NN | FASTER-NN | FASTER-NN-G.\n\t\t\
+SweepNet:\t2-class model for selective sweeps (Zhao et al. 2023, https://dl.acm.org/doi/abs/10.1145/3592979.3593411)\n\t\t\
+   	 \tImplemented in TensorFlow and PyTorch. \n\t\t\
+FAST-NN: \t2-class model for selective sweeps (van den Belt et al. 2024, https://doi.org/10.1093/bioinformatics/btae385)\n\t\t\
+         \tImplemented in PyTorch. \n\t\t\
+FASTER-NN:\t2-class model for selective sweeps.\n\t\t\
+	  \tImplemented in PyTorch.\n\t\t\
+FASTER-NN-G:\t2-class model for selective sweeps and 4-class model for 2-factor classification. The 4-class model is\n\t\t\t\tdesigned for scanning for selective sweeps and recombination hotspots at the same time. Using -cl4 deploys the 4-class model.\n");	
+	
 	fprintf(fp, "\t-e\tProvides the number of epochs (default: 10).\n");
-	fprintf(fp, "\t-cl4\tProvides four pairings (using '=') between class labels and corresponding folder names in the RAiSD_Images.some-runID\n\t\tdirectory (provided through -I). They are organized into two groups, 1 and 2, to carry out two simultaneous binary\n\t\tclassifications. This is only supported by SweepNetRecombination.\n\t\tSyntax: \"-cl4 label00=folderA label01=folderB label10=folderC label11=folderD\", where label00 through 11 are the label identifiers,\n\t\tand folderA through D are in the directory specified via -I. label00 and label01 are Group 0 while label10 and label11 are Group 1. \n");  
+	fprintf(fp, "\t-cl4\tProvides four pairings (using '=') between class labels and corresponding folder names in the RAiSD_Images.some-runID\n\t\tdirectory (provided through -I). They are organized into two groups, 1 and 2, to carry out two simultaneous binary\n\t\tclassifications. This is only supported by SweepNetRecombination.\n\t\tSyntax: \"-cl4 label00=folderA label01=folderB label10=folderC label11=folderD\", where label00 through 11 are the label identifiers,\n\t\tand folderA through D are in the directory specified via -I. label00 and label01 are Group 0 while label10 and label11 are Group 1. \n");
+	fprintf(fp, "\t-g\tSpecifies the number of sequence groups to be created by FASTER-NN-G for SFS grouped poooling (default: sample size).\n");  
 	//fprintf(fp, "\t-det\tIn this mode (Training), -det indicates that the CNN model to be trained will be used for detection. In this case,\n\t\tthe training data must have been created using -det in data-generation mode as well. This is only supported by the\n\t\tPyTorch implementation. [PYTORCH-ONLY]\n");
 	
 	fprintf(fp, "\n\t-- RAiSD-AI INFERENCE (MODE: MDL-TST) \n\n");
@@ -282,6 +291,7 @@ void RSDVersions(FILE * fp)
 	majorIndex++; minorIndex=0;
 		
 	fprintf(fp, " %*d. RAiSD v%d.%d (Jul  1, 2024): RAiSD-AI release (data generation, CNN training and testing, and CNN-based scans)\n", strlen, releaseIndex++, majorIndex, minorIndex++);
+	fprintf(fp, " %*d. RAiSD v%d.%d (Nov 21, 2024): Added FASTER-NN, FASTER-NN-G, and -g parameter for SFS grouped pooling in FASTER-NN-G\n", strlen, releaseIndex++, majorIndex, minorIndex++);
 
 }
 
@@ -419,9 +429,12 @@ void RSDCommandLine_init(RSDCommandLine_t * RSDCommandLine)
 	
 	RSDCommandLine->numOfPositiveClasses=0;
 	RSDCommandLine->positiveClassIndex=NULL;
+
+	RSDCommandLine->fasterNNgroups = 0;
 	
 	RSDCommandLine->userWindowSize=0;	
-	strncpy(RSDCommandLine->networkArchitecture, ARC_SWEEPNET1D, STRING_SIZE); 
+	strncpy(RSDCommandLine->networkArchitecture, ARC_FASTER_NN, STRING_SIZE);
+	RSDCommandLine->classification2x2En=0; 
 	
 	//Evaluation
 	RSDCommandLine->tprThresNnPositiveClass0 = 0.0;
@@ -621,7 +634,7 @@ void RSDCommandLine_load(RSDCommandLine_t * RSDCommandLine, int argc, char ** ar
 			}
 			else
 			{
-				fprintf(stderr, "\nERROR: Missing argument after %s\n\n",argv[i-1]);
+				fprintf(stderr, "\nERROR: Missing or invalid argument after %s\n\n",argv[i]);
 				exit(0);	
 			}
 			continue;
@@ -1516,6 +1529,9 @@ void RSDCommandLine_load(RSDCommandLine_t * RSDCommandLine, int argc, char ** ar
 				}
 				RSDCommandLine->numberOfClasses = numberOfClasses;
 				
+				if(RSDCommandLine->numberOfClasses==4)
+					RSDCommandLine->classification2x2En=1;
+				
 				RSDCommandLine->classLabelList = (char**)rsd_malloc(sizeof(char*)*RSDCommandLine->numberOfClasses); // this must be the true class
 				assert(RSDCommandLine->classLabelList!=NULL);
 				
@@ -1608,7 +1624,7 @@ void RSDCommandLine_load(RSDCommandLine_t * RSDCommandLine, int argc, char ** ar
 			}
 			else
 			{
-				fprintf(stderr, "\nERROR: Missing argument after %s\n\n",argv[i-1]);
+				fprintf(stderr, "\nERROR: Missing or invalid argument after %s\n\n",argv[i]);
 				exit(0);	
 			}
 			continue;
@@ -1671,7 +1687,7 @@ void RSDCommandLine_load(RSDCommandLine_t * RSDCommandLine, int argc, char ** ar
 				{
 					fprintf(stderr, "\nERROR: Invalid argument after -arc (unknown neural network architecture %s)\n\n",argv[i]);
 					exit(0);
-				}				
+				}
 			}
 			else
 			{
@@ -1749,7 +1765,9 @@ void RSDCommandLine_load(RSDCommandLine_t * RSDCommandLine, int argc, char ** ar
 		if(!strcmp(argv[i], "-cl4")) // class-pair associations for 2x2 model (SweepNetRecombination) 
 		{ 
 			flagCheck (argv, i, flagVector, 44); 
-
+			
+			RSDCommandLine->classification2x2En=1;
+			
 			if (i!=argc-1 && argv[i+1][0]!='-')
 			{
 				RSDCommandLine->numberOfClasses = 4;
@@ -1803,6 +1821,30 @@ void RSDCommandLine_load(RSDCommandLine_t * RSDCommandLine, int argc, char ** ar
 
 			continue;
 		}		
+		
+		if(!strcmp(argv[i], "-g")) 
+		{ 
+			flagCheck (argv, i, flagVector, 46);
+
+			if (i!=argc-1 && argv[i+1][0]!='-')
+			{
+				int groups = atoi(argv[++i]);
+				if(groups<=0)
+				{
+					fprintf(stderr, "\nERROR: Invalid argument after %s\n\n",argv[i-1]);
+					exit(0);
+				}
+				RSDCommandLine->fasterNNgroups = groups;
+			}
+			else
+			{
+				fprintf(stderr, "\nERROR: Missing or invalid argument after %s\n\n",argv[i]);
+				exit(0);	
+			}
+			continue;
+		}
+		
+				
 #endif
 		/*if(!strcmp(argv[i], "-set")) 
 		{ 

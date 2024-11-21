@@ -1,5 +1,5 @@
 from Logic.dataLoad import get_loader
-from Logic.models import SweepNet, FAST_NN, SweepNetRecombination
+from Logic.models import SweepNet, FAST_NN, FASTER_NN, FASTER_NN_grouped
 from Logic.testing import test_model, test_model_double_label
 from Logic.training import train_model, train_model_double_label
 import torch
@@ -10,7 +10,7 @@ import time
 import sys
 import json
     
-def train(height, width, epochs, batch, platform, opath, ipath, model_class, use_bp_distance, load_binary, train_detect, infofilename, reduction, hotspot, labelnames):
+def train(height, width, epochs, batch, platform, opath, ipath, model_class, use_bp_distance, load_binary, train_detect, infofilename, reduction, hotspot, labelnames, groups):
     #print("Training model", opath, end=' ')
     
     with open(opath + "/classLabels.txt", "w") as f:
@@ -36,9 +36,10 @@ def train(height, width, epochs, batch, platform, opath, ipath, model_class, use
     
     if model_class == "FAST-NN":
         model = FAST_NN(height, width, channels=channels, outputs=outputs)
-    elif model_class == "SweepNetRecombination":
-        model = SweepNetRecombination(height, width, channels=channels, outputs=outputs)
-        lr = 5e-3
+    elif model_class == "FASTER-NN":
+        model = FASTER_NN(height, width, channels=channels, outputs=outputs)
+    elif model_class == "FASTER-NN-G":
+        model = FASTER_NN_grouped(height, width, channels=channels, outputs=outputs, groups=groups)
     elif model_class == "SweepNet":
         model = SweepNet(height, width, channels=channels, outputs=outputs)
     else:
@@ -56,7 +57,7 @@ def train(height, width, epochs, batch, platform, opath, ipath, model_class, use
     torch.save(model.state_dict(), os.path.join(opath, 'model.pt'))
     
         
-def test(height, width, platform, mpath, ipath, opath, model_class, use_bp_distance, load_binary, reduction, hotspot, labelnames):
+def test(height, width, platform, mpath, ipath, opath, model_class, use_bp_distance, load_binary, reduction, hotspot, labelnames, groups):
     #print("Testing model ", mpath)
     
     # set class folders to false for production
@@ -74,8 +75,10 @@ def test(height, width, platform, mpath, ipath, opath, model_class, use_bp_dista
 
     if model_class == "FAST-NN":
         model = FAST_NN(height, width, channels=channels, outputs=outputs)
-    elif model_class == "SweepNetRecombination":
-        model = SweepNetRecombination(height, width, channels=channels, outputs=outputs)
+    elif model_class == "FASTER-NN":
+        model = FASTER_NN(height, width, channels=channels, outputs=outputs)
+    elif model_class == "FASTER-NN-G":
+        model = FASTER_NN_grouped(height, width, channels=channels, outputs=outputs, groups=groups)
     elif model_class == "SweepNet":
         model = SweepNet(height, width, channels=channels, outputs=outputs)
     else:
@@ -129,10 +132,11 @@ def test(height, width, platform, mpath, ipath, opath, model_class, use_bp_dista
 # a parameter to select which model to use is required to be implemented.
 def main(argv):
 
-    opts, args = getopt.getopt(argv, "m:p:t:a:r:e:i:o:d:h:w:c:f:x:y:b:l:n:H", ["mode=", "platform=", "threads=", "infofilename=", "reduce=","epochs=", "ipath=", "opath=", "modeldirect=", "height=", "width=", "class=", "file=", "distance=", "detect=", "batch", "hotspot=", "labelnames=", "help"])
+    opts, args = getopt.getopt(argv, "m:p:t:a:r:e:i:o:d:h:w:c:f:x:y:b:l:n:g:H", ["mode=", "platform=", "threads=", "infofilename=", "reduce=","epochs=", "ipath=", "opath=", "modeldirect=", "height=", "width=", "class=", "file=", "distance=", "detect=", "batch", "hotspot=", "labelnames=", "groups=", "help"])
  
     labelnames = "[]"
     hotspot = 0 
+    groups = 0
     for opt, arg in opts:
         if opt in ("-m", "--mode"):
             mode = arg
@@ -170,6 +174,8 @@ def main(argv):
             hotspot = arg
         elif opt in ("-n", "--labelnames"):
             labelnames = arg
+        elif opt in ("-g", "--groups"):
+            groups = arg
         elif opt in ("-H", "--help"):
             help()
             return 0
@@ -181,7 +187,7 @@ def main(argv):
 
     if (mode == "train"):
         start=time.time()
-        train(int(height), int(width), int(epochs), int(batch), platform, opath, ipath, model_class, int(use_bp_distance), int(load_binary), int(train_detect), infofilename, int(allelefreq), int(hotspot), json.loads(labelnames))
+        train(int(height), int(width), int(epochs), int(batch), platform, opath, ipath, model_class, int(use_bp_distance), int(load_binary), int(train_detect), infofilename, int(allelefreq), int(hotspot), json.loads(labelnames), int(groups))
         end=time.time()
        # with open(opath + "/image-dimensions.txt", "w") as f:
         #    f.write(str(str(height) + " " + str(width)))
@@ -189,7 +195,7 @@ def main(argv):
             
     elif (mode == "predict"):
         start=time.time()
-        test(int(height), int(width), platform, mpath, ipath, opath, model_class, int(use_bp_distance), int(load_binary), int(allelefreq), int(hotspot), json.loads(labelnames))
+        test(int(height), int(width), platform, mpath, ipath, opath, model_class, int(use_bp_distance), int(load_binary), int(allelefreq), int(hotspot), json.loads(labelnames), int(groups))
         end=time.time()
         
     else:

@@ -50,7 +50,7 @@ RSDNeuralNetwork_t * RSDNeuralNetwork_new (RSDCommandLine_t * RSDCommandLine)
 	return nn;
 }
 
-void read_img_nn_info_file (char * path, int mode, FILE * fpOut, int * width, int * height, char * format, char * architecture, int * dataType, int * enTF)
+void read_img_nn_info_file (char * path, int mode, FILE * fpOut, int * width, int * height, char * format, char * architecture, int * dataType, int * enTF, int * en2x2)
 {
 	assert(path!=NULL);
 	assert(mode==0 || mode==1);
@@ -92,8 +92,11 @@ void read_img_nn_info_file (char * path, int mode, FILE * fpOut, int * width, in
 			assert(enTF!=NULL);
 			ret = fscanf(fp, "%d", enTF);
 			assert(ret==1);
+			
+			assert(en2x2!=NULL);
+			ret = fscanf(fp, "%d", en2x2);
+			assert(ret==1);			
 		}
-		
 		fclose(fp);
 	}
 	
@@ -125,7 +128,7 @@ void RSDNeuralNetwork_init (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLin
 			strncpy(RSDNeuralNetwork->outputPath, "RAiSD_Model.", STRING_SIZE); 
 			strcat(RSDNeuralNetwork->outputPath, RSDCommandLine->runName);
 			
-			RSDNeuralNetwork->classSize = numOfClasses_NN_architecture (RSDCommandLine->networkArchitecture);
+			RSDNeuralNetwork->classSize = numOfClasses_NN_architecture (RSDCommandLine->networkArchitecture, RSDCommandLine->classification2x2En);
 			
 			RSDNeuralNetwork->classLabel = (char**)rsd_malloc(sizeof(char*)*RSDNeuralNetwork->classSize);
 			assert(RSDNeuralNetwork->classLabel!=NULL);
@@ -229,7 +232,7 @@ void RSDNeuralNetwork_init (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLin
 		strncpy(tstring, RSDCommandLine->inputFileName, STRING_SIZE);
 		strcat(tstring, "/info.txt");
 		
-		read_img_nn_info_file (tstring, 0, fpOut, &imgWidth, &imgHeight, imgFormat, NULL, &imgDataType, NULL);
+		read_img_nn_info_file (tstring, 0, fpOut, &imgWidth, &imgHeight, imgFormat, NULL, &imgDataType, NULL, NULL);
 	}
 	
 	if(RSDCommandLine->opCode==OP_TEST_CNN || RSDCommandLine->opCode==OP_USE_CNN)
@@ -239,7 +242,7 @@ void RSDNeuralNetwork_init (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLin
 		strcat(tstring, "/info.txt");
 		
 		read_img_nn_info_file (tstring, 1, fpOut, &RSDNeuralNetwork->imageWidth, &RSDNeuralNetwork->imageHeight, imgFormat2, RSDNeuralNetwork->networkArchitecture, 
-				       &RSDNeuralNetwork->dataType, &enTF);
+				       &RSDNeuralNetwork->dataType, &enTF, &RSDCommandLine->classification2x2En);
 				       
 		RSDNeuralNetwork->dataFormat = !strcmp(imgFormat2, "bin")?1:0;
 		assert(enTF==0 || enTF==1);		
@@ -259,7 +262,16 @@ void RSDNeuralNetwork_init (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLin
 				fprintf(fpOut, "\nERROR: The TensorFlow implementation does not currently support binary input. You can use the PyTorch implementation instead.\n\n");
 				fprintf(stderr, "\nERROR: The TensorFlow implementation does not currently support binary input. You can use the PyTorch implementation instead.\n\n");
 				exit(0);
-			}			
+			}
+			
+			if(!strcmp(RSDNeuralNetwork->networkArchitecture, ARC_FASTER_NN_G) && (RSDNeuralNetwork->dataFormat==1 && RSDNeuralNetwork->dataType==1))
+			{
+				fprintf(fpOut, "\nERROR: %s can only be used with raw image data.\n\n", RSDNeuralNetwork->networkArchitecture);
+				fprintf(stderr, "\nERROR: %s can only be used with raw image data.\n\n", RSDNeuralNetwork->networkArchitecture);
+				exit(0);			
+			}
+			
+						
 		break;
 		
 		case OP_TEST_CNN:
@@ -349,20 +361,20 @@ void RSDNeuralNetwork_init (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLin
 			RSDCommandLine->imgDataType = RSDNeuralNetwork->dataType;
 			strcpy(RSDCommandLine->networkArchitecture, RSDNeuralNetwork->networkArchitecture); 
 			
-			if(numOfPositiveClasses_NN_architecture (RSDNeuralNetwork->networkArchitecture)!=RSDCommandLine->numOfPositiveClasses)
+			if(numOfPositiveClasses_NN_architecture (RSDNeuralNetwork->networkArchitecture, RSDCommandLine->classification2x2En)!=RSDCommandLine->numOfPositiveClasses)
 			{
-				fprintf(fpOut, "\nERROR: The number of positive-class indices provided through -pci is incompatible with the trained model (expected %d).\n\n", numOfPositiveClasses_NN_architecture (RSDNeuralNetwork->networkArchitecture));		
-				fprintf(stderr, "\nERROR: The number of positive-class indices provided through -pci is incompatible with the trained model (expected %d).\n\n", numOfPositiveClasses_NN_architecture (RSDNeuralNetwork->networkArchitecture));				
+				fprintf(fpOut, "\nERROR: The number of positive-class indices provided through -pci is incompatible with the trained model (expected %d).\n\n", numOfPositiveClasses_NN_architecture (RSDNeuralNetwork->networkArchitecture, RSDCommandLine->classification2x2En));		
+				fprintf(stderr, "\nERROR: The number of positive-class indices provided through -pci is incompatible with the trained model (expected %d).\n\n", numOfPositiveClasses_NN_architecture (RSDNeuralNetwork->networkArchitecture, RSDCommandLine->classification2x2En));				
 				
 				exit(0);			
 			}			
 			
 			for(i=0;i<RSDCommandLine->numOfPositiveClasses;i++)
 			{
-				if((RSDCommandLine->positiveClassIndex[i]<0) || (RSDCommandLine->positiveClassIndex[i]>=numOfClasses_NN_architecture (RSDNeuralNetwork->networkArchitecture)))
+				if((RSDCommandLine->positiveClassIndex[i]<0) || (RSDCommandLine->positiveClassIndex[i]>=numOfClasses_NN_architecture (RSDNeuralNetwork->networkArchitecture, RSDCommandLine->classification2x2En)))
 				{
-					fprintf(fpOut, "\nERROR: Invalid positive-class index given through -pci (%d). Valid values: [0-%d].\n\n", RSDCommandLine->positiveClassIndex[i], numOfClasses_NN_architecture (RSDNeuralNetwork->networkArchitecture)-1);		
-					fprintf(stderr, "\nERROR: Invalid positive-class index given through -pci (%d). Valid values: [0-%d].\n\n", RSDCommandLine->positiveClassIndex[i], numOfClasses_NN_architecture (RSDNeuralNetwork->networkArchitecture)-1);		
+					fprintf(fpOut, "\nERROR: Invalid positive-class index given through -pci (%d). Valid values: [0-%d].\n\n", RSDCommandLine->positiveClassIndex[i], numOfClasses_NN_architecture (RSDNeuralNetwork->networkArchitecture, RSDCommandLine->classification2x2En)-1);		
+					fprintf(stderr, "\nERROR: Invalid positive-class index given through -pci (%d). Valid values: [0-%d].\n\n", RSDCommandLine->positiveClassIndex[i], numOfClasses_NN_architecture (RSDNeuralNetwork->networkArchitecture, RSDCommandLine->classification2x2En)-1);		
 				
 					exit(0);				
 				}
@@ -475,17 +487,17 @@ void RSDNeuralNetwork_init (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLin
 			ret=fscanf(fp, "%d", &classes);
 			assert(ret==1);
 				
-			if(classes!=numOfClasses_NN_architecture(RSDCommandLine->networkArchitecture))
+			if(classes!=numOfClasses_NN_architecture(RSDCommandLine->networkArchitecture, RSDCommandLine->classification2x2En))
 			{
 				fprintf(fpOut, "\nERROR: %d class folder(s) found in directory %s (%s requires %d)!\n\n", classes, 
 														RSDCommandLine->inputFileName,
 														RSDCommandLine->networkArchitecture,
-														numOfClasses_NN_architecture(RSDCommandLine->networkArchitecture));
+														numOfClasses_NN_architecture(RSDCommandLine->networkArchitecture, RSDCommandLine->classification2x2En));
 																
 				fprintf(stderr, "\nERROR: %d class folder(s) found in directory %s (%s requires %d)!\n\n", classes, 
 														RSDCommandLine->inputFileName,
 														RSDCommandLine->networkArchitecture,
-														numOfClasses_NN_architecture(RSDCommandLine->networkArchitecture));
+														numOfClasses_NN_architecture(RSDCommandLine->networkArchitecture, RSDCommandLine->classification2x2En));
 				
 				exec_command("rm checkClassNumErr.txt 1>>/dev/null 2>>/dev/null");
 				exec_command("rm checkClassNumErr2.txt 1>>/dev/null 2>>/dev/null");
@@ -642,6 +654,25 @@ void RSDNeuralNetwork_createTrainCommand (RSDNeuralNetwork_t * RSDNeuralNetwork,
 		strcat(trainCommand, " -c ");
 		strcat(trainCommand, RSDCommandLine->networkArchitecture); 
 		
+		if(!strcmp(RSDCommandLine->networkArchitecture, ARC_FASTER_NN_G))
+		{	
+			if(RSDCommandLine->fasterNNgroups==0)
+			{
+				RSDCommandLine->fasterNNgroups =  RSDNeuralNetwork->imageHeight;
+			}
+			else
+			{
+				RSDCommandLine->fasterNNgroups = getValidNumberOf_FASTER_NN_G_Groups (RSDNeuralNetwork->imageHeight, RSDCommandLine->fasterNNgroups);
+			}
+				
+			strcat(trainCommand, " -g ");
+			sprintf(tstring, "%d", RSDCommandLine->fasterNNgroups);
+			strcat(trainCommand, tstring);	
+			
+			
+			
+		}
+		
 		if(!strcmp(RSDCommandLine->networkArchitecture, ARC_SWEEPNETRECOMB))
 		{
 			int j=0;
@@ -717,9 +748,17 @@ void RSDNeuralNetwork_train (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLi
 	//fprintf(fpOut, " Training command    :\t%s\n", trainCommand);
 	//fprintf(stdout, " Training command    :\t%s\n", trainCommand);
 	
-	fprintf(fpOut, "\n CNN training ...\n\n");
-	fprintf(stdout, "\n CNN training ...\n\n");
 	
+	if(!strcmp(RSDCommandLine->networkArchitecture, ARC_FASTER_NN_G))
+	{
+		fprintf(fpOut, "\n CNN training (%s, groups=%d) ...\n\n", RSDCommandLine->networkArchitecture, RSDCommandLine->fasterNNgroups);
+		fprintf(stdout, "\n CNN training (%s, groups=%d) ...\n\n", RSDCommandLine->networkArchitecture, RSDCommandLine->fasterNNgroups);
+	}
+	else
+	{
+		fprintf(fpOut, "\n CNN training (%s) ...\n\n", RSDCommandLine->networkArchitecture);
+		fprintf(stdout, "\n CNN training (%s) ...\n\n", RSDCommandLine->networkArchitecture);	
+	}
 	fflush(fpOut);
 	fflush(stdout);
 	
@@ -743,6 +782,7 @@ void RSDNeuralNetwork_train (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLi
 	fprintf(fpImgDim, "%d\n%d\n", RSDNeuralNetwork->imageWidth, RSDNeuralNetwork->imageHeight);
 	fprintf(fpImgDim, "%s\n%d\n%s\n", RSDNeuralNetwork->dataFormat==1?"bin":"2D", RSDNeuralNetwork->dataType, RSDNeuralNetwork->networkArchitecture);
 	fprintf(fpImgDim, "%d\n", RSDCommandLine->enTF);
+	fprintf(fpImgDim, "%d\n", RSDCommandLine->classification2x2En);
 	fprintf(fpImgDim, "***DO_NOT_REMOVE_OR_EDIT_THIS_FILE***\n");
 		
 	fclose(fpImgDim);
