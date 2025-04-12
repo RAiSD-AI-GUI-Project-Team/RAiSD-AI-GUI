@@ -241,8 +241,8 @@ int main (int argc, char ** argv)
 #if _RSDAI
 			validSetIndex++;
 			
-			RSDResults_incrementSetCounter (RSDResults);
-			RSDResults_saveSetID (RSDResults, RSDDataset);
+			//RSDResults_incrementSetCounter (RSDResults);
+			//RSDResults_saveSetID (RSDResults, RSDDataset);
 						
 			if(RSDCommandLine->opCode==OP_DEF)
 			{
@@ -308,6 +308,13 @@ int main (int argc, char ** argv)
 
 				continue;
 			}
+			
+#ifdef _RSDAI
+			RSDResults_incrementSetCounter (RSDResults);
+			RSDResults_saveSetID (RSDResults, RSDDataset);
+#endif			
+			
+			
 			RSDPatternPool_resize (RSDPatternPool, RSDDataset->setSamples, RAiSD_Info_FP);
 #ifdef _HM
 			RSDHashMap_free(RSDPatternPool->hashMap);
@@ -469,7 +476,7 @@ int main (int argc, char ** argv)
 
 			if(setIndex == setIndexValid)
 				break;	
-		}		
+		}			
 	}	
 			
 #ifdef _RSDAI
