@@ -11,3 +11,12 @@ class BoolParameter(Parameter[bool]):
             return self.flag
         else:
             return ""
+    
+    def __str__(self) -> str:
+        return (
+            f'BoolParameter('
+            + f'name: "{self.name}", '
+            + f'description: "{self.description})", '
+            + f'value: {self.value}, '
+            + f'valid: {self.valid})'
+        )
