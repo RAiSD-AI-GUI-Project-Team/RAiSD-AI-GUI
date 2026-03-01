@@ -1,8 +1,8 @@
 from typing import Self
 from PySide6.QtWidgets import QWidget, QFormLayout
 
-from gui.model.ParameterGroup import ParameterGroup
-from gui.widgets.ParameterWidget import ParameterWidget
+from gui.model.parameter_group import ParameterGroup
+from gui.widgets.parameter_widget import ParameterWidget
 
 
 class ParameterFormSection(QWidget):

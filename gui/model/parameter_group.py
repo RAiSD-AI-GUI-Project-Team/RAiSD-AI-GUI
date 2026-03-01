@@ -1,6 +1,6 @@
 from typing import Any
 
-from gui.model.Parameter import Parameter
+from gui.model.parameter import Parameter
 
 
 class ParameterGroup():

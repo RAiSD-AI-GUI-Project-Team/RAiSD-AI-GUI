@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QCheckBox
 
-from gui.model.Parameter import (
+from gui.model.parameter import (
     Parameter,
     BoolParameter,
 )
