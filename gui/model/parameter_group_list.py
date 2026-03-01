@@ -1,7 +1,7 @@
 from typing import Self
 
-from gui.model.ParameterGroup import ParameterGroup
-from gui.model.Parameter import (
+from gui.model.parameter_group import ParameterGroup
+from gui.model.parameter import (
     Parameter,
     BoolParameter,
 )
