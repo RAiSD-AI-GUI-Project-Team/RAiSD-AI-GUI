@@ -2,7 +2,7 @@ import sys
 
 from PySide6.QtWidgets import QApplication, QStyleFactory
 
-from gui.model.ParameterGroupList import ParameterGroupList
+from gui.model.parameter_group_list import ParameterGroupList
 from gui.windows.main import MainWindow
 
 
