@@ -33,10 +33,22 @@ class ParameterGroupList():
             '--print-to-console',
             False,
         )
+        other_dummy_param = BoolParameter(
+            'Use PyTorch',
+            'If this is checked, PyTorch will be used instead of TensorFlow',
+            '--use-pt',
+            True,
+        )
         parameter_groups = [
             ParameterGroup(
-                'Important parameters',
+                'Image generation',
                 [dummy_true_bool_param, dummy_false_bool_param],
+                '-op=IMG_GEN',
+            ),
+            ParameterGroup(
+                'Model training',
+                [other_dummy_param],
+                '-op=MDL_GEN',
             )
         ]
         return cls("./RAiSD-AI", parameter_groups)
