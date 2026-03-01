@@ -2,15 +2,14 @@
 
 ## Installation instructions
 
-This section contains instructions for creating a Conda environment with PySide6 and the Qt Widgets Designer installed.
+This section contains instructions for creating a Mamba environment with PySide6 and the Qt Widgets Designer installed.
 
 ### Linux
 
 ```bash
-conda env create -f environment-raisd-ai-gui.yml
-conda activate raisd-ai-gui
+micromamba env create -f environment-raisd-ai-gui.yml
+micromamba activate raisd-ai-gui
 ```
-
 
 ## Usage instructions
 
