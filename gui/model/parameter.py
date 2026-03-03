@@ -67,8 +67,11 @@ class Parameter(ABC, QObject, Generic[T], metaclass=AbstractQObjectMeta):
     def reset_value(self) -> None:
         """
         Reset the value of the parameter to the default value.
+        
+        This method triggers the value_changed signal to update
+        any connected widgets.
         """
-        self._value = self.default_value
+        self.value = self.default_value
 
     @property
     def valid(self) -> bool:

@@ -2,7 +2,7 @@ from typing import Any
 from abc import ABC
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QCheckBox
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QCheckBox, QPushButton
 
 from gui.model.parameter import (
     Parameter,
@@ -53,7 +53,7 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
     def from_parameter(cls, parameter: Parameter[Any]) -> tuple[QWidget, "ParameterWidget"]:
         """
         Create a suitable `ParameterWidget` for a given `Parameter`,
-        along with a label.
+        along with a label and reset button.
 
         The method checks the type of the given parameter in order to
         create the suitable widget (e.g. a dropdown menu for an enum
@@ -61,21 +61,40 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         `ParameterWidget` object.
 
         The method also creates a label that displays the parameter's
-        name and returns it alongside the `ParameterWidget` object.
+        name and a reset button that restores the default value. These
+        are returned in a horizontal layout alongside the `ParameterWidget` object.
 
         :param parameter: the parameter
         :type parameter: Parameter[Any]
 
-        :return: the label and the widget
+        :return: the label with reset button container and the widget
         :rtype: tuple[QWidget, ParameterWidget]
         """
-        label: QWidget = QLabel(parameter.name)
+        # Create label
+        label_widget = QLabel(parameter.name)
 
+        # Create reset button
+        reset_button = QPushButton("Reset")
+        reset_button.setToolTip(f"Reset to default value: {parameter.default_value}")
+
+        # Create container for label and reset button
+        label_container = QWidget()
+        label_layout = QHBoxLayout(label_container)
+        label_layout.addWidget(label_widget)
+        label_layout.addWidget(reset_button)
+        label_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Create appropriate widget based on parameter type
         if isinstance(parameter, BoolParameter):
-            return label, BoolParameterWidget(parameter)
+            widget = BoolParameterWidget(parameter)
+        else:
+            # TODO: implement selection of widget subclass for other parameter types
+            raise NotImplementedError(f"ParameterWidget#from_parameter not implemented for {type(parameter)}!")
 
-        # TODO: implement selection of widget subclass for other parameter types
-        raise NotImplementedError(f"ParameterWidget#from_parameter not implemented for {type(parameter)}!")
+        # Connect reset button to parameter's reset method
+        reset_button.clicked.connect(lambda: parameter.reset_value())
+
+        return label_container, widget
 
 
 class BoolParameterWidget(ParameterWidget):
