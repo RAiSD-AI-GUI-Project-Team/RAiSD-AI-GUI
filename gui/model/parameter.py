@@ -114,3 +114,85 @@ class BoolParameter(Parameter[bool]):
             + f'value: {self.value}, '
             + f'valid: {self.valid})'
         )
+
+
+class IntParameter(Parameter[int]):
+    """
+    An integer parameter in the GUI with optional bounds.
+    """
+
+    value_changed = Signal(int, bool)
+
+    def __init__(
+            self,
+            name: str, description: str, flag: str,
+            default_value: int,
+            lower_bound: int = None,
+            upper_bound: int = None
+    ) -> None:
+        super().__init__(name, description, flag, default_value)
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+
+    @property
+    def valid(self) -> bool:
+        """Check if current value is within bounds."""
+        if self.lower_bound is not None and self._value < self.lower_bound:
+            return False
+        if self.upper_bound is not None and self._value > self.upper_bound:
+            return False
+        return True
+
+    def to_cli(self) -> str:
+        return f"{self.flag} {self.value}"
+
+    def __str__(self) -> str:
+        bounds = f"[{self.lower_bound}, {self.upper_bound}]"
+        return (
+            f'IntParameter('
+            + f'name: "{self.name}", '
+            + f'value: {self.value}, '
+            + f'bounds: {bounds}, '
+            + f'valid: {self.valid})'
+        )
+
+
+class FloatParameter(Parameter[float]):
+    """
+    A floating point parameter in the GUI with optional bounds.
+    """
+
+    value_changed = Signal(float, bool)
+
+    def __init__(
+            self,
+            name: str, description: str, flag: str,
+            default_value: float,
+            lower_bound: float = None,
+            upper_bound: float = None
+    ) -> None:
+        super().__init__(name, description, flag, default_value)
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+
+    @property
+    def valid(self) -> bool:
+        """Check if current value is within bounds."""
+        if self.lower_bound is not None and self._value < self.lower_bound:
+            return False
+        if self.upper_bound is not None and self._value > self.upper_bound:
+            return False
+        return True
+
+    def to_cli(self) -> str:
+        return f"{self.flag} {self.value}"
+
+    def __str__(self) -> str:
+        bounds = f"[{self.lower_bound}, {self.upper_bound}]"
+        return (
+            f'FloatParameter('
+            + f'name: "{self.name}", '
+            + f'value: {self.value}, '
+            + f'bounds: {bounds}, '
+            + f'valid: {self.valid})'
+        )

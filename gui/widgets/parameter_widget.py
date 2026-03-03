@@ -2,11 +2,16 @@ from typing import Any
 from abc import ABC
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QCheckBox
+from PySide6.QtWidgets import (
+    QWidget, QLabel, QVBoxLayout, QCheckBox,
+    QSpinBox, QDoubleSpinBox
+)
 
 from gui.model.parameter import (
     Parameter,
     BoolParameter,
+    IntParameter,
+    FloatParameter,
 )
 
 
@@ -73,6 +78,10 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
 
         if isinstance(parameter, BoolParameter):
             return label, BoolParameterWidget(parameter)
+        elif isinstance(parameter, IntParameter):
+            return label, IntParameterWidget(parameter)
+        elif isinstance(parameter, FloatParameter):
+            return label, FloatParameterWidget(parameter)
 
         # TODO: implement selection of widget subclass for other parameter types
         raise NotImplementedError(f"ParameterWidget#from_parameter not implemented for {type(parameter)}!")
@@ -115,3 +124,104 @@ class BoolParameterWidget(ParameterWidget):
     @Slot(bool, bool)
     def _parameter_value_changed(self, new_value: bool, valid: bool) -> None:
         self._checkbox.setChecked(new_value)
+
+
+class IntParameterWidget(ParameterWidget):
+    """
+    A widget to edit an integer parameter with optional bounds.
+    """
+
+    def __init__(self, parameter: IntParameter) -> None:
+        """
+        Initialize an IntParameterWidget object.
+
+        :param parameter: the integer parameter to reference
+        :type parameter: IntParameter
+        """
+        super().__init__(parameter)
+
+        layout = QVBoxLayout(self)
+        self._spinbox = QSpinBox()
+        
+        # Set bounds if specified
+        if parameter.lower_bound is not None:
+            self._spinbox.setMinimum(parameter.lower_bound)
+        else:
+            self._spinbox.setMinimum(-2147483648)  # INT_MIN
+            
+        if parameter.upper_bound is not None:
+            self._spinbox.setMaximum(parameter.upper_bound)
+        else:
+            self._spinbox.setMaximum(2147483647)  # INT_MAX
+            
+        self._spinbox.setValue(parameter.value)
+        layout.addWidget(self._spinbox)
+
+        # Add bounds label if bounds are specified
+        if parameter.lower_bound is not None or parameter.upper_bound is not None:
+            bounds_text = f"Valid range: [{parameter.lower_bound or '-∞'}, {parameter.upper_bound or '∞'}]"
+            bounds_label = QLabel(bounds_text)
+            bounds_label.setStyleSheet("color: gray; font-size: 9pt;")
+            layout.addWidget(bounds_label)
+
+        self._spinbox.valueChanged.connect(self._spinbox_value_changed)
+        parameter.value_changed.connect(self._parameter_value_changed)
+
+    @Slot(int)
+    def _spinbox_value_changed(self, new_value: int) -> None:
+        self.parameter.value = new_value
+
+    @Slot(int, bool)
+    def _parameter_value_changed(self, new_value: int, valid: bool) -> None:
+        self._spinbox.setValue(new_value)
+
+
+class FloatParameterWidget(ParameterWidget):
+    """
+    A widget to edit a floating point parameter with optional bounds.
+    """
+
+    def __init__(self, parameter: FloatParameter) -> None:
+        """
+        Initialize a FloatParameterWidget object.
+
+        :param parameter: the float parameter to reference
+        :type parameter: FloatParameter
+        """
+        super().__init__(parameter)
+
+        layout = QVBoxLayout(self)
+        self._spinbox = QDoubleSpinBox()
+        
+        # Set bounds if specified
+        if parameter.lower_bound is not None:
+            self._spinbox.setMinimum(parameter.lower_bound)
+        else:
+            self._spinbox.setMinimum(float('-inf'))
+            
+        if parameter.upper_bound is not None:
+            self._spinbox.setMaximum(parameter.upper_bound)
+        else:
+            self._spinbox.setMaximum(float('inf'))
+            
+        self._spinbox.setValue(parameter.value)
+        self._spinbox.setDecimals(4)  # Default precision
+        layout.addWidget(self._spinbox)
+
+        # Add bounds label if bounds are specified
+        if parameter.lower_bound is not None or parameter.upper_bound is not None:
+            bounds_text = f"Valid range: [{parameter.lower_bound or '-∞'}, {parameter.upper_bound or '∞'}]"
+            bounds_label = QLabel(bounds_text)
+            bounds_label.setStyleSheet("color: gray; font-size: 9pt;")
+            layout.addWidget(bounds_label)
+
+        self._spinbox.valueChanged.connect(self._spinbox_value_changed)
+        parameter.value_changed.connect(self._parameter_value_changed)
+
+    @Slot(float)
+    def _spinbox_value_changed(self, new_value: float) -> None:
+        self.parameter.value = new_value
+
+    @Slot(float, bool)
+    def _parameter_value_changed(self, new_value: float, valid: bool) -> None:
+        self._spinbox.setValue(new_value)
