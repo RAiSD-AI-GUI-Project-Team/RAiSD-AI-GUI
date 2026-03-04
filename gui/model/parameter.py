@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from numbers import Real
 from typing import Generic, TypeVar
 
 from PySide6.QtCore import QObject, Signal
@@ -111,6 +112,59 @@ class BoolParameter(Parameter[bool]):
             f'BoolParameter('
             + f'name: "{self.name}", '
             + f'description: "{self.description})", '
+            + f'value: {self.value}, '
+            + f'valid: {self.valid})'
+        )
+
+
+X = TypeVar("X", bound=Real)
+
+
+class NumberParameter(Parameter[X]):
+    def __init__(
+            self,
+            name: str, description: str, flag: str,
+            default_value: X,
+            lower_bound: X | None = None,
+            upper_bound: X | None = None,
+    ) -> None:
+        super().__init__(name, description, flag, default_value)
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+
+    @property
+    def valid(self):
+        return (self.lower_bound >= self.value and self.value <= self.upper_bound)
+
+    def to_cli(self) -> str:
+        return f"{self.flag} {self.value}"   
+
+
+class IntParameter(NumberParameter[int]):
+    value_changed = Signal(int, bool)
+
+    def __str__(self) -> str:
+        return (
+            f'IntParameter('
+            + f'name: "{self.name}", '
+            + f'description: "{self.description})", '
+            + f'lower bound: "{self.lower_bound}", ' 
+            + f'upper bound: "{self.upper_bound}", '
+            + f'value: {self.value}, '
+            + f'valid: {self.valid})'
+        )
+
+
+class FloatParameter(NumberParameter[float]):
+    value_changed = Signal(float, bool)
+
+    def __str__(self) -> str:
+        return (
+            f'FloatParameter('
+            + f'name: "{self.name}", '
+            + f'description: "{self.description})", '
+            + f'lower bound: "{self.lower_bound}", ' 
+            + f'upper bound: "{self.upper_bound}", '
             + f'value: {self.value}, '
             + f'valid: {self.valid})'
         )
