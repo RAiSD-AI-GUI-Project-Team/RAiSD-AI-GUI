@@ -2,11 +2,14 @@ from typing import Any
 from abc import ABC
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QCheckBox
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QCheckBox, QLineEdit
+from PySide6.QtGui import QIntValidator
 
 from gui.model.parameter import (
     Parameter,
     BoolParameter,
+    IntParameter,
+    FloatParameter,
 )
 
 
@@ -74,6 +77,9 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         if isinstance(parameter, BoolParameter):
             return label, BoolParameterWidget(parameter)
 
+        if isinstance(parameter, IntParameter):
+            return label, IntParameterWidget(parameter)
+
         # TODO: implement selection of widget subclass for other parameter types
         raise NotImplementedError(f"ParameterWidget#from_parameter not implemented for {type(parameter)}!")
 
@@ -115,3 +121,44 @@ class BoolParameterWidget(ParameterWidget):
     @Slot(bool, bool)
     def _parameter_value_changed(self, new_value: bool, valid: bool) -> None:
         self._checkbox.setChecked(new_value)
+
+
+class IntParameterWidget(ParameterWidget) :
+
+    def __init__(self, parameter: IntParameter) -> None:
+        
+        super().__init__(parameter)
+
+        layout = QVBoxLayout(self)
+
+        self._lineedit = QLineEdit()
+        self._lineedit.setText(str(parameter.value))
+        validator = QIntValidator()
+        self._lineedit.setValidator(validator)
+        layout.addWidget(self._lineedit)
+
+        match (parameter.lower_bound is None, parameter.upper_bound is None):
+            case (False, False):
+                label = QLabel(f'lower bound: "{parameter.lower_bound}", upper bound: "{parameter.upper_bound}"')
+                layout.addWidget(label)
+            case (False, True):
+                label = QLabel(f'lower bound: "{parameter.lower_bound}"')
+                layout.addWidget(label)
+            case (True, False):
+                label = QLabel(f'upper bound: "{parameter.upper_bound}"')
+                layout.addWidget(label)
+    
+        self._lineedit.textChanged.connect(self._text_changed)
+        parameter.value_changed.connect(self._parameter_value_changed)
+
+    @Slot(str)
+    def _text_changed(self, text: str) -> None:
+        try: 
+            self.parameter.value = int(text)
+        except:
+            pass
+
+    @Slot(int, bool)
+    def _parameter_value_changed(self, new_value: int, valid: bool) -> None:
+        self._lineedit.setText(str(new_value))
+
