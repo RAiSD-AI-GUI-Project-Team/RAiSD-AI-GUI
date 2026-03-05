@@ -3,15 +3,9 @@ from typing import Generic, TypeVar
 
 from PySide6.QtCore import QObject, Signal
 
+from gui.model.meta import AbstractQObjectMeta
+
 T = TypeVar("T")
-
-
-class AbstractQObjectMeta(type(ABC), type(QObject)):
-    """
-    Metaclass for an abstract base QObject class.
-    """
-
-    pass
 
 
 class Parameter(ABC, QObject, Generic[T], metaclass=AbstractQObjectMeta):
