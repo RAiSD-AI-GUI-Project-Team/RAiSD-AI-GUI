@@ -2,7 +2,7 @@ from typing import Any
 from abc import ABC
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QCheckBox
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QCheckBox, QPushButton, QHBoxLayout
 
 from gui.model.parameter import (
     Parameter,
@@ -50,7 +50,7 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         return self._parameter        
 
     @classmethod
-    def from_parameter(cls, parameter: Parameter[Any]) -> tuple[QWidget, "ParameterWidget"]:
+    def from_parameter(cls, parameter: Parameter[Any]) -> QWidget:
         """
         Create a suitable `ParameterWidget` for a given `Parameter`,
         along with a label.
@@ -69,14 +69,25 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         :return: the label and the widget
         :rtype: tuple[QWidget, ParameterWidget]
         """
+        row = QWidget()
+        layout = QHBoxLayout(row)
+
         label: QWidget = QLabel(parameter.name)
+        layout.addWidget(label, stretch=1)
+
+        parameter_widget: ParameterWidget
+        reset_button = ResetButtonWidget(parameter)
 
         if isinstance(parameter, BoolParameter):
-            return label, BoolParameterWidget(parameter)
+            parameter_widget = BoolParameterWidget(parameter)
+        else:
+            # TODO: implement selection of widget subclass for other parameter types
+            raise NotImplementedError(f"ParameterWidget#from_parameter not implemented for {type(parameter)}!")
 
-        # TODO: implement selection of widget subclass for other parameter types
-        raise NotImplementedError(f"ParameterWidget#from_parameter not implemented for {type(parameter)}!")
+        layout.addWidget(parameter_widget)
+        layout.addWidget(reset_button)
 
+        return row
 
 class BoolParameterWidget(ParameterWidget):
     """
@@ -115,3 +126,16 @@ class BoolParameterWidget(ParameterWidget):
     @Slot(bool, bool)
     def _parameter_value_changed(self, new_value: bool, valid: bool) -> None:
         self._checkbox.setChecked(new_value)
+
+class ResetButtonWidget(ParameterWidget):
+    def __init__(self, parameter: Parameter[Any]) -> None:
+        super().__init__(parameter)
+        layout = QVBoxLayout(self)
+
+        self._button = QPushButton("Reset")
+        self._button.clicked.connect(self._reset_button_clicked)
+        layout.addWidget(self._button)
+
+    @Slot()
+    def _reset_button_clicked(self) -> None:
+        self.parameter.reset_value()
