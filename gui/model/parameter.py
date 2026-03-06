@@ -69,7 +69,7 @@ class Parameter(ABC, QObject, Generic[T], metaclass=AbstractQObjectMeta):
         return self._enabled
 
     @enabled.setter
-    def setter(self, new_enabled: bool) -> None:
+    def enabled(self, new_enabled: bool) -> None:
         self._enabled = new_enabled
         self.enabled_changed.emit(self._enabled)
 
