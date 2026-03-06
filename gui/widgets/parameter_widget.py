@@ -1,9 +1,9 @@
 from typing import Any
 from abc import ABC
 
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Slot, QRegularExpression
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QCheckBox, QLineEdit
-from PySide6.QtGui import QIntValidator, QDoubleValidator
+from PySide6.QtGui import QRegularExpressionValidator
 
 from gui.model.parameter import (
     Parameter,
@@ -136,7 +136,8 @@ class IntParameterWidget(ParameterWidget):
 
         self._lineedit = QLineEdit()
         self._lineedit.setText(str(parameter.value))
-        validator = QIntValidator()
+        regex = QRegularExpression(R"^0|(-)?[1-9][0-9]*$")
+        validator = QRegularExpressionValidator(regex)
         self._lineedit.setValidator(validator)
         layout.addWidget(self._lineedit)
 
@@ -151,15 +152,15 @@ class IntParameterWidget(ParameterWidget):
                 label = QLabel(f'upper bound: "{parameter.upper_bound}"')
                 layout.addWidget(label)
     
-        self._lineedit.textChanged.connect(self._text_changed)
+        self._lineedit.editingFinished.connect(self._text_changed)
         parameter.value_changed.connect(self._parameter_value_changed)
 
     @Slot(str)
-    def _text_changed(self, text: str) -> None:
+    def _text_changed(self) -> None:
         try: 
-            self.parameter.value = int(text)
+            self.parameter.value = int(self._lineedit.text())
         except:
-            pass
+            self._lineedit.setText(str(self.parameter.value))
 
     @Slot(int, bool)
     def _parameter_value_changed(self, new_value: int, valid: bool) -> None:
@@ -175,7 +176,8 @@ class FloatParameterWidget(ParameterWidget):
 
         self._lineedit = QLineEdit()
         self._lineedit.setText(str(parameter.value))
-        validator = QDoubleValidator()
+        regex = QRegularExpression(R"^0([.][0-9]*[1-9])?|(-)?[1-9][0-9]*([.][0-9]*[1-9])?$")
+        validator = QRegularExpressionValidator(regex)
         self._lineedit.setValidator(validator)
         layout.addWidget(self._lineedit)
 
@@ -190,15 +192,15 @@ class FloatParameterWidget(ParameterWidget):
                 label = QLabel(f'upper bound: "{parameter.upper_bound}"')
                 layout.addWidget(label)
     
-        self._lineedit.textChanged.connect(self._text_changed)
+        self._lineedit.editingFinished.connect(self._text_changed)
         parameter.value_changed.connect(self._parameter_value_changed)
 
     @Slot(str)
-    def _text_changed(self, text: str) -> None:
-        try: 
-            self.parameter.value = float(text)
+    def _text_changed(self) -> None:
+        try:
+            self.parameter.value = float(self._lineedit.text())
         except:
-            pass
+            self._lineedit.setText(str(self.parameter.value))
 
     @Slot(float, bool)
     def _parameter_value_changed(self, new_value: float, valid: bool) -> None:
