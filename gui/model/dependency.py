@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Any
 
 from PySide6.QtCore import (
     QObject,
@@ -24,8 +25,46 @@ class Dependency(QObject):
             self,
             source: Condition,
             target: Effect,
+            parent: QObject | None = None,
     ) -> None:
+        super().__init__(parent=parent)
         self._source = source
         self._target = target
 
-        self._source.changed.connect(self._target)
+        self._source.changed.connect(self._target.condition_changed)
+
+
+class BoolParameterTrueCondition(Dependency.Condition):
+    def __init__(
+            self,
+            parameter: Parameter[bool],
+            parent: QObject | None = None,
+    ) -> None:
+        super().__init__(parent=parent)
+        self._parameter = parameter
+
+        self._parameter.value_changed.connect(self._parameter_value_changed)
+
+    @Slot(bool, bool)
+    def _parameter_value_changed(
+        self,
+        new_value: bool,
+        new_valid: bool,
+    ) -> None:
+        self.changed.emit(new_value)
+
+
+class ParameterEnabledEffect(Dependency.Effect):
+    def __init__(
+            self,
+            parameter: Parameter[Any],
+            parent: QObject | None = None,
+    ) -> None:
+        super().__init__(parent=parent)
+        self._parameter = parameter
+        print("constructed an effect for ", parameter)
+        
+
+    def condition_changed(self, new_value: bool) -> None:
+        print("condition changed in effect")
+        self._parameter.enabled = new_value
