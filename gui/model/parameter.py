@@ -69,6 +69,7 @@ class Parameter(ABC, QObject, Generic[T], metaclass=AbstractQObjectMeta):
         Reset the value of the parameter to the default value.
         """
         self._value = self.default_value
+        self.value_changed.emit(self.value, self.valid)
 
     @property
     def valid(self) -> bool:
