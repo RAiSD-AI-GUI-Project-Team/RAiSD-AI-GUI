@@ -71,10 +71,11 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         :rtype: QWidget
         """
         row = QWidget()
-        layout = QHBoxLayout(row)
+        row.setVisible(parameter.enabled)
         parameter.enabled_changed.connect(
             lambda new_enabled: row.setVisible(new_enabled)
         )
+        layout = QHBoxLayout(row)
 
         label: QWidget = QLabel(parameter.name)
         layout.addWidget(label, stretch=1)
