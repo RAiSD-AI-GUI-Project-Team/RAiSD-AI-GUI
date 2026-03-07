@@ -162,7 +162,11 @@ class NumberParameter(Parameter[X]):
 
     @property
     def valid(self):
-        return (self.lower_bound >= self.value and self.value <= self.upper_bound)
+        if self.lower_bound is not None and self.value < self.lower_bound:
+            return False
+        if self.upper_bound is not None and self.value > self.upper_bound:
+            return False
+        return True
 
     def to_cli(self) -> str:
         # A numeric parameter is represented in the command line by
