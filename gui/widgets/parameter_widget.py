@@ -127,15 +127,24 @@ class BoolParameterWidget(ParameterWidget):
 
 
 class IntParameterWidget(ParameterWidget):
+    """
+    A widget to edit an integer parameter.
+    """
 
     def __init__(self, parameter: IntParameter) -> None:
-        
+        """
+        Initialize an `IntParameterWidget` object.
+
+        :param parameter: the integer parameter to reference
+        :type parameter: IntParameter
+        """
         super().__init__(parameter)
 
         layout = QVBoxLayout(self)
 
         self._lineedit = QLineEdit()
         self._lineedit.setText(str(parameter.value))
+        # Allow an arbitrary length integer with no leading zeroes.
         regex = QRegularExpression(R"^0|(-)?[1-9][0-9]*$")
         validator = QRegularExpressionValidator(regex)
         self._lineedit.setValidator(validator)
@@ -169,15 +178,29 @@ class IntParameterWidget(ParameterWidget):
 
 
 class FloatParameterWidget(ParameterWidget):
+    """
+    A widget to edit a float parameter.
+    """
+
     def __init__(self, parameter: FloatParameter) -> None:
-        
+        """
+        Initialize a `FloatParameterWidget` object.
+
+        :param parameter: the float parameter to reference
+        :type parameter: FloatParameter
+        """
         super().__init__(parameter)
 
         layout = QVBoxLayout(self)
 
         self._lineedit = QLineEdit()
         self._lineedit.setText(str(parameter.value))
-        regex = QRegularExpression(R"^0([.][0-9]*[1-9])?|(-)?[1-9][0-9]*([.][0-9]*[1-9])?$")
+        # Allow an arbitray length integer without leading zeroes,
+        # optionally followed by a decimal point and an arbitrary length
+        # fractional part without trailing zeroes.
+        regex = QRegularExpression(
+            R"^0([.][0-9]*[1-9])?|(-)?[1-9][0-9]*([.][0-9]*[1-9])?$"
+        )
         validator = QRegularExpressionValidator(regex)
         self._lineedit.setValidator(validator)
         layout.addWidget(self._lineedit)
