@@ -144,8 +144,8 @@ class IntParameterWidget(ParameterWidget):
 
         self._lineedit = QLineEdit()
         self._lineedit.setText(str(parameter.value))
-        # Allow an arbitrary length integer with no leading zeroes.
-        regex = QRegularExpression(R"^0|(-)?[1-9][0-9]*$")
+        # Allow an arbitrary length integer.
+        regex = QRegularExpression(R"^(-)?[0-9]*$")
         validator = QRegularExpressionValidator(regex)
         self._lineedit.setValidator(validator)
         layout.addWidget(self._lineedit)
@@ -195,11 +195,10 @@ class FloatParameterWidget(ParameterWidget):
 
         self._lineedit = QLineEdit()
         self._lineedit.setText(str(parameter.value))
-        # Allow an arbitray length integer without leading zeroes,
-        # optionally followed by a decimal point and an arbitrary length
-        # fractional part without trailing zeroes.
+        # Allow an arbitray length integer, optionally followed by a
+        # decimal point and an arbitrary length fractional part.
         regex = QRegularExpression(
-            R"^0([.][0-9]*[1-9])?|(-)?[1-9][0-9]*([.][0-9]*[1-9])?$"
+            R"^(-)?[0-9]*([.][0-9]*)?$"
         )
         validator = QRegularExpressionValidator(regex)
         self._lineedit.setValidator(validator)
