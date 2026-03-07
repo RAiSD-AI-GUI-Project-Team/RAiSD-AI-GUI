@@ -121,6 +121,13 @@ X = TypeVar("X", bound=Real)
 
 
 class NumberParameter(Parameter[X]):
+    """
+    A numeric parameter in the GUI.
+
+    The value of a numeric parameter is valid if it is greater than the
+    lower bound and lower than the upper bound, when provided.
+    """
+
     def __init__(
             self,
             name: str, description: str, flag: str,
@@ -128,6 +135,27 @@ class NumberParameter(Parameter[X]):
             lower_bound: X | None = None,
             upper_bound: X | None = None,
     ) -> None:
+        """
+        Initialize a `NumberParameter[X]` object.
+
+        :param name: the name of the parameter
+        :type name: str
+
+        :param description: a longer description of the parameter
+        :type description: str
+
+        :param flag: the command-line flag of the parameter
+        :type flag: str
+
+        :param default_value: the default value of the parameter
+        :type default_value: X
+
+        :param lower_bound: the lower bound of the parameter (optional)
+        :type lower_bound: X | None
+
+        :param upper_bound: the upper bound of the parameter (optional)
+        :type upper_bound: X | None
+        """
         super().__init__(name, description, flag, default_value)
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
@@ -137,10 +165,16 @@ class NumberParameter(Parameter[X]):
         return (self.lower_bound >= self.value and self.value <= self.upper_bound)
 
     def to_cli(self) -> str:
+        # A numeric parameter is represented in the command line by
+        # its flag and its value.
         return f"{self.flag} {self.value}"   
 
 
 class IntParameter(NumberParameter[int]):
+    """
+    An integer parameter in the GUI.
+    """
+
     value_changed = Signal(int, bool)
 
     def __str__(self) -> str:
@@ -156,6 +190,10 @@ class IntParameter(NumberParameter[int]):
 
 
 class FloatParameter(NumberParameter[float]):
+    """
+    A floating-point parameter in the GUI.
+    """
+
     value_changed = Signal(float, bool)
 
     def __str__(self) -> str:
