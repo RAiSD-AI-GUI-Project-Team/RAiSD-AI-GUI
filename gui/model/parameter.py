@@ -125,8 +125,8 @@ class NumberParameter(Parameter[X]):
     """
     A numeric parameter in the GUI.
 
-    The value of a numeric parameter is valid if it is greater than the
-    lower bound and lower than the upper bound, when provided.
+    The value of a numeric parameter is valid if it is greater than or equal to the
+    lower bound and lower than or equal to the upper bound, when provided.
     """
 
     def __init__(
