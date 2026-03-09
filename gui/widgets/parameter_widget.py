@@ -2,11 +2,20 @@ from typing import Any
 from abc import ABC
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QCheckBox
+from PySide6.QtWidgets import (
+    QWidget,
+    QLabel,
+    QVBoxLayout,
+    QHBoxLayout,
+    QCheckBox,
+    QLineEdit,
+    QPushButton,
+)
 
 from gui.model.parameter import (
     Parameter,
     BoolParameter,
+    StringParameter,
 )
 
 
@@ -31,6 +40,28 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
     `ParameterWidget` objects should not be created directly, but
     through the `from_parameter` factory method.
     """
+
+    class ResetButton(QPushButton):
+        """
+        A button to reset the value of a given parameter to its default
+        value.
+        """
+
+        def __init__(self, parameter: Parameter[Any]) -> None:
+            """
+            Initialize a `ResetButtonWidget` object.
+
+            :param parameter: the parameter to reference
+            :type parameter: Parameter[Any]
+            """
+            super().__init__("Reset")
+            self._parameter = parameter
+
+            self.clicked.connect(self._clicked)
+
+        @Slot()
+        def _clicked(self) -> None:
+            self._parameter.reset_value()
 
     def __init__(self, parameter: Parameter[Any]):
         """
@@ -81,17 +112,20 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         layout.addWidget(label, stretch=1)
 
         parameter_widget: ParameterWidget
+        reset_button = cls.ResetButton(parameter)
 
         if isinstance(parameter, BoolParameter):
             parameter_widget = BoolParameterWidget(parameter)
-        # TODO: implement selection of widget subclass for other parameter types
+        elif isinstance(parameter, StringParameter):
+            parameter_widget = StringParameterWidget(parameter)
         else:
+            # TODO: implement selection of widget subclass for other parameter types
             raise NotImplementedError(f"ParameterWidget#from_parameter not implemented for {type(parameter)}!")
 
         layout.addWidget(parameter_widget)
+        layout.addWidget(reset_button)
 
         return row
-
 
 class BoolParameterWidget(ParameterWidget):
     """
@@ -130,3 +164,47 @@ class BoolParameterWidget(ParameterWidget):
     @Slot(bool, bool)
     def _parameter_value_changed(self, new_value: bool, valid: bool) -> None:
         self._checkbox.setChecked(new_value)
+
+
+class StringParameterWidget(ParameterWidget):
+    """
+    A widget to edit a string parameter.
+    """
+
+    def __init__(self, parameter: StringParameter) -> None:
+        """
+        Initialize a `StringParameterWidget` object.
+
+        If the parameter has a maximum length, the length is enforced on
+        the input field and displayed to the user in a label.
+
+        :param parameter: the string parameter to reference
+        :type parameter: StringParameter
+        """
+        super().__init__(parameter)
+
+        layout = QVBoxLayout(self)
+
+        self._line_edit = QLineEdit()
+        self._line_edit.setText(parameter.value)
+        layout.addWidget(self._line_edit)
+
+        if parameter.max_length is not None:
+            self._line_edit.setMaxLength(parameter.max_length)
+            hint = QLabel(f"Max length: {parameter.max_length}")
+            layout.addWidget(hint)
+
+        self._line_edit.editingFinished.connect(self._editing_finished)
+        parameter.value_changed.connect(self._parameter_value_changed)
+
+    @Slot(str)
+    def _editing_finished(self) -> None:
+        self.parameter.value = self._line_edit.text()
+
+    @Slot(str, bool)
+    def _parameter_value_changed(self, new_value: str, valid: bool) -> None:
+        self._line_edit.setText(new_value)
+        if valid: # Styling can be changed in the future
+            self._line_edit.setStyleSheet("QLineEdit { border: 1px solid green; }")
+        else:
+            self._line_edit.setStyleSheet("QLineEdit { border: 1px solid red; }")

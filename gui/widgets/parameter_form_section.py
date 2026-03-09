@@ -38,7 +38,7 @@ class ParameterFormSection(QWidget):
         for parameter in parameter_group.parameters:
             form_row = ParameterWidget.from_parameter(parameter)
             form_layout.addWidget(form_row)
-        
+
         layout = QVBoxLayout(self)
         layout.addWidget(heading)
         layout.addWidget(form_body)
