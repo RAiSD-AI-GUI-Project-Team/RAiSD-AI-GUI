@@ -130,6 +130,29 @@ class EnumParameter(Parameter[int]):
             options: list[tuple[str, str]],
             default_value: int,
     ) -> None:
+        """
+        Initialize an `EnumParameter` object.
+
+        The `options` argument is a list of the options offered by the
+        enum parameter. Each option is a 2-tuple where the first element
+        is the name to be displayed to the user, and the second is the
+        form to be used in the command-line representation.
+
+        :param name: the name of the parameter
+        :type name: str
+
+        :param description: a longer description of the parameter
+        :type description: str
+
+        :param flag: the command-line flag of the parameter
+        :type flag: str
+
+        :param options: the options of the parameter
+        :type options: list[tuple[str, str]]
+
+        :param default_value: the index of the default option
+        :type default_value: int
+        """
         super().__init__(name, description, flag, default_value)
         self._options = options
 
