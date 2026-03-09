@@ -213,6 +213,73 @@ class FloatParameter(NumberParameter[float]):
         )
 
 
+class EnumParameter(Parameter[int]):
+    """
+    A parameter with enumerated values in the GUI.
+    """
+
+    value_changed = Signal(int, bool)
+
+    def __init__(
+            self,
+            name: str, description: str, flag: str,
+            options: list[tuple[str, str]],
+            default_value: int,
+    ) -> None:
+        """
+        Initialize an `EnumParameter` object.
+
+        The `options` argument is a list of the options offered by the
+        enum parameter. Each option is a 2-tuple where the first element
+        is the name to be displayed to the user, and the second is the
+        form to be used in the command-line representation.
+
+        :param name: the name of the parameter
+        :type name: str
+
+        :param description: a longer description of the parameter
+        :type description: str
+
+        :param flag: the command-line flag of the parameter
+        :type flag: str
+
+        :param options: the options of the parameter
+        :type options: list[tuple[str, str]]
+
+        :param default_value: the index of the default option
+        :type default_value: int
+        """
+        super().__init__(name, description, flag, default_value)
+        self._options = options
+
+    @property
+    def options(self) -> list[str]:
+        return [option[0] for option in self._options]
+
+    @property
+    def option(self) -> str | None:
+        try:
+            return self.options[self.value]
+        except IndexError:
+            return None
+
+    @property
+    def valid(self) -> bool:
+        return self.value in range(len(self.options))
+
+    def to_cli(self) -> str:
+        return f"{self.flag} {self._options[self.value][1]}"
+
+    def __str__(self) -> str:
+        return (
+            "EnumParameter"
+            + f'name: "{self.name}", '
+            + f'description: "{self.description}", '
+            + f'options: {self.options}, '
+            + f'selected option: {self.option})'
+        )
+
+
 class StringParameter(Parameter[str]):
     """
     A string parameter in the GUI.

@@ -6,6 +6,7 @@ from gui.model.parameter import (
     BoolParameter,
     IntParameter,
     FloatParameter,
+    EnumParameter,
     StringParameter,
 )
 
@@ -75,6 +76,23 @@ class ParameterGroupList():
         )
 
         parameter_groups = [
+            ParameterGroup(
+                'Additional options',
+                [
+                    EnumParameter(
+                        'Mode',
+                        'This option determines how fast the program will be.',
+                        '-m',
+                        [
+                            ('Slow', 'slow'),
+                            ('Regular', 'normal'),
+                            ('Fast', 'fast'),
+                            ('Super fast', 'very-fast'),
+                        ],
+                        1,
+                    ),
+                ],
+            ),
             ParameterGroup(
                 'Personal data',
                 [
