@@ -23,7 +23,7 @@ class ParameterForm(QWidget):
         """
         super().__init__()
         self._parameter_group_list = parameter_group_list
-
+        self._parameter_form_sections = []
         layout = QVBoxLayout(self)
 
         heading = QLabel("RAiSD-AI parameters")
@@ -32,3 +32,11 @@ class ParameterForm(QWidget):
         for parameter_group in self._parameter_group_list.parameter_groups:
             parameter_form_section = ParameterFormSection(parameter_group)
             layout.addWidget(parameter_form_section)
+            self._parameter_form_sections.append(parameter_form_section)
+
+            parameter_form_section.setVisible(False)
+            for operation in parameter_group.operations:
+                if self._parameter_group_list.operations[operation]: 
+                    parameter_form_section.setVisible(True)
+                    break
+

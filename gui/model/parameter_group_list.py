@@ -113,7 +113,7 @@ class ParameterGroupList():
             ),
             ParameterGroup(
                 'Personal data',
-                ['RSD-DEF', 'IMG-GEN', 'MDL-GEN', 'MDL-TST', 'SWP-SCN'],
+                ['SWP-SCN'],
                 [
                     StringParameter(
                         'Your name',
@@ -242,15 +242,6 @@ class ParameterGroupList():
         The list of groups in the parameter list.
         """
         return self._parameter_groups
-
-    def add_parameter_group(self, parameter_group: ParameterGroup) -> None:
-        """
-        Add a group of parameters to the list.
-
-        :param parameter_group: the group to be added
-        :type parameter_group: ParameterGroup
-        """
-        self._parameter_groups.append(parameter_group)
 
     @property
     def valid(self) -> bool:
