@@ -8,15 +8,9 @@ from PySide6.QtCore import (
     Slot,
 )
 
+from gui.model.meta import AbstractQObjectMeta
+
 T = TypeVar("T")
-
-
-class AbstractQObjectMeta(type(ABC), type(QObject)):
-    """
-    Metaclass for an abstract base QObject class.
-    """
-
-    pass
 
 
 class Parameter(ABC, QObject, Generic[T], metaclass=AbstractQObjectMeta):
@@ -29,11 +23,13 @@ class Parameter(ABC, QObject, Generic[T], metaclass=AbstractQObjectMeta):
     """
 
     value_changed: Signal
+    enabled_changed = Signal(bool)
 
     def __init__(
             self,
             name: str, description: str, flag: str,
             default_value: T,
+            enabled: bool = True,
     ) -> None:
         """
         Initialize a `Parameter` object.
@@ -56,6 +52,7 @@ class Parameter(ABC, QObject, Generic[T], metaclass=AbstractQObjectMeta):
         self.default_value = default_value
         self._value = default_value
         self.flag = flag
+        self._enabled = enabled
 
     @property
     def value(self) -> T:
@@ -68,6 +65,18 @@ class Parameter(ABC, QObject, Generic[T], metaclass=AbstractQObjectMeta):
     def value(self, new_value: T) -> None:
         self._value = new_value
         self.value_changed.emit(self.value, self.valid)
+
+    @property
+    def enabled(self) -> bool:
+        """
+        Whether the parameter is enabled.
+        """
+        return self._enabled
+
+    @enabled.setter
+    def enabled(self, new_enabled: bool) -> None:
+        self._enabled = new_enabled
+        self.enabled_changed.emit(self._enabled)
 
     def reset_value(self) -> None:
         """
@@ -373,7 +382,7 @@ class StringParameter(Parameter[str]):
     def valid(self) -> bool:
         if self.max_length is not None and len(self.value) > self.max_length:
             return False
-        if self._pattern is not None and not self._pattern.match(self.value):
+        if self._pattern is not None and not self._pattern.fullmatch(self.value):
             return False
         return True
 

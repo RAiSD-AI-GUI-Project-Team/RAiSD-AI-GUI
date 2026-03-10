@@ -11,6 +11,11 @@ from gui.model.parameter import (
     EnumParameter,
     StringParameter,
 )
+from gui.model.dependency import (
+    Dependency,
+    BoolParameterTrueCondition,
+    ParameterEnabledEffect,
+)
 
 
 class ParameterGroupList():
@@ -25,6 +30,7 @@ class ParameterGroupList():
             self,
             command: str,
             parameter_groups: list[ParameterGroup] | None = None,
+            dependencies: list[Dependency] | None = None
     ) -> None:
         """
         Initialize a `ParameterGroupList` object.
@@ -37,6 +43,7 @@ class ParameterGroupList():
         """
         self.command = command
         self._parameter_groups = parameter_groups or []
+        self._dependencies = dependencies or []
 
     @classmethod
     def from_yaml(cls, file_path: str) -> "ParameterGroupList":
