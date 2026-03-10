@@ -20,7 +20,13 @@ from gui.widgets.parameter_form import ParameterForm
 from gui.windows.dialog import ConfirmDialog, ErrorDialog
 
 class RunWidget(QWidget):
+    """
+    Widget that displays all steps of a mode.
+    """
     def __init__(self, parameter_group_list: ParameterGroupList, command_executor: CommandExecutor):
+        """
+        Initialize `RunWidget` object.
+        """
         super().__init__()
         self._parameter_group_list = parameter_group_list
         self.command_executor = command_executor
@@ -35,6 +41,11 @@ class RunWidget(QWidget):
         self._setup_ui()
 
     def _setup_ui(self):
+        """
+        Setup the general run widget.
+
+        Includes the step button bar and the stacked step widget.
+        """
         self.setStyleSheet("background-color: lightblue;")
         layout = QVBoxLayout(self)
 
@@ -46,14 +57,17 @@ class RunWidget(QWidget):
         self._setup_step_button_bar(step_button_bar_layout)
 
         # Step stacked widget
-        step_stacked_widget = QWidget()
-        step_stacked_widget.setStyleSheet("background-color: lightgray;")
-        self.step_stacked_widget_layout = QStackedLayout(step_stacked_widget)
-        layout.addWidget(step_stacked_widget, 1)
-        self._setup_step_stacked_widget(self.step_stacked_widget_layout)
+        stacked_step_widget = QWidget()
+        stacked_step_widget.setStyleSheet("background-color: lightgray;")
+        self.stacked_step_widget_layout = QStackedLayout(stacked_step_widget)
+        layout.addWidget(stacked_step_widget, 1)
+        self._setup_stacked_step_widget(self.stacked_step_widget_layout)
         
 
     def _setup_step_button_bar(self, layout:QHBoxLayout):
+        """
+        Setup the step button bar.
+        """
         parameter_input_button = QPushButton("Parameter Input")
         parameter_input_button.clicked.connect(self._parameter_input_button_clicked)
         layout.addWidget(parameter_input_button)
@@ -73,7 +87,10 @@ class RunWidget(QWidget):
         self.results_button.clicked.connect(self.results_button_clicked)
         layout.addWidget(self.results_button)
 
-    def _setup_step_stacked_widget(self, layout:QStackedLayout):
+    def _setup_stacked_step_widget(self, layout:QStackedLayout):
+        """
+        Setup the stacked step widget.
+        """
         # Parameter input widget
         self.parameter_input_widget = QWidget()
         self.parameter_input_widget.setStyleSheet("background-color: lightblue;")
@@ -103,6 +120,9 @@ class RunWidget(QWidget):
         self._setup_results_widget(results_layout)
 
     def _setup_parameter_input_widget(self, layout:QVBoxLayout) -> None:
+        """
+        Setup the parameter input widget.
+        """
         parameter_input_label = QLabel("Parameter Input")
         layout.addWidget(parameter_input_label)
 
@@ -124,11 +144,17 @@ class RunWidget(QWidget):
         layout.addWidget(check_param_button)
 
     def _setup_parameter_confirmation_widget(self, layout:QVBoxLayout) -> None:
+        """
+        Setup the parameter confirmation widget.
+        """
         parameter_confirmation_label = QLabel("Parameter Confirmation")
         layout.addWidget(parameter_confirmation_label)
         pass
     
     def _setup_execution_view_widget(self, layout:QVBoxLayout) -> None:
+        """
+        Setup the execution view widget.
+        """
         execution_view_label = QLabel("Execution View")
         layout.addWidget(execution_view_label)
 
@@ -154,41 +180,50 @@ class RunWidget(QWidget):
         layout.addWidget(self.stop_execution_button)
 
     def _setup_results_widget(self, layout:QVBoxLayout) -> None:
+        """
+        Setup the results widget.
+        """
         results_label = QLabel("Results")
         layout.addWidget(results_label)
 
     # ---------- step button bar methods ----------
     @Slot()
     def _parameter_input_button_clicked(self) -> None:
-        self.step_stacked_widget_layout.setCurrentWidget(self.parameter_input_widget)
+        self.stacked_step_widget_layout.setCurrentWidget(self.parameter_input_widget)
 
     @Slot()
     def _parameter_confirmation_button_clicked(self) -> None:
-        self.step_stacked_widget_layout.setCurrentWidget(self.parameter_confirmation_widget)
+        self.stacked_step_widget_layout.setCurrentWidget(self.parameter_confirmation_widget)
 
     @Slot()
     def execution_view_button_clicked(self) -> None:
-        self.step_stacked_widget_layout.setCurrentWidget(self.execution_view_widget)
+        self.stacked_step_widget_layout.setCurrentWidget(self.execution_view_widget)
 
     @Slot()
     def results_button_clicked(self) -> None:
-        self.step_stacked_widget_layout.setCurrentWidget(self.results_widget)
+        self.stacked_step_widget_layout.setCurrentWidget(self.results_widget)
 
     # ---------- Parameter input widget methods ----------
     @Slot()
     def _parameter_input_submit_button_clicked(self) -> None:
+        """
+        Run the commands from parameter_group_list when submit button is clicked.
+        """
         print("submit")
         # TODO: self.command_executor.start_execution(self._parameter_group_list.to_cli())
         self.command_executor.start_execution([
             "echo No way!",
-            "ping utwente.nl -c 1 35aasrg",
+            "ping utwente.nl -c 2",
             "./RAiSD-AI -n TrainingData2DSNP -I datasets/train/msneutral1_100sims.out -L 100000 -its 50000 -op IMG-GEN -icl neutralTR -f -frm -O",
             "echo Shaboom!",
         ])
 
     @Slot()
     def _parameter_input_check_param_button_clicked(self) -> None:
-        print("check parameters")
+        """
+        Prints the current result of `parameter_group_list.to_cli()`.
+        """
+        print("check parameters:")
         print(self._parameter_group_list.to_cli())
 
     # ---------- Parameter confirmation widget methods ----------
@@ -197,21 +232,34 @@ class RunWidget(QWidget):
     # ---------- Execution view widget methods ----------
     @Slot()
     def _stop_execution(self):
+        """
+        Stop the current execution after confirmation.
+        """
         self.confirm_stop_execution_dialog = ConfirmDialog(self, "Stop Execution", "stop the current execution")
         if self.confirm_stop_execution_dialog.exec():
             self.command_executor.stop_execution()
 
     @Slot(str)
     def _command_executor_output(self, output: str) -> None:
+        """
+        Append the output from the command_executor to execution_output.
+        """
         self.execution_output.append(output)
         
     @Slot(str)
     def _command_executor_err_output(self, output:str) -> None:
+        """
+        Append the error output from the command_executor to error_output.
+        """
         self.error_output.append(output)
 
-    def setup_execution_view(self, number_of_processes:int) -> None:
+    def setup_execution_indicators(self, number_of_processes:int) -> None:
+        """
+        Set the execution indicators.
+
+        reset current ones and add more or hide when needed.
+        """
         number_of_indicators = len(self.execution_indicators)
-        print(f"setupexecutionview:{number_of_processes}.{number_of_indicators}")
         for idx in range(max([number_of_indicators, number_of_processes])):
             if idx + 1 <= number_of_processes and idx + 1 <= number_of_indicators:
                 self.execution_indicators[idx].setVisible(True)
@@ -223,6 +271,9 @@ class RunWidget(QWidget):
                 self.execution_indicators[idx].setVisible(False)
 
     def add_indicator_widget(self, index:int) -> None:
+        """
+        Add an indicator widget to self.step_layout.
+        """
         widget = QWidget()
         widget.setFixedSize(50, 50)
         widget.setStyleSheet("background-color: lightgray;")
@@ -233,42 +284,66 @@ class RunWidget(QWidget):
         self.execution_indicators.append(widget)
 
     def set_execution_view_indicator(self, index:int, color:str) -> None:
+        """
+        Set the indicator to the given color.
+
+        :param index: the index of the indicator.
+        :type index: int
+
+        :param color: the new color of the indicator.
+        :type color: str
+        """
         self.execution_indicators[index].setStyleSheet(f"background-color: {color};")
 
     def clear_outputs(self) -> None:
+        """
+        Clears the output fields.
+        """
         self.execution_output.clear()
         self.error_output.clear()
 
     # ---------- Results widget methods ----------
     # TODO
 
-    # ---------- Command executor methods ----------
+    # ---------- Command executor slots ----------
     @Slot()
     def _execution_started(self, number_of_processes:int) -> None:
+        """
+        Handle CommandExecutor.execution_started.
+        """
         print("Execution started")
         self.set_execution_buttons(running=True)
         self.clear_outputs()
-        self.setup_execution_view(number_of_processes)
+        self.setup_execution_indicators(number_of_processes)
         self.execution_view_button.setEnabled(True)
         self.results_button.setEnabled(False)
-        self.step_stacked_widget_layout.setCurrentWidget(self.execution_view_widget)
+        self.stacked_step_widget_layout.setCurrentWidget(self.execution_view_widget)
 
     @Slot()
     def _execution_finished(self) -> None:
+        """
+        Handle CommandExecutor.execution_finshed.
+        """
         print("Execution finished")
         self.set_execution_buttons(running=False)
         self.results_button.setEnabled(True)
         self.confirm_stop_execution_dialog.close()
-        self.step_stacked_widget_layout.setCurrentWidget(self.results_widget)
+        self.stacked_step_widget_layout.setCurrentWidget(self.results_widget)
 
     @Slot()
     def _execution_stopped(self) -> None:
+        """
+        Handle CommandExecutor.execution_stopped.
+        """
         print("Execution stopped")
         self.execution_done()
         self.set_execution_view_indicator(self.current_process, "purple")
 
     @Slot(int)
     def _execution_failed(self, exit_code: int) -> None:
+        """
+        Handle CommandExecutor.execution_failed.
+        """
         print(f"Execution failed with exit code {exit_code}")
         self.execution_done()
         self.set_execution_view_indicator(self.current_process, "red")
@@ -278,6 +353,9 @@ class RunWidget(QWidget):
     
     @Slot(QProcess.ProcessError)
     def _process_failed(self, process_error:QProcess.ProcessError) -> None:
+        """
+        Handle CommandExecutor.process_failed.
+        """
         print(f"Execution failed with process error {process_error}")
         self.execution_done()
         self.set_execution_view_indicator(self.current_process, "red")
@@ -287,19 +365,34 @@ class RunWidget(QWidget):
 
     @Slot(int)
     def _process_started(self, index: int) -> None:
+        """
+        Handle CommandExecutor.process_started.
+        """
         self.set_execution_view_indicator(index, "yellow")
         self.current_process = index
 
     @Slot(int)
     def _process_finished(self, index: int) -> None:
+        """
+        Handle CommandExecutor.process_finished.
+        """
         self.set_execution_view_indicator(index, "green")
 
     # ---------- Helper functions ----------
     def set_execution_buttons(self, running: bool) -> None:
+        """
+        Set the execution buttons.
+
+        When running is true the start execution button will be off 
+        and the stop execution on. Otherwise it is inverted.
+        """
         self.stop_execution_button.setEnabled(running)
         self.start_execution_button.setEnabled(not running)
 
     def execution_done(self) -> None:
+        """
+        Update the execution buttons and Close an open confirm dialog.
+        """
         self.set_execution_buttons(running=False)
         if hasattr(self, "confirm_stop_execution_dialog"):
             self.confirm_stop_execution_dialog.close()
