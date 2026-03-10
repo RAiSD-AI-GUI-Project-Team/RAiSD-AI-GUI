@@ -90,10 +90,25 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         """
         The `Parameter` object referenced by the widget.
         """
-        return self._parameter        
+        return self._parameter
 
     @classmethod
-    def from_parameter(cls, parameter: Parameter[Any]) -> QWidget:
+    def from_parameter(cls, parameter: Parameter[Any]) -> "ParameterWidget":
+        if isinstance(parameter, BoolParameter):
+            return BoolParameterWidget(parameter)
+        elif isinstance(parameter, IntParameter):
+            return IntParameterWidget(parameter)
+        elif isinstance(parameter, FloatParameter):
+            return FloatParameterWidget(parameter)
+        elif isinstance(parameter, EnumParameter):
+            return EnumParameterWidget(parameter)
+        elif isinstance(parameter, StringParameter):
+            return StringParameterWidget(parameter)
+        # TODO: implement selection of widget subclass for other parameter types
+        raise NotImplementedError(f"ParameterWidget#from_parameter not implemented for {type(parameter)}!")
+
+    @classmethod
+    def create_form_row(cls, parameter: Parameter[Any]) -> QWidget:
         """
         Create a suitable `ParameterWidget` for a given `Parameter`,
         grouped horizontally with a label to be used as a form row.
@@ -129,24 +144,10 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         )
         layout.addWidget(label, stretch=1)
 
-        parameter_widget: ParameterWidget
-        reset_button = cls.ResetButton(parameter)
-
-        if isinstance(parameter, BoolParameter):
-            parameter_widget = BoolParameterWidget(parameter)
-        elif isinstance(parameter, IntParameter):
-            parameter_widget = IntParameterWidget(parameter)
-        elif isinstance(parameter, FloatParameter):
-            parameter_widget = FloatParameterWidget(parameter)
-        elif isinstance(parameter, EnumParameter):
-            parameter_widget = EnumParameterWidget(parameter)
-        elif isinstance(parameter, StringParameter):
-            parameter_widget = StringParameterWidget(parameter)
-        else:
-            # TODO: implement selection of widget subclass for other parameter types
-            raise NotImplementedError(f"ParameterWidget#from_parameter not implemented for {type(parameter)}!")
-
+        parameter_widget = cls.from_parameter(parameter)
         layout.addWidget(parameter_widget)
+
+        reset_button = cls.ResetButton(parameter)
         layout.addWidget(reset_button)
 
         return row
