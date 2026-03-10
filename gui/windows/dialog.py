@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import (
     QWidget,
     QDialog, 
+    QMessageBox,
     QDialogButtonBox, 
     QLabel, 
     QVBoxLayout,
@@ -42,3 +43,26 @@ class ConfirmDialog(QDialog):
         layout.addWidget(message)
         layout.addWidget(self.buttonBox)
         self.setLayout(layout)
+
+class ErrorDialog(QMessageBox):
+    """
+    A simple dialog that gives the user information about an error.
+    """
+    def __init__(self, parent:QWidget, title:str, error:str):
+        """
+        Initializes the ErrorDialog.
+
+        :param parent: the parent of the dialog
+        :type parent: Qwidget
+
+        :param title: the title of the dialog
+        :type title: str
+
+        :param error: the error
+        :type error: str
+        """
+        super().__init__(parent)
+
+        self.setWindowTitle(title)
+        self.setText(error)
+        self.exec()

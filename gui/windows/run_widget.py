@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
 from gui.model.parameter_group_list import ParameterGroupList
 from gui.execution.command_executor import CommandExecutor
 from gui.widgets.parameter_form import ParameterForm
-from gui.windows.confirm_dialog import ConfirmDialog
+from gui.windows.dialog import ConfirmDialog, ErrorDialog
 
 class RunWidget(QWidget):
     def __init__(self, parameter_group_list: ParameterGroupList, command_executor: CommandExecutor):
@@ -272,6 +272,7 @@ class RunWidget(QWidget):
         print(f"Execution failed with exit code {exit_code}")
         self.execution_done()
         self.set_execution_view_indicator(self.current_process, "red")
+        self.error_dialog = ErrorDialog(self, f"Execution Failed ({exit_code})", f"Execution failed with exit code {exit_code}")
         self.execution_output.append(f"Execution failed with exit code {exit_code}")
     
     @Slot(QProcess.ProcessError)
@@ -279,6 +280,7 @@ class RunWidget(QWidget):
         print(f"Execution failed with process error {process_error}")
         self.execution_done()
         self.set_execution_view_indicator(self.current_process, "red")
+        self.error_dialog = ErrorDialog(self, f"Execution Failed ({process_error})", f"Execution failed with process error {process_error}")
         self.execution_output.append(f"Execution failed with process error {process_error}")
 
     @Slot(int)
@@ -297,4 +299,5 @@ class RunWidget(QWidget):
 
     def execution_done(self) -> None:
         self.set_execution_buttons(running=False)
-        self.confirm_stop_execution_dialog.close()
+        if hasattr(self, "confirm_stop_execution_dialog"):
+            self.confirm_stop_execution_dialog.close()
