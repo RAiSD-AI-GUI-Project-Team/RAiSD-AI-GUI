@@ -33,7 +33,7 @@ class ParameterGroup():
         self.cli_option = cli_option
 
     @property
-    def operations(self) -> str:
+    def operations(self) -> [str]:
         """
         The operations that a parametergroup belongs to.
         """
@@ -76,3 +76,6 @@ class ParameterGroup():
         cli_params = [self.cli_option] + [p.to_cli() for p in self.parameters]
         nonempty_params = [p for p in cli_params if p]
         return " ".join(nonempty_params)
+
+    def __str__(self) -> str:
+        return f"{self.name}: {self.to_cli()}"
