@@ -134,6 +134,14 @@ class FileParameter(Parameter[list[str]]):
     - The value list is not empty.
     - If it is not multiple (multiple = False), there should only be a single file in the list.
     - Every file in the list exists and readable and their file extension is in the accepted_formats
+
+    Three different modes are there:
+    1. accepted_formats is filled:
+        a. hard_block is True -> This will result in user only being able to select the files that match the type in accepted_formats
+        b. hard_block is False -> User can select any file, but a warning will be displayed if the file type does not match the ones in accepted formats.
+    2. accepted_formats is None:
+        a. hard_block is False -> User can upload any file. The system notifies the user any file type is accepted here.
+        b. hard_block is True -> No, need to use this configuration. Yet, user can upload any file. But user is not notified.
     """
     value_changed = Signal(list, bool)
 
@@ -142,14 +150,24 @@ class FileParameter(Parameter[list[str]]):
         name: str,
         description: str,
         flag: str,
-        accepted_formats: list[str],
+        accepted_formats: list[str] | None = None, #set this for hard-blocking the user from selecting different files "vasta", "vcf", "ms"
+        hard_block: bool = False, #the flag indicating whether the accepted format is hard block for the user
         multiple: bool = False, #the flag indicating whether multiple files are allowed or not
         default_value: list[str] | None = None,
     ) -> None:
-        self.accepted_formats = [
-            ext if ext.startswith(".") else f".{ext}"
-            for ext in accepted_formats
-        ]
+        self.hard_block = hard_block
+        if hard_block:
+            self.accepted_formats = (
+                [ext if ext.startswith(".") else f".{ext}" for ext in accepted_formats]
+                if accepted_formats is not None else None
+            )
+            self.expected_formats = None
+        if not hard_block:
+            self.expected_formats = (
+                [ext if ext.startswith(".") else f".{ext}" for ext in accepted_formats]
+                if accepted_formats is not None else None
+            )
+            self.accepted_formats = None
         self.multiple = multiple
         super().__init__(name, description, flag, default_value or [])
 
@@ -162,13 +180,21 @@ class FileParameter(Parameter[list[str]]):
         return all(
             Path(f).is_file()
             and os.access(Path(f), os.R_OK)
-            and Path(f).suffix.lower() in self.accepted_formats
-            for f in self.value
-        )
+            and (self.accepted_formats is None or Path(f).suffix.lower() in self.accepted_formats or Path(f).suffix.lower() in self.expected_formats)
+            for f in self.value)
 
     @property
     def file_extensions(self) -> list[str]:
         return [Path(f).suffix.lower() for f in self.value if f]
+
+    @property
+    def matches_expected(self) -> bool:
+        if not self.value or self.expected_formats is None:
+            return True
+        return all(
+            Path(f).suffix.lower() in self.expected_formats
+            for f in self.value
+        )
 
     @Parameter.value.setter
     def value(self, new_value: list[str]) -> None:
