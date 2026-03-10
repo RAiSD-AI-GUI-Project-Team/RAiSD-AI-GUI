@@ -15,14 +15,16 @@ class CommandExecutor(QObject):
     Use `stop_execution` to stop the execution.
     """
 
-    output = Signal(str)                    # line of stdout output
-    execution_started = Signal(int)         # number of processes to run
+    output = Signal(str)                            # line of stdout output
+    err_output = Signal(str)                        # line of stderr output
+    execution_started = Signal(int)                 # number of processes to run
     execution_finished = Signal()   
+    execution_failed = Signal(int)                  # exit_code
     execution_stopped = Signal()
-    execution_failed = Signal(int)          # exit_code
-    process_started = Signal(int)           # process_index
-    process_finished = Signal(int)          # process_index
-    sub_step_finished = Signal(int, int)    # process_index, step_number
+    process_started = Signal(int)                   # process_index
+    process_finished = Signal(int)                  # process_index
+    process_failed = Signal(QProcess.ProcessError)  # process_error
+    sub_step_finished = Signal(int, int)            # process_index, step_number
 
     def __init__(self):
         """
@@ -35,11 +37,10 @@ class CommandExecutor(QObject):
         self._process.readyReadStandardOutput.connect(self._read_output)
         self._process.readyReadStandardError.connect(self._read_error)
         self._process.finished.connect(self._process_finished)
+        self._process.errorOccurred.connect(self._error_occurred)
         
         self._commands = []
         self._command_queue = queue.Queue()
-
-        self._error_message = ""
 
     @Slot(list)
     def start_execution(self, commands:list[str]=[]) -> None:
@@ -57,6 +58,7 @@ class CommandExecutor(QObject):
         
         self.execution_started.emit(len(commands))
         self._commands = commands
+        self._command_queue = queue.Queue()
         for command in self._commands:
             self._command_queue.put(command)
         self._next_process()   
@@ -89,7 +91,7 @@ class CommandExecutor(QObject):
         :param command: the command to be executed in the process
         :type command: str
         """
-        self._process.start("bash", ["-c micromamba run -n raisd-ai ", command])
+        self._process.start("bash", ["-c", f"micromamba run -n raisd-ai {command}"])
 
     @Slot()
     def _stop_process(self) -> None:
@@ -98,7 +100,7 @@ class CommandExecutor(QObject):
         """
         if self._process.state() == QProcess.ProcessState.Running:
             self._process.terminate()
-            if not self._process.waitForFinished(500):
+            if not self._process.waitForFinished(4000):
                 self._process.kill()
 
     @Slot()
@@ -109,6 +111,13 @@ class CommandExecutor(QObject):
         self.process_started.emit(self.get_process_index())
 
     @Slot()
+    def _error_occurred(self, process_error:QProcess.ProcessError) -> None:
+        """
+        Emits `error_occurred` with the error message.
+        """
+        self.process_failed.emit(process_error)
+
+    @Slot()
     def _process_finished(self, exit_code:int, exit_status:QProcess.ExitStatus) -> None:
         """
         Starts the next process and signals the completion of the previous process
@@ -117,11 +126,12 @@ class CommandExecutor(QObject):
         If the process finished with exit code 9 or 15, `execution_stopped` is emitted.
         Otherwise `execution_failed` is emitted with the exit code of the process.
         """
+        print(f"PROCESS FINISHED: ({exit_code}.{exit_status})")
         if exit_status is QProcess.ExitStatus.NormalExit and exit_code == 0:
             self.process_finished.emit(self.get_process_index())
             self._next_process()
         else:
-            if exit_code == 9 or exit_code == 15:
+            if exit_code == 4 or exit_code == 252 or exit_code == 9 or exit_code == 15:
                 self.execution_stopped.emit()
             else:
                 self.execution_failed.emit(exit_code) 
@@ -133,7 +143,7 @@ class CommandExecutor(QObject):
         """
         data = self._process.readAllStandardOutput().data().decode()
         self.output.emit(data.strip())
-        print(self.output.emit(data.strip()))
+        print(f"stdout:{data.strip()}")
         # TODO: filter output for substeps (self.sub_step_finished)
 
     @Slot()
@@ -142,15 +152,8 @@ class CommandExecutor(QObject):
         Reads the stderr of the process and compiles the error message.
         """
         data = self._process.readAllStandardError().data().decode()
-        self._error_message += data.strip()
-
-    def get_error_message(self) -> str:
-        """
-        The compiled error message.
-        """
-        error_message = self._error_message
-        self._error_message = ""
-        return error_message
+        self.err_output.emit(data.strip())
+        print(f"stderr:{data.strip()}")
 
     def get_process_index(self) -> int:
         """
