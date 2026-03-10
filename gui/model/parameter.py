@@ -154,6 +154,8 @@ class MultiParameter(Parameter[tuple[()]]):
     A multi-value parameter in the GUI.
     """
 
+    value_changed = Signal(tuple[()], bool)
+
     def __init__(
             self,
             name: str, description: str, flag: str,
