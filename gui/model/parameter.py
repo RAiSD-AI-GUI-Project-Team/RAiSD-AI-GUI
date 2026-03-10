@@ -127,6 +127,8 @@ class OptionalParameter(Parameter[bool]):
         )
         self._parameter = parameter
 
+        self._parameter.enabled = self.value
+
         self.value_changed.connect(self._value_changed)
 
     @property
@@ -136,6 +138,11 @@ class OptionalParameter(Parameter[bool]):
     @property
     def valid(self) -> bool:
         return self.parameter.valid
+
+    def to_cli(self) -> str:
+        if self.value:
+            return self.parameter.to_cli()
+        return ""
 
     @Slot(bool, bool)
     def _value_changed(self, new_value, _):
