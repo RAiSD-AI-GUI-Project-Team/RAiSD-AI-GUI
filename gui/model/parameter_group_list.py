@@ -1,5 +1,11 @@
 from re import compile
 
+from PySide6.QtCore import (
+    QObject,
+    Signal,
+    Slot,
+)
+
 from gui.model.parameter_group import ParameterGroup
 from gui.model.parameter import (
     Parameter,
@@ -16,13 +22,15 @@ from gui.model.dependency import (
 )
 
 
-class ParameterGroupList():
+class ParameterGroupList(QObject):
     """
     A list of parameters for a terminal command.
 
     The parameters are organized in `ParameterGroup` objects, based on
     the operation mode they correspond to and how they relate.
     """
+
+    operations_changed = Signal(bool)
 
     def __init__(
             self,
@@ -234,6 +242,8 @@ class ParameterGroupList():
         if operation in self._operations:
             raise Exception(f"Setting an invalid operation: {operation}.")
         self._operations[operation] = value
+
+        operations_changed.emit(True)
 
 
     @property
