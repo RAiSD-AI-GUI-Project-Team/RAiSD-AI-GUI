@@ -197,7 +197,6 @@ class RunWidget(QWidget):
     # ---------- Execution view widget methods ----------
     @Slot()
     def _stop_execution(self):
-        self.command_executor.stop_execution()
         self.confirm_stop_execution_dialog = ConfirmDialog(self, "Stop Execution", "stop the current execution")
         if self.confirm_stop_execution_dialog.exec():
             self.command_executor.stop_execution()
