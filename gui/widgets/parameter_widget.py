@@ -22,6 +22,7 @@ from PySide6.QtGui import (
 
 from gui.model.parameter import (
     Parameter,
+    OptionalParameter,
     BoolParameter,
     IntParameter,
     FloatParameter,
@@ -94,15 +95,31 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
 
     @classmethod
     def from_parameter(cls, parameter: Parameter[Any]) -> "ParameterWidget":
+        """
+        Create a suitable `ParameterWidget` for a given `Parameter`.
+
+        The method checks the type of the given parameter in order to
+        create the suitable widget (e.g. a dropdown menu for an enum
+        parameter). This is the recommended method of creating a
+        `ParameterWidget` object.
+
+        :param parameter: the parameter to create a widget for
+        :type parameter: Parameter[Any]
+
+        :return: the corresponding widget
+        :rtype: ParameterWidget
+        """
+        if isinstance(parameter, OptionalParameter):
+            return OptionalParameterWidget(parameter)
         if isinstance(parameter, BoolParameter):
             return BoolParameterWidget(parameter)
-        elif isinstance(parameter, IntParameter):
+        if isinstance(parameter, IntParameter):
             return IntParameterWidget(parameter)
-        elif isinstance(parameter, FloatParameter):
+        if isinstance(parameter, FloatParameter):
             return FloatParameterWidget(parameter)
-        elif isinstance(parameter, EnumParameter):
+        if isinstance(parameter, EnumParameter):
             return EnumParameterWidget(parameter)
-        elif isinstance(parameter, StringParameter):
+        if isinstance(parameter, StringParameter):
             return StringParameterWidget(parameter)
         # TODO: implement selection of widget subclass for other parameter types
         raise NotImplementedError(f"ParameterWidget#from_parameter not implemented for {type(parameter)}!")
@@ -116,9 +133,6 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         The method creates a label that displays the parameter's
         name and groups it in a horizontal layout alongside the
         `ParameterWidget` object.
-
-        :param parameter: the parameter
-        :type parameter: Parameter[Any]
 
         :return: the label and the widget in a horizontal layout
         :rtype: QWidget
