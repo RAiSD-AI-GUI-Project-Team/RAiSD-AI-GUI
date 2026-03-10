@@ -240,7 +240,8 @@ class ParameterGroupList(QObject):
         :param value: the value to set the operation to.
         :type value: bool
         """
-        if operation in self._operations:
+
+        if not operation in self._operations:
             raise Exception(f"Setting an invalid operation: {operation}.")
         self._operations[operation] = value
 
@@ -288,7 +289,7 @@ class ParameterGroupList(QObject):
         # Create instruction for each 
         # TODO use the output from one to set params for two (separate function?)
         for operation in operations:
-            instruction = f"{self.command} {operation}"
+            instruction = f"{self.command} -op {operation}"
             for param_group in operations[operation]:
                 instruction = f"{instruction} {param_group.to_cli()}"
             instructions.append(instruction)
