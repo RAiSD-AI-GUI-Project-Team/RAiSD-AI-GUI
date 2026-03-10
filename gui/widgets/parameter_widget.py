@@ -109,15 +109,11 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
 
     def build_form_row(self) -> QWidget:
         """
-        Create a suitable `ParameterWidget` for a given `Parameter`,
-        grouped horizontally with a label to be used as a form row.
+        Build the form row containing this widget.
 
-        The method checks the type of the given parameter in order to
-        create the suitable widget (e.g. a dropdown menu for an enum
-        parameter). This is the recommended method of creating a
-        `ParameterWidget` object.
+        Call this method only once for a given widget.
 
-        The method also creates a label that displays the parameter's
+        The method creates a label that displays the parameter's
         name and groups it in a horizontal layout alongside the
         `ParameterWidget` object.
 
