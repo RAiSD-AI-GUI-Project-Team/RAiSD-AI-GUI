@@ -33,8 +33,8 @@ class MainWindow(QMainWindow):
         layout = QHBoxLayout(central_widget)
 
         # Create the parameter form and add it to the layout.
-        parameter_form = ParameterForm(parameter_group_list)
-        layout.addWidget(parameter_form)
+        self.parameter_form = ParameterForm(self._parameter_group_list)
+        layout.addWidget(self.parameter_form)
 
         # Create the submit button and add it to the layout.
         submit_button = QPushButton("Submit")
