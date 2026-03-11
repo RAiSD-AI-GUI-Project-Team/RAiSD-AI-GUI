@@ -24,7 +24,10 @@ class Parameter(ABC, QObject, Generic[T], metaclass=AbstractQObjectMeta):
 
     def __init__(
             self,
-            name: str, description: str, flag: str,
+            name: str, 
+            description: str, 
+            flag: str,
+            modes: list[str],
             default_value: T,
             enabled: bool = True,
     ) -> None:
@@ -46,9 +49,10 @@ class Parameter(ABC, QObject, Generic[T], metaclass=AbstractQObjectMeta):
         super().__init__(self)
         self.name = name
         self.description = description
+        self.flag = flag
+        self.modes = modes
         self.default_value = default_value
         self._value = default_value
-        self.flag = flag
         self._enabled = enabled
 
     @property
@@ -140,7 +144,10 @@ class NumberParameter(Parameter[X]):
 
     def __init__(
             self,
-            name: str, description: str, flag: str,
+            name: str, 
+            description: str, 
+            flag: str,
+            modes: list[str],
             default_value: X,
             lower_bound: X | None = None,
             upper_bound: X | None = None,
@@ -166,7 +173,7 @@ class NumberParameter(Parameter[X]):
         :param upper_bound: the upper bound of the parameter (optional)
         :type upper_bound: X | None
         """
-        super().__init__(name, description, flag, default_value)
+        super().__init__(name, description, flag, modes, default_value)
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
 
@@ -231,7 +238,10 @@ class EnumParameter(Parameter[int]):
 
     def __init__(
             self,
-            name: str, description: str, flag: str,
+            name: str, 
+            description: str, 
+            flag: str,
+            modes: list[str],
             options: list[tuple[str, str]],
             default_value: int,
     ) -> None:
@@ -258,7 +268,7 @@ class EnumParameter(Parameter[int]):
         :param default_value: the index of the default option
         :type default_value: int
         """
-        super().__init__(name, description, flag, default_value)
+        super().__init__(name, description, flag, modes, default_value)
         self._options = options
 
     @property
@@ -307,7 +317,11 @@ class StringParameter(Parameter[str]):
 
     def __init__(
             self,
-            name: str, description: str, flag: str, default_value: str,
+            name: str, 
+            description: str, 
+            flag: str, 
+            modes: list[str],
+            default_value: str,
             max_length: int | None = None,
             pattern: Pattern | None = None,
     ) -> None:
@@ -332,7 +346,7 @@ class StringParameter(Parameter[str]):
         :param pattern: the pattern the string must match (optional)
         :type pattern: Pattern | None
         """
-        super().__init__(name, description, flag, default_value)
+        super().__init__(name, description, flag, modes, default_value)
         self.max_length = max_length
         self._pattern = pattern
 

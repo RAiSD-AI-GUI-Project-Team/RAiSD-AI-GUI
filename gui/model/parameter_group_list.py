@@ -78,12 +78,14 @@ class ParameterGroupList(QObject):
             'Make PDFs',
             'If this is checked, PDFs of the output will be created.',
             '-pdf',
+            ['IMG-GEN'],
             True,
         )
         dummy_false_bool_param = BoolParameter(
             'Print to console',
             'If this is checked, output will be printed to console.',
             '--print-to-console',
+            ['IMG-GEN'],
             False,
         )
         dummy_dependency = Dependency(
@@ -98,18 +100,19 @@ class ParameterGroupList(QObject):
             'Use PyTorch',
             'If this is checked, PyTorch will be used instead of TensorFlow',
             '--use-pt',
+            ['MDL-GEN'],
             True,
         )
 
         parameter_groups = [
             ParameterGroup(
                 'Additional options',
-                ['RSD-DEF', 'IMG-GEN', 'MDL-GEN', 'MDL-TST', 'SWP-SCN'],
                 [
                     EnumParameter(
                         'Mode',
                         'This option determines how fast the program will be.',
                         '-m',
+                        ['RSD-DEF', 'IMG-GEN', 'MDL-GEN', 'MDL-TST', 'SWP-SCN'],
                         [
                             ('Slow', 'slow'),
                             ('Regular', 'normal'),
@@ -122,18 +125,19 @@ class ParameterGroupList(QObject):
             ),
             ParameterGroup(
                 'Personal data',
-                ['SWP-SCN'],
                 [
                     StringParameter(
                         'Your name',
                         'Enter your first and last name.',
                         '--name',
+                        ['SWP-SCN'],
                         '',
                     ),
                     StringParameter(
                         'Phone number',
                         'Enter your phone number. Ten digits.',
                         '--phone-number',
+                        ['SWP-SCN'],
                         '0123456789',
                         10,
                         compile(r"^\d{10}$"),
@@ -142,28 +146,27 @@ class ParameterGroupList(QObject):
             ),
             ParameterGroup(
                 'Image generation',
-                ['IMG-GEN'],
                 [dummy_true_bool_param, dummy_false_bool_param],
             ),
             ParameterGroup(
                 'Model training',
-                ['MDL-GEN'],
                 [other_dummy_param],
             ),
             ParameterGroup(
                 'Grid size',
-                ['RSD-DEF', 'IMG-GEN', 'MDL-GEN', 'MDL-TST', 'SWP-SCN'],
                 [
                     IntParameter(
                         'Unbounded int',
                         'This int can take any value.',
                         '--unbounded-int',
+                        ['RSD-DEF', 'IMG-GEN', 'MDL-GEN', 'MDL-TST', 'SWP-SCN'],
                         5,
                     ),
                     IntParameter(
                         'Lower bounded int',
                         'Bla Bla Bla',
                         '--lowerbounded-int',
+                        ['RSD-DEF', 'IMG-GEN', 'MDL-GEN', 'MDL-TST', 'SWP-SCN'],
                         6,
                         5,
                     ),
@@ -171,6 +174,7 @@ class ParameterGroupList(QObject):
                         'Upper bounded int',
                         'Bla Bla Bla',
                         '--upperbounded-int',
+                        ['RSD-DEF', 'IMG-GEN', 'MDL-GEN', 'MDL-TST', 'SWP-SCN'],
                         6,
                         upper_bound = 50,
                     ),                   
@@ -178,6 +182,7 @@ class ParameterGroupList(QObject):
                         'Bounded int',
                         'This int can take any value.',
                         '--bounded-int',
+                        ['RSD-DEF', 'IMG-GEN', 'MDL-GEN', 'MDL-TST', 'SWP-SCN'],
                         5,
                         1,
                         10000,
@@ -186,18 +191,19 @@ class ParameterGroupList(QObject):
             ),
             ParameterGroup(
                 'Power size',
-                ['RSD-DEF', 'IMG-GEN', 'MDL-GEN', 'MDL-TST', 'SWP-SCN'],
                 [
                     FloatParameter(
                         'Unbounded float',
                         'This float can take any value.',
                         '--unbounded-float',
+                        ['RSD-DEF', 'IMG-GEN', 'MDL-GEN', 'MDL-TST', 'SWP-SCN'],
                         8.5,
                     ),
                     FloatParameter(
                         'Lower bounded float',
                         'Bla Bla Bla',
                         '--lowerbounded-float',
+                        ['RSD-DEF', 'IMG-GEN', 'MDL-GEN', 'MDL-TST', 'SWP-SCN'],
                         6.6,
                         5.0,
                     ),
@@ -205,6 +211,7 @@ class ParameterGroupList(QObject):
                         'Upper bounded float',
                         'Bla Bla Bla',
                         '--upperbounded-float',
+                        ['RSD-DEF', 'IMG-GEN', 'MDL-GEN', 'MDL-TST', 'SWP-SCN'],
                         6.9,
                         upper_bound = 50.0,
                     ),                   
@@ -212,6 +219,7 @@ class ParameterGroupList(QObject):
                         'Bounded float',
                         'This float can take any value.',
                         '--bounded-float',
+                        ['RSD-DEF', 'IMG-GEN', 'MDL-GEN', 'MDL-TST', 'SWP-SCN'],
                         5,
                         1.67,
                         10000,
