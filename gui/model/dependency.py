@@ -48,6 +48,7 @@ class Dependency(QObject):
         self._source = source
         self._target = target
 
+        self._target.condition_changed(self._source.value)
         self._source.changed.connect(self._target.condition_changed)
 
 
