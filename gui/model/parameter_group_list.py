@@ -117,6 +117,18 @@ class ParameterGroupList():
                         lower_bound=lower_bound,
                         upper_bound=upper_bound
                     )
+                case "bool":
+                    if "default" in obj:
+                        default_value = obj["default"]
+                    else:
+                        raise ValueError(f"No default value provided for bool parameter {name}")
+                    
+                    return BoolParameter(
+                        name,
+                        description,
+                        flag,
+                        default_value,
+                    )
                 case "enum":
                     options_list = obj.get("options")
                     options: list[tuple[str, str]]
