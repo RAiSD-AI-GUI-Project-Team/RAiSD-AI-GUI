@@ -10,6 +10,8 @@ class ParameterGroup(QObject):
     A group of `Parameter` objects associated with the same command.
     """
 
+    enabled_changed = Signal(bool)
+
     def __init__(
             self,
             name: str,
@@ -27,6 +29,11 @@ class ParameterGroup(QObject):
         super().__init__()
         self.name = name
         self._parameters = parameters or []
+        self._enabled = False
+        for parameter in self._parameters:
+            parameter.enabled_changed.connect(self._parameter_enabled_changed)
+            if parameter.enabled:
+                self._enabled = True
 
     @property
     def parameters(self) -> list[Parameter[Any]]:
@@ -37,9 +44,10 @@ class ParameterGroup(QObject):
 
     def add_parameter(self, parameter: Parameter[Any]) -> None:
         """
-        Add a parameter to the group.
+        Add a parameter to the group and connect to its enabled_changed signal
         """
         self._parameters.append(parameter)
+        parameter.enabled_changed.connect(self._parameter_enabled_changed)
     
     @property
     def valid(self) -> bool:
@@ -50,6 +58,24 @@ class ParameterGroup(QObject):
         is valid.
         """
         return all([param.valid for param in self.parameters])
+
+    @Slot(bool)
+    def _parameter_enabled_changed(self, new_value: bool) -> None:
+        """
+        Check if the parameter group is enabled.
+        """
+
+        # Check if any children are enabled
+        new_enabled = False
+        for parameter in self._parameters:
+            if parameter.enabled:
+                new_enabled = True
+                break
+
+        # If enabled changed, emit signal
+        if self._enabled != new_enabled:
+            self.enabled_changed.emit(new_enabled)
+            self._enabled = new_enabled
 
     def to_cli(self, operation: str) -> str:
         """
