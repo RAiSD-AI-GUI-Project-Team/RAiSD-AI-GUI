@@ -59,6 +59,28 @@ class ParameterGroupList(QObject):
         self._parameter_groups = parameter_groups or []
         self._dependencies = dependencies or []
 
+    class OperationEnabledCondition(Dependency.Condition):
+        def __init__(
+                self,
+                parameter_group_list: "ParameterGroupList",
+                operation: str,
+                parent: QObject | None = None,
+        ) -> None:
+            super().__init__(
+                # TODO: no more private access
+                value=operation in parameter_group_list._operations,
+                parent=parent,
+            )
+            self._parameter_group_list = parameter_group_list
+            self._operation = operation
+
+            self._parameter_group_list.operations_changed.connect(self._operations_changed)
+
+        @Slot()
+        def _operations_changed(self) -> None:
+            self.value = self._parameter_group_list._operations[self._operation]
+
+
     @classmethod
     def from_yaml(cls, file_path: str) -> "ParameterGroupList":
         """
