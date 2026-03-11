@@ -189,7 +189,7 @@ class ParameterGroupList():
                     )
                 case _:
                     raise ValueError(
-                        "Invalid parameter definition in configuration file."
+                        f"Invalid parameter definition for parameter {name} in configuration file (type: {parameter_type})."
                     )
 
         def parse_parameter_group(obj: dict) -> ParameterGroup:
