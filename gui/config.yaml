@@ -1,8 +1,8 @@
 modes:
   - name: Standard RAiSD
-    parameter_groups: []
     operations:
-      - name: Sweep scan
+      RSD-DEF:
+        name: Sweep scan
         description: Do a sweep scan with standard RAiSD.
         cli: ""
         input:
@@ -13,46 +13,10 @@ modes:
               - VCF
               - FASTA
         output: report # What and how?
-        parameter_groups:
-          - name: SNP and sample handling
-            parameters:
-              - "input-file-type"
-              - "-L"
-              - "-S"
-              - "-m"
-              - "-M"
-              - "-y"
-              - "-X"
-              - "-B"
-              - "-o"
-          - name: Sliding window and mu statistic
-            parameters:
-              - "-w"
-              - "-c"
-              - "-G"
-              - "-VAREXP"
-              - "-SFSEXP"
-              - "-LDEXP"
-          - name: Standard output and reports
-            parameters:
-              - "-f"
-              - "-s"
-              - "-t"
-              - "-p"
-              - "-O"
-              - "-R"
-              - "-P"
-              - "-D"
-              - "-A"
-          - name: Accuracy and sensitivity evaluation
-            parameters:
-              - "-Td"
-              - "-k"
-              - "-l"
   - name: RAiSD-AI
-    parameter_groups: []
     operations:
-      - name: Data formatting
+      IMG-GEN:
+        name: Data formatting
         description: Make raw data into PNGs.
         cli: -op IMG_GEN
         input:
@@ -66,8 +30,8 @@ modes:
           - multiple: true
             extension:
               - png
-        parameter_groups: []
-      - name: Model training
+      MDL-GEN:
+        name: Model training
         description: Train a sweep detection CNN model.
         cli: -op MDL_GEN
         input:
@@ -79,8 +43,8 @@ modes:
             extension:
               - pt
               - keras
-        parameter_groups: []
-      - name: Model testing
+      MDL-TST:
+        name: Model testing
         description: Evaluate a model.
         cli: -op MDL_TST
         input:
@@ -92,8 +56,8 @@ modes:
             extension:
               - png
         output: testing report # What and how?
-        parameter_groups: []
-      - name: Sweep scan
+      SWP-SCN:
+        name: Sweep scan
         description: Use a trained model to scan for selective sweeps.
         cli: -op SWP_SCN
         input:
@@ -108,11 +72,10 @@ modes:
               - VCF
               - FASTA
         output: report # What and how?
-        parameter_groups: []
   - name: Common outlier analysis
-    parameter_groups: []
     operations:
-      - name: Common outlier analysis
+      CO:
+        name: Common outlier analysis
         description: Perform common outlier analysis for a completed RAiSD run.
         cli: ""
         input:
@@ -123,11 +86,10 @@ modes:
             extensoion:
               - raisd # Whatever file RAiSD produces
         output: common outlier report # What?
-        parameter_groups: []
   - name: File conversion
-    parameter_groups: []
     operations:
-      - name: FASTA to VCF
+      FASTA-VCF:
+        name: FASTA to VCF
         cli: -E
         input:
           - multiple: false
@@ -137,8 +99,8 @@ modes:
           - multiple: false
             extension:
               - VCF
-        parameter_groups: []
-      - name: VCF to ms
+      VCF-MS:
+        name: VCF to ms
         cli: ""
         input:
           - multiple: false
@@ -148,343 +110,385 @@ modes:
           - multiple: false
             extension:
               - ms
-        parameter_groups: []
-parameters:
-  "-n":
-    name: Run name
-    description: A unique run ID that is used to name the output files.
-    cli: -n
-    type: str
-  # Where to handle -I?
-  input-file-type:
-    name: Input file type
-    description: The type of the input file. This may change which parameters can be filled in.
-    cli: null
-    type: enum
-    options:
-      - name: ms
-        cli: null
-      - name: mbs
-        cli: null
-      - name: FASTA
-        cli: null
-      - name: Single-chromosome VCF
-        cli: null
-      - name: Multiple-chromosome VCF
-    default: 0
-  # SNP and sample handling
-  "-L":
-    name: Region length
-    description: The size of the region (in basepairs) for ms file. If not provided, it will be extracted at runtime.
-    cli: -L
-    type: int
-    min: 1
-    default: 1
-  "-S":
-    name: Sample file
-    description: A file containing the list of samples to be processed for VCF files.
-    cli: -S
-    type: file
-  "-m":
-    name: maf # What?
-    description: The threshold value for excluding SNPs with minor allele frequency.
-    cli: -m
-    type: float
-    min: 0.0
-    max: 0.1
-  "-y":
-    name: Ploidy
-    description: The ploidy used to correctly represent missing data.
-    cli: -y
-    type: int
-    min: 1
-    default: 2
-  "-M":
-    name: Missing data handling strategy
-    description: How to handle missing data.
-    cli: -M
-    type: enum
-    options:
-      - name: Discard SNP
-        cli: "0"
-      - name: Impute N per SNP
-        cli: "1"
-      - name: Represent N through a mask
-        cli: "2"
-      - name: Ignore allele pairs with N
-        cli: "3"
-    default: 0
-  "-X":
-    name: Exclude regions
-    description: Exclude regions from the analysis.
-    type: optional
-    default: false
-    parameter:
-      name: Excluded regions file
-      description: "A tab-delimited file that contains regions per chromosome (one per line) to be excluded from the analysis (Format: chromosome [tab] regionStart [tab] regionStop)."
-      cli: -X
-      type: file
-  "-B":
-    name: Provide chromosome size
-    description: For VCF files with a single chromosome. If not provided, the values will be determined at runtime by parsing each chromosome in its entirety before processing, leading to slightly longer overall execution time. # Not very good description
-    type: optional
-    default: false
-    parameter:
-      name: Chromosome size
-      description: The chromosome size.
-      cli: -B
-      type: multi
-      parameters:
-        - type: int
-          name: Region length in basepairs
-          default: 1 # ?
-        - type: int
-          name: Region length in SNPs
-          default: 1 # ?
-      # selection target <= region length
-      # selection target D threshold <= region length
-  "-o":
-    name: Order VCF
-    description: Enables dataset check and reordering of the input VCF file (only for unzipped VCF files).
-    cli: -o
-    type: bool
-    default: false
-  # Sliding window and mu statistic
-  "-w":
-    name: Window size
-    description: The window size. The default value is empirically determined.
-    cli: -w
-    type: int # Must be even!
-    min: 6
-    default: 50
-  "-c":
-    name: SFS slack
-    description: The slack for the SFS edges to be used for the calculation of mu_SFS.
-    cli: -c
-    type: int
-    min: 1
-    default: 1
-  "-G":
-    name: Report grid scores
-    description: Report mu statistic scores at equidistant locations between the first and last SNPs.
-    type: optional
-    default: false
-    parameter:
-      name: Grid size
-      description: The total number of evaluation points across the data.
-      cli: -G
-      type: int
-      min: 3
-      default: -1 # ?!
-  "-VAREXP":
-    name: mu-var exponent
-    description: The exponent for the mu-var factor.
-    cli: -VAREXP
-    type: float
-    min: 0.0 # Exclusive!
-    max: 10.0 # Exclusive!
-    default: 1.0
-  "-SFSEXP":
-    name: mu-sfs exponent
-    description: The exponent for the mu-sfs factor.
-    cli: -SFSEXP
-    type: float
-    min: 0.0 # Exclusive!
-    max: 10.0 # Exclusive!
-    default: 1.0
-  "-LDEXP":
-    name: mu-ld exponent
-    description: The exponent for the mu-ld factor.
-    cli: -LDEXP
-    type: float
-    min: 0.0 # Exclusive!
-    max: 10.0 # Exclusive!
-    default: 1.0
-  # Standard output and reports
-  "-f":
-    name: Overwrite output
-    description: Overwrite existing run files under the same run ID.
-    cli: -f
-    type: bool
-    default: false
-    # We probably don't want this as a normal parameter
-  "-s":
-    name: Split output
-    description: Generate a separate report file per set.
-    cli: -s
-    type: bool
-    default: false
-  "-t":
-    name: Remove set separator
-    description: Remove the set separator from the report(s).
-    cli: -t
-    type: bool
-    default: false
-  "-p":
-    name: Print sample list
-    description: Generate the output
-    cli: -p
-    type: bool
-    default: false
-  "-O":
-    name: Display progress
-    description: Show progress on the display device (at SNP set granularity).
-    cli: -O
-    type: bool
-    default: false
-    # Probably don't offer this to the user?
-  "-R":
-    name: Full report
-    description: Include additional information in the report file(s), i.e. window start and end, and the mu-statistic factors for variation, SFS and LD.
-    cli: -R
-    type: bool
-    default: false
-  "-P":
-    name: Create plots
-    description: Generate four plots (for the three mu-statistic factors and the final score) in one PDF file per set of SNPs in the input file using Rscript. # Activates -s, -t, -R
-    cli: -P
-    type: bool
-    default: false
-  "-D":
-    name: Generate a site report
-    description: Generate a site report, e.g. total, discarded, imputed etc.
-    cli: -D
-    type: bool
-    default: false
-  "-A":
-    name: Create Manhattan plot
-    description: Generate a Manhattan plot for the final mu-statistic score using Rscript.
-    type: optional
-    default: false
-    parameter:
-      name: Probability value
-      description: Provide a probability value to be used for the quantile function in R.
-      cli: -A
-      type: float
-      min: 0.0
-      max: 1.0
-      default: 0.9999
-  # Accuracy and sensitivity evaluation
-  "-Td":
-    name: Calculate average distance
-    description: Calculate the average distance (over all datasets in the input file) between the selection target and the reported locations.
-    type: optional
-    default: false
-    parameter:
-      name: null
-      description: null
-      type: multi
-      parameters:
-        - name: Selection target
-          description: Provide the selection target (in basepairs).
-          cli: -T
-          type: int
-          min: 1
-          default: 1 # Source: I made it up
-        - name: Set maximum distance
-          description: 
-          type: optional
-          default: false
-          parameter:
-            name: Maximum distance
-            description:
-            cli: -d
-            type: int
-            min: 1
-            default: 1 # Made up
-  "-k": # May be wrong!
-    name: Report score
-    description: Report the corresponding reported score after sorting reported locations for all the datasets in the input file.
-    type: optional
-    default: false
-    parameter:
-      name: False positive rate
-      description: The false positive rate to use.
-      cli: -k
-      type: float
-      min: 0.0
-      max: 1.0
-      default: 0.05
-  "-l":
-    name: Thresholds
-    description: Fill in these thresholds using the values reported by a previous RAiSD-AI run with "Report score" activated.
-    cli: -l # There also has to be an integer that says how many of the thresholds are provided!
-    # The CLI representation here needs more thought
-    type: multi
+parameter_groups:
+  - name: General
+    operations:
+      - RSD-DEF
+      - IMG-GEN
+      - MDL-GEN
+      - MDL-TST
+      - SWP-SCN
+      - CO
+      - FASTA-VCF
+      - VCF-MS
     parameters:
-      # Are the thresholds 0-1?
-      - name: Provide var threshold
-        description: null
+      "-n":
+        name: Run name
+        description: A unique run ID that is used to name the output files.
+        cli: -n
+        type: str
+      # Where to handle -I?
+      input-file-type:
+        name: Input file type
+        description: The type of the input file. This may change which parameters can be filled in.
+        cli: null
+        type: enum
+        options:
+          - name: ms
+            cli: null
+          - name: mbs
+            cli: null
+          - name: FASTA
+            cli: null
+          - name: Single-chromosome VCF
+            cli: null
+          - name: Multiple-chromosome VCF
+        default: 0
+  - name: SNP and sample handling
+    operations:
+      - RSD-DEF
+      - IMG-GEN
+      - MDL-GEN
+      - MDL-TST
+      - SWP-SCN
+    parameters:
+      "-L":
+        name: Region length
+        description: The size of the region (in basepairs) for ms file. If not provided, it will be extracted at runtime.
+        cli: -L
+        type: int
+        min: 1
+        default: 1
+      "-S":
+        name: Sample file
+        description: A file containing the list of samples to be processed for VCF files.
+        cli: -S
+        type: file
+      "-m":
+        name: maf # What?
+        description: The threshold value for excluding SNPs with minor allele frequency.
+        cli: -m
+        type: float
+        min: 0.0
+        max: 0.1
+      "-y":
+        name: Ploidy
+        description: The ploidy used to correctly represent missing data.
+        cli: -y
+        type: int
+        min: 1
+        default: 2
+      "-M":
+        name: Missing data handling strategy
+        description: How to handle missing data.
+        cli: -M
+        type: enum
+        options:
+          - name: Discard SNP
+            cli: "0"
+          - name: Impute N per SNP
+            cli: "1"
+          - name: Represent N through a mask
+            cli: "2"
+          - name: Ignore allele pairs with N
+            cli: "3"
+        default: 0
+      "-X":
+        name: Exclude regions
+        description: Exclude regions from the analysis.
         type: optional
         default: false
         parameter:
-          name: var threshold
-          description: null
-          cli: "var="
-          type: float
-          min: 0.0
-          max: 1.0
-          default: 0.0
-      - name: Provide sfs threshold
-        description: null
+          name: Excluded regions file
+          description: "A tab-delimited file that contains regions per chromosome (one per line) to be excluded from the analysis (Format: chromosome [tab] regionStart [tab] regionStop)."
+          cli: -X
+          type: file
+      "-B":
+        name: Provide chromosome size
+        description: For VCF files with a single chromosome. If not provided, the values will be determined at runtime by parsing each chromosome in its entirety before processing, leading to slightly longer overall execution time. # Not very good description
         type: optional
         default: false
         parameter:
-          name: sfs threshold
-          description: null
-          cli: "sfs="
-          type: float
-          min: 0.0
-          max: 1.0
-          default: 0.0
-      - name: Provide ld threshold
-        description: null
+          name: Chromosome size
+          description: The chromosome size.
+          cli: -B
+          type: multi
+          parameters:
+            - type: int
+              name: Region length in basepairs
+              default: 1 # ?
+            - type: int
+              name: Region length in SNPs
+              default: 1 # ?
+          # selection target <= region length
+          # selection target D threshold <= region length
+      "-o":
+        name: Order VCF
+        description: Enables dataset check and reordering of the input VCF file (only for unzipped VCF files).
+        cli: -o
+        type: bool
+        default: false
+  - name: Sliding window and mu statistic
+    operations:
+      - RSD-DEF
+      - IMG-GEN
+      - MDL-GEN
+      - MDL-TST
+      - SWP-SCN
+    parameters:
+      "-w":
+        name: Window size
+        description: The window size. The default value is empirically determined.
+        cli: -w
+        type: int # Must be even!
+        min: 6
+        default: 50
+      "-c":
+        name: SFS slack
+        description: The slack for the SFS edges to be used for the calculation of mu_SFS.
+        cli: -c
+        type: int
+        min: 1
+        default: 1
+      "-G":
+        name: Report grid scores
+        description: Report mu statistic scores at equidistant locations between the first and last SNPs.
         type: optional
         default: false
         parameter:
-          name: ld threshold
-          description: null
-          cli: "ld="
-          type: float
-          min: 0.0
-          max: 1.0
-          default: 0.0
-      - name: Provide mu threshold
-        description: null
+          name: Grid size
+          description: The total number of evaluation points across the data.
+          cli: -G
+          type: int
+          min: 3
+          default: -1 # ?!
+      "-VAREXP":
+        name: mu-var exponent
+        description: The exponent for the mu-var factor.
+        cli: -VAREXP
+        type: float
+        min: 0.0 # Exclusive!
+        max: 10.0 # Exclusive!
+        default: 1.0
+      "-SFSEXP":
+        name: mu-sfs exponent
+        description: The exponent for the mu-sfs factor.
+        cli: -SFSEXP
+        type: float
+        min: 0.0 # Exclusive!
+        max: 10.0 # Exclusive!
+        default: 1.0
+      "-LDEXP":
+        name: mu-ld exponent
+        description: The exponent for the mu-ld factor.
+        cli: -LDEXP
+        type: float
+        min: 0.0 # Exclusive!
+        max: 10.0 # Exclusive!
+        default: 1.0
+  - name: Standard output and reports
+    operations:
+      - RSD-DEF
+      - IMG-GEN
+      - MDL-GEN
+      - MDL-TST
+      - SWP-SCN
+    parameters:
+      "-f":
+        name: Overwrite output
+        description: Overwrite existing run files under the same run ID.
+        cli: -f
+        type: bool
+        default: false
+        operations:
+          add:
+            - FASTA-VCF
+            - VCF-MS
+        # We probably don't want this as a normal parameter
+      "-s":
+        name: Split output
+        description: Generate a separate report file per set.
+        cli: -s
+        type: bool
+        default: false
+      "-t":
+        name: Remove set separator
+        description: Remove the set separator from the report(s).
+        cli: -t
+        type: bool
+        default: false
+      "-p":
+        name: Print sample list
+        description: Generate the output
+        cli: -p
+        type: bool
+        default: false
+      "-O":
+        name: Display progress
+        description: Show progress on the display device (at SNP set granularity).
+        cli: -O
+        type: bool
+        default: false
+        # Probably don't offer this to the user?
+      "-R":
+        name: Full report
+        description: Include additional information in the report file(s), i.e. window start and end, and the mu-statistic factors for variation, SFS and LD.
+        cli: -R
+        type: bool
+        default: false
+      "-P":
+        name: Create plots
+        description: Generate four plots (for the three mu-statistic factors and the final score) in one PDF file per set of SNPs in the input file using Rscript. # Activates -s, -t, -R
+        cli: -P
+        type: bool
+        default: false
+      "-D":
+        name: Generate a site report
+        description: Generate a site report, e.g. total, discarded, imputed etc.
+        cli: -D
+        type: bool
+        default: false
+      "-A":
+        name: Create Manhattan plot
+        description: Generate a Manhattan plot for the final mu-statistic score using Rscript.
         type: optional
         default: false
         parameter:
-          name: mu threshold
-          description: null
-          cli: "mu="
+          name: Probability value
+          description: Provide a probability value to be used for the quantile function in R.
+          cli: -A
           type: float
           min: 0.0
           max: 1.0
-          default: 0.0
-      - name: Provide pcl0 threshold
-        description: null
+          default: 0.9999
+  - name: Accuracy and sensitivity evaluation
+    operations:
+      - RSD-DEF
+      - IMG-GEN
+      - MDL-GEN
+      - MDL-TST
+      - SWP-SCN
+    parameters:
+      "-Td":
+        name: Calculate average distance
+        description: Calculate the average distance (over all datasets in the input file) between the selection target and the reported locations.
         type: optional
         default: false
         parameter:
-          name: pcl0 threshold
+          name: null
           description: null
-          cli: "pcl0="
-          type: float
-          min: 0.0
-          max: 1.0
-          default: 0.0
-      - name: Provide pcl1 threshold
-        description: null
+          type: multi
+          parameters:
+            - name: Selection target
+              description: Provide the selection target (in basepairs).
+              cli: -T
+              type: int
+              min: 1
+              default: 1 # Source: I made it up
+            - name: Set maximum distance
+              description: 
+              type: optional
+              default: false
+              parameter:
+                name: Maximum distance
+                description:
+                cli: -d
+                type: int
+                min: 1
+                default: 1 # Made up
+      "-k": # May be wrong!
+        name: Report score
+        description: Report the corresponding reported score after sorting reported locations for all the datasets in the input file.
         type: optional
         default: false
         parameter:
-          name: pcl1 threshold
-          description: null
-          cli: "pcl1="
+          name: False positive rate
+          description: The false positive rate to use.
+          cli: -k
           type: float
           min: 0.0
           max: 1.0
-          default: 0.0
+          default: 0.05
+      "-l":
+        name: Thresholds
+        description: Fill in these thresholds using the values reported by a previous RAiSD-AI run with "Report score" activated.
+        cli: -l # There also has to be an integer that says how many of the thresholds are provided!
+        # The CLI representation here needs more thought
+        type: multi
+        parameters:
+          # Are the thresholds 0-1?
+          - name: Provide var threshold
+            description: null
+            type: optional
+            default: false
+            parameter:
+              name: var threshold
+              description: null
+              cli: "var="
+              type: float
+              min: 0.0
+              max: 1.0
+              default: 0.0
+          - name: Provide sfs threshold
+            description: null
+            type: optional
+            default: false
+            parameter:
+              name: sfs threshold
+              description: null
+              cli: "sfs="
+              type: float
+              min: 0.0
+              max: 1.0
+              default: 0.0
+          - name: Provide ld threshold
+            description: null
+            type: optional
+            default: false
+            parameter:
+              name: ld threshold
+              description: null
+              cli: "ld="
+              type: float
+              min: 0.0
+              max: 1.0
+              default: 0.0
+          - name: Provide mu threshold
+            description: null
+            type: optional
+            default: false
+            parameter:
+              name: mu threshold
+              description: null
+              cli: "mu="
+              type: float
+              min: 0.0
+              max: 1.0
+              default: 0.0
+          - name: Provide pcl0 threshold
+            description: null
+            type: optional
+            default: false
+            parameter:
+              name: pcl0 threshold
+              description: null
+              cli: "pcl0="
+              type: float
+              min: 0.0
+              max: 1.0
+              default: 0.0
+          - name: Provide pcl1 threshold
+            description: null
+            type: optional
+            default: false
+            parameter:
+              name: pcl1 threshold
+              description: null
+              cli: "pcl1="
+              type: float
+              min: 0.0
+              max: 1.0
+              default: 0.0
 dependencies:
   - condition:
       type: enum value
