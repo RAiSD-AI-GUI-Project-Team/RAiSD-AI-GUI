@@ -36,7 +36,7 @@ class ParameterGroupList(QObject):
     def __init__(
             self,
             command: str,
-            operations: dict[str, bool] | None,
+            operations: dict[str, bool],
             parameter_groups: list[ParameterGroup] | None = None,
             dependencies: list[Dependency] | None = None,
     ) -> None:
@@ -246,7 +246,7 @@ class ParameterGroupList(QObject):
         return cls("./RAiSD-AI", {'RSD-DEF': False, 'IMG-GEN': True, 'MDL-GEN': True, 'MDL-TST': False, 'SWP-SCN': False}, parameter_groups, dependencies)
 
     @property
-    def operations(self) -> dict[str,bool]:
+    def operations(self) -> dict[str, bool]:
         """
         The active operations of the parameter list.
 
