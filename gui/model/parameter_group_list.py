@@ -108,6 +108,7 @@ class ParameterGroupList(QObject):
             "Browse",
             "Input your files",
             "",
+            ['MDL-GEN'],
             ["vcf", "fasta", "pdf"],
             False,
             True,
@@ -165,7 +166,6 @@ class ParameterGroupList(QObject):
             ParameterGroup(
                 "Input files",
               [dummy_file_selection_param],
-               "-"
             ),
             ParameterGroup(
                 'Grid size',

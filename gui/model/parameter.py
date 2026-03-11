@@ -388,238 +388,6 @@ class StringParameter(Parameter[str]):
         )
 
 
-X = TypeVar("X", bound=float)
-
-
-class NumberParameter(Parameter[X]):
-    """
-    A numeric parameter in the GUI.
-
-    The value of a numeric parameter is valid if it is greater than or equal to the
-    lower bound and lower than or equal to the upper bound, when provided.
-    """
-
-    def __init__(
-            self,
-            name: str, description: str, flag: str,
-            default_value: X,
-            lower_bound: X | None = None,
-            upper_bound: X | None = None,
-    ) -> None:
-        """
-        Initialize a `NumberParameter[X]` object.
-
-        :param name: the name of the parameter
-        :type name: str
-
-        :param description: a longer description of the parameter
-        :type description: str
-
-        :param flag: the command-line flag of the parameter
-        :type flag: str
-
-        :param default_value: the default value of the parameter
-        :type default_value: X
-
-        :param lower_bound: the lower bound of the parameter (optional)
-        :type lower_bound: X | None
-
-        :param upper_bound: the upper bound of the parameter (optional)
-        :type upper_bound: X | None
-        """
-        super().__init__(name, description, flag, default_value)
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-
-    @property
-    def valid(self):
-        if self.lower_bound is not None and self.value < self.lower_bound:
-            return False
-        if self.upper_bound is not None and self.value > self.upper_bound:
-            return False
-        return True
-
-    def to_cli(self) -> str:
-        # A numeric parameter is represented in the command line by
-        # its flag and its value.
-        return f"{self.flag} {self.value}"   
-
-
-class IntParameter(NumberParameter[int]):
-    """
-    An integer parameter in the GUI.
-    """
-
-    value_changed = Signal(int, bool)
-
-    def __str__(self) -> str:
-        return (
-            f'IntParameter('
-            + f'name: "{self.name}", '
-            + f'description: "{self.description})", '
-            + f'lower bound: "{self.lower_bound}", ' 
-            + f'upper bound: "{self.upper_bound}", '
-            + f'value: {self.value}, '
-            + f'valid: {self.valid})'
-        )
-
-
-class FloatParameter(NumberParameter[float]):
-    """
-    A floating-point parameter in the GUI.
-    """
-
-    value_changed = Signal(float, bool)
-
-    def __str__(self) -> str:
-        return (
-            f'FloatParameter('
-            + f'name: "{self.name}", '
-            + f'description: "{self.description})", '
-            + f'lower bound: "{self.lower_bound}", ' 
-            + f'upper bound: "{self.upper_bound}", '
-            + f'value: {self.value}, '
-            + f'valid: {self.valid})'
-        )
-
-
-class EnumParameter(Parameter[int]):
-    """
-    A parameter with enumerated values in the GUI.
-    """
-
-    value_changed = Signal(int, bool)
-
-    def __init__(
-            self,
-            name: str, description: str, flag: str,
-            options: list[tuple[str, str]],
-            default_value: int,
-    ) -> None:
-        """
-        Initialize an `EnumParameter` object.
-
-        The `options` argument is a list of the options offered by the
-        enum parameter. Each option is a 2-tuple where the first element
-        is the name to be displayed to the user, and the second is the
-        form to be used in the command-line representation.
-
-        :param name: the name of the parameter
-        :type name: str
-
-        :param description: a longer description of the parameter
-        :type description: str
-
-        :param flag: the command-line flag of the parameter
-        :type flag: str
-
-        :param options: the options of the parameter
-        :type options: list[tuple[str, str]]
-
-        :param default_value: the index of the default option
-        :type default_value: int
-        """
-        super().__init__(name, description, flag, default_value)
-        self._options = options
-
-    @property
-    def options(self) -> list[str]:
-        return [option[0] for option in self._options]
-
-    @property
-    def option(self) -> str | None:
-        try:
-            return self.options[self.value]
-        except IndexError:
-            return None
-
-    @property
-    def valid(self) -> bool:
-        return self.value in range(len(self.options))
-
-    def to_cli(self) -> str:
-        return f"{self.flag} {self._options[self.value][1]}"
-
-    def __str__(self) -> str:
-        return (
-            "EnumParameter"
-            + f'name: "{self.name}", '
-            + f'description: "{self.description}", '
-            + f'options: {self.options}, '
-            + f'selected option: {self.option})'
-        )
-
-
-class StringParameter(Parameter[str]):
-    """
-    A string parameter in the GUI.
-
-    The parameter may optionally contain a maximum length and/or a
-    regex pattern the input must match.
-
-    The value is considered valid when both of the following hold:
-    - If a maximum length was specified, the value does not exceed it.
-    - If a regex pattern was specified, the value matches it.
-
-    If neither constraint is given, the value is always valid.
-    """
-
-    value_changed = Signal(str, bool)
-
-    def __init__(
-            self,
-            name: str, description: str, flag: str, default_value: str,
-            max_length: int | None = None,
-            pattern: Pattern | None = None,
-    ) -> None:
-        """
-        Initialize a `StringParameter` object.
-
-        :param name: the name of the parameter
-        :type name: str
-
-        :param description: a longer description of the parameter
-        :type description: str
-
-        :param flag: the command-line flag of the parameter
-        :type flag: str
-
-        :param default_value: the default value of the parameter
-        :type default_value: str
-
-        :param max_length: the maximum length of the string (optional)
-        :type max_length: int | None
-
-        :param pattern: the pattern the string must match (optional)
-        :type pattern: Pattern | None
-        """
-        super().__init__(name, description, flag, default_value)
-        self.max_length = max_length
-        self._pattern = pattern
-
-    @property
-    def valid(self) -> bool:
-        if self.max_length is not None and len(self.value) > self.max_length:
-            return False
-        if self._pattern is not None and not self._pattern.fullmatch(self.value):
-            return False
-        return True
-
-    def to_cli(self) -> str:
-        return f"{self.flag} {self.value}"
-
-    def __str__(self) -> str:
-        return (
-            f'String('
-            + f'name: "{self.name}", '
-            + f'description: "{self.description})", '
-            + f'max length: {self.max_length}, '
-            + f'pattern: {self._pattern}, '
-            + f'value: {self.value}, '
-            + f'valid: {self.valid})'
-        )
-
-
 class FileParameter(Parameter[list[str]]):
     """
     A file path parameter in the GUI
@@ -654,6 +422,7 @@ class FileParameter(Parameter[list[str]]):
         name: str,
         description: str,
         flag: str,
+        operations: set[str],
         accepted_formats: list[str] | None = None,
         strict: bool = False,
         multiple: bool = False,
@@ -675,7 +444,13 @@ class FileParameter(Parameter[list[str]]):
             )
             self.accepted_formats = None
         self.multiple = multiple
-        super().__init__(name, description, flag, default_value or [])
+        super().__init__(
+            name,
+            description,
+            flag,
+            operations,
+            default_value or []
+        )
 
     @property
     def valid(self) -> bool:
@@ -719,7 +494,7 @@ class FileParameter(Parameter[list[str]]):
             f'valid: {self.valid})'
         )
 
-    def to_cli(self) -> str:
-        if self.valid:
+    def to_cli(self, operation: str) -> str:
+        if self.in_cli(operation):
             return " ".join(f"{self.flag} {f}" for f in self.value)
         return ""
