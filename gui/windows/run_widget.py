@@ -137,12 +137,32 @@ class RunWidget(QWidget):
         layout.addWidget(parameter_form_scroll)
 
         self.start_execution_button = QPushButton("Submit")
+        self._validity_label = QLabel("")
+        self._validity_label.setStyleSheet("QLabel { color: red; }")
+        layout.addWidget(self._validity_label)
+        self.start_execution_button.setEnabled(self._parameter_group_list.valid)
+        self._update_submit_button_state()
+        for group in self._parameter_group_list.parameter_groups:
+            for parameter in group.parameters:
+                parameter.value_changed.connect(self._update_submit_button_state)
+
         self.start_execution_button.clicked.connect(self._parameter_input_submit_button_clicked)
         layout.addWidget(self.start_execution_button)
 
         check_param_button = QPushButton("Check parameters")
         check_param_button.clicked.connect(self._parameter_input_check_param_button_clicked)
         layout.addWidget(check_param_button)
+
+    def _update_submit_button_state(self) -> None:
+        """
+        Helper function to display the error that makes the submit button inactive
+        """
+        valid = self._parameter_group_list.valid
+        self.start_execution_button.setEnabled(valid)
+        if valid:
+            self._validity_label.setText("")
+        else:
+            self._validity_label.setText("Cannot submit: one or more parameters are invalid.")
 
     def _setup_parameter_confirmation_widget(self, layout: QVBoxLayout) -> None:
         """
