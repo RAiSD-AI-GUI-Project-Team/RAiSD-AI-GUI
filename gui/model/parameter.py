@@ -462,8 +462,10 @@ class FileParameter(Parameter[list[str]]):
             Path(f).is_file()
             and os.access(Path(f), os.R_OK)
             and (self.accepted_formats is None
-                 or Path(f).suffix.lower() in self.accepted_formats
-                 or Path(f).suffix.lower() in self.expected_formats)
+                 or self.accepted_formats
+                 and Path(f).suffix.lower() in self.accepted_formats
+                 or self.expected_formats
+                 and Path(f).suffix.lower() in self.expected_formats)
             for f in self.value)
 
     @property
@@ -479,7 +481,11 @@ class FileParameter(Parameter[list[str]]):
             for f in self.value
         )
 
-    @Parameter.value.setter
+    @property
+    def value(self) -> list[str]:
+        return super().value
+
+    @value.setter
     def value(self, new_value: list[str]) -> None:
         self._value = new_value
         self.value_changed.emit(self.value, self.valid)
