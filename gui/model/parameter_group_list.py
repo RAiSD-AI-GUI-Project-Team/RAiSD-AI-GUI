@@ -1,7 +1,19 @@
+from re import compile
+
 from gui.model.parameter_group import ParameterGroup
 from gui.model.parameter import (
     Parameter,
-    BoolParameter, FileParameter,
+    BoolParameter,
+    IntParameter,
+    FloatParameter,
+    EnumParameter,
+    StringParameter,
+    FileParameter,
+)
+from gui.model.dependency import (
+    Dependency,
+    BoolParameterTrueCondition,
+    ParameterEnabledEffect,
 )
 
 
@@ -17,6 +29,7 @@ class ParameterGroupList():
             self,
             command: str,
             parameter_groups: list[ParameterGroup] | None = None,
+            dependencies: list[Dependency] | None = None
     ) -> None:
         """
         Initialize a `ParameterGroupList` object.
@@ -29,6 +42,7 @@ class ParameterGroupList():
         """
         self.command = command
         self._parameter_groups = parameter_groups or []
+        self._dependencies = dependencies or []
 
     @classmethod
     def from_configuration_file(cls, file_path: str) -> "ParameterGroupList":
@@ -62,13 +76,20 @@ class ParameterGroupList():
             '--print-to-console',
             False,
         )
+        dummy_dependency = Dependency(
+            BoolParameterTrueCondition(
+                dummy_true_bool_param,
+            ),
+            ParameterEnabledEffect(
+                dummy_false_bool_param,
+            ),
+        )
         other_dummy_param = BoolParameter(
             'Use PyTorch',
             'If this is checked, PyTorch will be used instead of TensorFlow',
             '--use-pt',
             True,
         )
-
         dummy_file_selection_param = FileParameter(
             "Browse",
             "Input your files",
@@ -78,7 +99,44 @@ class ParameterGroupList():
             True,
             None
         )
+
         parameter_groups = [
+            ParameterGroup(
+                'Additional options',
+                [
+                    EnumParameter(
+                        'Mode',
+                        'This option determines how fast the program will be.',
+                        '-m',
+                        [
+                            ('Slow', 'slow'),
+                            ('Regular', 'normal'),
+                            ('Fast', 'fast'),
+                            ('Super fast', 'very-fast'),
+                        ],
+                        1,
+                    ),
+                ],
+            ),
+            ParameterGroup(
+                'Personal data',
+                [
+                    StringParameter(
+                        'Your name',
+                        'Enter your first and last name.',
+                        '--name',
+                        '',
+                    ),
+                    StringParameter(
+                        'Phone number',
+                        'Enter your phone number. Ten digits.',
+                        '--phone-number',
+                        '0123456789',
+                        10,
+                        compile(r"^\d{10}$"),
+                    )
+                ],
+            ),
             ParameterGroup(
                 'Image generation',
                 [dummy_true_bool_param, dummy_false_bool_param],
@@ -93,10 +151,76 @@ class ParameterGroupList():
                 "Input files",
               [dummy_file_selection_param],
                "-"
-            )
+            ),
+            ParameterGroup(
+                'Grid size',
+                [
+                    IntParameter(
+                        'Unbounded int',
+                        'This int can take any value.',
+                        '--unbounded-int',
+                        5,
+                    ),
+                    IntParameter(
+                        'Lower bounded int',
+                        'Bla Bla Bla',
+                        '--lowerbounded-int',
+                        6,
+                        5,
+                    ),
+                    IntParameter(
+                        'Upper bounded int',
+                        'Bla Bla Bla',
+                        '--upperbounded-int',
+                        6,
+                        upper_bound = 50,
+                    ),                   
+                    IntParameter(
+                        'Bounded int',
+                        'This int can take any value.',
+                        '--bounded-int',
+                        5,
+                        1,
+                        10000,
+                    ),
+                ],
+            ),
+            ParameterGroup(
+                'Power size',
+                [
+                    FloatParameter(
+                        'Unbounded float',
+                        'This float can take any value.',
+                        '--unbounded-float',
+                        8.5,
+                    ),
+                    FloatParameter(
+                        'Lower bounded float',
+                        'Bla Bla Bla',
+                        '--lowerbounded-float',
+                        6.6,
+                        5.0,
+                    ),
+                    FloatParameter(
+                        'Upper bounded float',
+                        'Bla Bla Bla',
+                        '--upperbounded-float',
+                        6.9,
+                        upper_bound = 50.0,
+                    ),                   
+                    FloatParameter(
+                        'Bounded float',
+                        'This float can take any value.',
+                        '--bounded-float',
+                        5,
+                        1.67,
+                        10000,
+                    ),
+                ],
+            ),
         ]
-
-        return cls("./RAiSD-AI", parameter_groups)
+        dependencies = [dummy_dependency]
+        return cls("./RAiSD-AI", parameter_groups, dependencies)
 
     @property
     def parameter_groups(self) -> list[ParameterGroup]:
