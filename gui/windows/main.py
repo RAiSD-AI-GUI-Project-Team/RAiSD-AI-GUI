@@ -67,6 +67,7 @@ class MainWindow(QMainWindow):
         run_button = QPushButton()
         run_button.clicked.connect(self._run_button_clicked)
         run_button.setObjectName("run_button")
+        run_button.setProperty("state", "active")
         run_button.setFixedSize(40, 40)
         layout.addWidget(run_button)
 
