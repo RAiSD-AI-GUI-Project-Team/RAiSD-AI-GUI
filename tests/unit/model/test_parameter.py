@@ -12,6 +12,7 @@ class TestBoolParameter:
             name="testbool", 
             description="Test bool parameter", 
             flag="--testbool", 
+            operations={'IMG-GEN', 'MDL-GEN'},
             default_value=False
         )
 
@@ -21,6 +22,7 @@ class TestBoolParameter:
         assert param.name == "testbool"
         assert param.description == "Test bool parameter"
         assert param.flag == "--testbool"
+        assert param.operations == {'IMG-GEN', 'MDL-GEN'}
         assert param.value is False
         assert param.default_value is False
 
@@ -45,9 +47,13 @@ class TestBoolParameter:
     def test_to_cli(self):
         """Test BoolParameter command-line representation."""
         param = self.bool_param
-        assert param.to_cli() == ""
+        assert param.to_cli('IMG-GEN') == ""
         param.value = True
-        assert param.to_cli() == param.flag
+        assert param.to_cli('SWP-SCN') == ""
+        assert param.to_cli('IMG-GEN') == param.flag
+        assert param.to_cli('MDL-GEN') == param.flag
+        param.enabled = False
+        assert param.to_cli('IMG-GEN') == ""
 
     def test_value_changed_signal_emitted(self):
         """Test that value_changed signal is emitted when BoolParameter value changes."""
