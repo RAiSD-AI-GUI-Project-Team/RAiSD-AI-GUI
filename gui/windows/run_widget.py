@@ -63,7 +63,6 @@ class RunWidget(QWidget):
         self.stacked_step_widget_layout = QStackedLayout(stacked_step_widget)
         layout.addWidget(stacked_step_widget, 1)
         self._setup_stacked_step_widget(self.stacked_step_widget_layout)
-        
 
     def _setup_step_button_bar(self, layout:QHBoxLayout):
         """
@@ -206,7 +205,6 @@ class OperationSelectionWidget(RunSubWidget):
         return QWidget()
         # TODO: Implement
         # raise NotImplementedError
-
 
 class ParameterInputWidget(RunSubWidget):
 
@@ -538,9 +536,7 @@ class RunViewWidget(RunSubWidget):
         """
         self.set_execution_view_indicator(index, "green")
     
-    
 class RunResultsWidget(RunSubWidget):
-    
     def __init__(self):
         super().__init__()
 
