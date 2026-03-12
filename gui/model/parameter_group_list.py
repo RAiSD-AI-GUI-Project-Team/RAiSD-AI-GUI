@@ -105,11 +105,9 @@ class ParameterGroupList(QObject):
 
             description = obj.get("description", "") or ""
 
-            parameter_type: str
-            if "type" in obj:
-                parameter_type = obj["type"]
-            else:
+            if "type" not in obj:
                 raise ValueError("Parameter type missing.")
+            parameter_type = obj["type"]
 
             flag = obj.get("cli", "") or ""
 
@@ -127,10 +125,12 @@ class ParameterGroupList(QObject):
 
             match parameter_type:
                 case "int":
-                    if "default" in obj:
-                        default_value = obj["default"]
-                    else:
-                        raise ValueError(f"No default value provided for int parameter {name}")
+                    if "default" not in obj:
+                        raise ValueError(
+                            "No default value provided "
+                            + f"for int parameter {name}."
+                        )
+                    default_value = obj["default"]
 
                     lower_bound = obj.get("min", None)
                     upper_bound = obj.get("max", None)
@@ -145,10 +145,12 @@ class ParameterGroupList(QObject):
                         upper_bound=upper_bound
                     )
                 case "float":
-                    if "default" in obj:
-                        default_value = obj["default"]
-                    else:
-                        raise ValueError(f"No default value provided for int parameter {name}")
+                    if "default" not in obj:
+                        raise ValueError(
+                            "No default value provided "
+                            + f"for float parameter {name}"
+                        )
+                    default_value = obj["default"]
 
                     lower_bound = obj.get("min", None)
                     upper_bound = obj.get("max", None)
@@ -163,10 +165,12 @@ class ParameterGroupList(QObject):
                         upper_bound=upper_bound
                     )
                 case "bool":
-                    if "default" in obj:
-                        default_value = obj["default"]
-                    else:
-                        raise ValueError(f"No default value provided for bool parameter {name}")
+                    if "default" not in obj:
+                        raise ValueError(
+                            "No default value provided "
+                            + f"for bool parameter {name}."
+                        )
+                    default_value = obj["default"]
                     
                     parameter = BoolParameter(
                         name,
@@ -176,21 +180,24 @@ class ParameterGroupList(QObject):
                         default_value,
                     )
                 case "enum":
+                    options: list[tuple[str, str]] = []
                     options_list = obj.get("options", [])
-                    options: list[tuple[str, str]]
-                    options = []
-                    for option in options_list:
-                        if "name" in option:
-                            option_name = option.get("name", "") or ""
-                        else:
-                            raise ValueError(f"An enum option does not have a name for enum parameter {name}")
-                        cli = option.get("cli", "") or ""
+                    for option_obj in options_list:
+                        if "name" not in option_obj:
+                            raise ValueError(
+                                "An enum option does not have a name "
+                                + f"for enum parameter {name}."
+                            )
+                        option_name = option_obj["name"]
+                        cli = option_obj.get("cli", "") or ""
                         options.append((option_name, cli))
 
-                    if "default" in obj:
-                        default_value = obj["default"]
-                    else:
-                        raise ValueError(f"No default value provided for enum parameter {name}")
+                    if "default" not in obj:
+                        raise ValueError(
+                            "No default value provided "
+                            + f"for enum parameter {name}."
+                        )
+                    default_value = obj["default"]
                     
                     parameter = EnumParameter(
                         name,
@@ -220,12 +227,18 @@ class ParameterGroupList(QObject):
                         compiled_pattern,
                     )
                 case "optional":
-                    if "default" in obj:
-                        default_value = obj["default"]
-                    else:
-                        raise ValueError(f"No default value provided for default parameter {name}")
-                    
-                    inner_parameter = parse_parameter(obj.get("parameter", {}), operations)
+                    default_value = obj.get("default", False)
+
+                    if "parameter" not in obj:
+                        raise ValueError(
+                            "Inner parameter not provided "
+                            + f"for optional parameter {name}."
+                        )
+                    inner_parameter = parse_parameter(
+                        obj["parameter"],
+                        operations,
+                    )
+
                     parameter = OptionalParameter(
                         name,
                         description,
@@ -234,10 +247,20 @@ class ParameterGroupList(QObject):
                         inner_parameter,
                     )
                 case "multi":
-                    parameters_list = obj.get("parameters", []) or []
+                    if "parameters" not in obj:
+                        raise ValueError(
+                            f"Inner parameters not provided "
+                            + f"for mult-value parameter {name}."
+                        )
+                    parameters_list = obj["parameters"]
                     inner_parameters: list[Parameter[Any]] = []
                     for inner_parameter_obj in parameters_list:
-                        inner_parameters.append(parse_parameter(inner_parameter_obj, operations))
+                        inner_parameters.append(
+                            parse_parameter(
+                                inner_parameter_obj,
+                                operations,
+                            ),
+                        )
 
                     parameter = MultiParameter(
                         name,
@@ -247,11 +270,11 @@ class ParameterGroupList(QObject):
                     )
                 case _:
                     raise ValueError(
-                        f"Invalid parameter definition for parameter {name} in configuration file (type: {parameter_type})."
+                        f"Invalid parameter definition for parameter {name} "
+                        + f"in configuration file (type: {parameter_type})."
                     )
 
             condition_objs = obj.get("conditions", [])
-
             parameter_to_condition_objs[parameter] = condition_objs
 
             return parameter
