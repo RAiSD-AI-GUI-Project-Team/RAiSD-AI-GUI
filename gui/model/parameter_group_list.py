@@ -65,21 +65,22 @@ class ParameterGroupList(QObject):
                 self,
                 parameter_group_list: "ParameterGroupList",
                 operation: str,
+                target_value: bool = True,
                 parent: QObject | None = None,
         ) -> None:
             super().__init__(
-                # TODO: no more private access
-                value=operation in parameter_group_list._operations,
+                value=parameter_group_list.operations[operation]==target_value,
                 parent=parent,
             )
             self._parameter_group_list = parameter_group_list
             self._operation = operation
+            self._target_value = target_value
 
             self._parameter_group_list.operations_changed.connect(self._operations_changed)
 
         @Slot()
         def _operations_changed(self) -> None:
-            self.value = self._parameter_group_list._operations[self._operation]
+            self.value = self._parameter_group_list.operations[self._operation] == self._target_value
 
 
     @classmethod
@@ -279,7 +280,7 @@ class ParameterGroupList(QObject):
                             cls.OperationEnabledCondition(
                             result,
                             operation,
-                            result,
+                            parent=result,
                         )
                     )
                 Dependency(
