@@ -23,8 +23,6 @@ from gui.model.parameter import (
 from gui.model.dependency import (
     Dependency,
     OrCondition,
-    BoolParameterTrueCondition,
-    ParameterEnabledEffect,
 )
 
 
@@ -285,7 +283,7 @@ class ParameterGroupList(QObject):
                     )
                 Dependency(
                     OrCondition(dependencies),
-                    ParameterEnabledEffect(param),
+                    Parameter.EnabledEffect(param),
                     result,
                 )
 

@@ -8,7 +8,6 @@ from PySide6.QtCore import (
 )
 
 from gui.model.meta import AbstractQObjectMeta
-from gui.model.parameter import Parameter
 
 
 class Dependency(QObject):
@@ -67,37 +66,3 @@ class OrCondition(Dependency.Condition):
     @Slot(bool)
     def _condition_changed(self, _: bool) -> None:
         self.value = any([condition.value for condition in self._conditions])
-
-
-class BoolParameterTrueCondition(Dependency.Condition):
-    def __init__(
-            self,
-            parameter: Parameter[bool],
-            parent: QObject | None = None,
-    ) -> None:
-        super().__init__(value=parameter.value, parent=parent)
-        self._parameter = parameter
-
-        self._parameter.value_changed.connect(self._parameter_value_changed)
-
-    @Slot(bool, bool)
-    def _parameter_value_changed(
-        self,
-        new_value: bool,
-        _: bool,
-    ) -> None:
-        self.changed.emit(new_value)
-
-
-class ParameterEnabledEffect(Dependency.Effect):
-    def __init__(
-            self,
-            parameter: Parameter[Any],
-            parent: QObject | None = None,
-    ) -> None:
-        super().__init__(parent=parent)
-        self._parameter = parameter
-        
-
-    def condition_changed(self, new_value: bool) -> None:
-        self._parameter.enabled = new_value

@@ -11,6 +11,7 @@ from PySide6.QtCore import (
 )
 
 from gui.model.meta import AbstractQObjectMeta
+from gui.model.dependency import Dependency
 
 T = TypeVar("T")
 
@@ -23,6 +24,18 @@ class Parameter(ABC, QObject, Generic[T], metaclass=AbstractQObjectMeta):
     to use the signal mechanism and from `Generic` to add type hints
     based on the type of value that the parameter stores.
     """
+
+    class EnabledEffect(Dependency.Effect):
+        def __init__(
+                self,
+                parameter: "Parameter[Any]",
+                parent: QObject | None = None,
+        ) -> None:
+            super().__init__(parent=parent)
+            self._parameter = parameter
+
+        def condition_changed(self, new_value: bool) -> None:
+            self._parameter.enabled = new_value
 
     value_changed: Signal
     enabled_changed = Signal(bool)
@@ -220,6 +233,29 @@ class BoolParameter(Parameter[bool]):
 
     The value of a boolean parameter is always valid.
     """
+
+    class Condition(Dependency.Condition):
+        def __init__(
+                self,
+                parameter: "BoolParameter",
+                target_value: bool = True,
+                parent: QObject | None = None,
+        ) -> None:
+            super().__init__(
+                value=parameter.value==target_value,
+                parent=parent)
+            self._parameter = parameter
+            self._target_value = target_value
+
+            self._parameter.value_changed.connect(self._parameter_value_changed)
+
+        @Slot(bool, bool)
+        def _parameter_value_changed(
+            self,
+            new_value: bool,
+            _: bool,
+        ) -> None:
+            self.value = new_value == self._target_value
 
     value_changed = Signal(bool, bool)
 
