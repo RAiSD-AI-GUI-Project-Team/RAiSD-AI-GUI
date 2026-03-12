@@ -117,7 +117,7 @@ class RunWidget(QWidget):
         layout.addWidget(self.run_view_widget)
 
         # Results widget
-        self.run_results_widget = RunResultsWidget()
+        self.run_results_widget = RunResultsWidget(self._parameter_group_list)
         layout.addWidget(self.run_results_widget)
 
     # ---------- step button bar switch methods ----------
@@ -537,8 +537,9 @@ class RunViewWidget(RunSubWidget):
         self.set_execution_view_indicator(index, "green")
     
 class RunResultsWidget(RunSubWidget):
-    def __init__(self):
+    def __init__(self, parameter_group_list: ParameterGroupList):
         super().__init__()
+        self._parameter_group_list = parameter_group_list
 
     def _setup_widget(self) -> QWidget:
         widget = QWidget()
