@@ -235,12 +235,29 @@ class BoolParameter(Parameter[bool]):
     """
 
     class Condition(Dependency.Condition):
+        """
+        A condition that tracks whether a bool parameter has a given
+        value.
+        """
+
         def __init__(
                 self,
                 parameter: "BoolParameter",
                 target_value: bool = True,
                 parent: QObject | None = None,
         ) -> None:
+            """
+            Initialize a `BoolParameter.Condition` object.
+
+            :param parameter: the bool parameter to track
+            :type parameter: BoolParameter
+
+            :param target_value: the target value of the bool parameter
+            :type target_value: bool
+
+            :param parent: the parent of this `QObject`
+            :type parent: QObject | None
+            """
             super().__init__(
                 value=parameter.value==target_value,
                 parent=parent)
@@ -383,12 +400,29 @@ class EnumParameter(Parameter[int]):
     """
 
     class Condition(Dependency.Condition):
+        """
+        A condition that tracks whether an enum parameter's value is in
+        a given set of values.
+        """
+
         def __init__(
                 self,
                 parameter: "EnumParameter",
                 target_values: list[int],
                 parent: QObject | None = None,
         ) -> None:
+            """
+            Initialize an `EnumParameter.Condition` object.
+
+            :param parameter: the enum parameter to track
+            :type parameter: EnumParameter
+
+            :param target_values: the set of target values
+            :type target_values: list[int]
+
+            :param parent: the parent of this `QObject`
+            :type parent: QObject | None
+            """
             self._parameter = parameter
             self._target_values = target_values
             super().__init__(
