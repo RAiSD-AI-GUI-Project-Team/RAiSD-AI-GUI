@@ -1,6 +1,8 @@
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout
 
 from PySide6.QtCore import Signal, Slot
+from PySide6.QtGui import QPainter
+from PySide6.QtWidgets import QStyle, QStyleOption
 
 from gui.model.parameter_group import ParameterGroup
 from gui.widgets.parameter_widget import ParameterWidget
@@ -29,6 +31,7 @@ class ParameterFormSection(QWidget):
         :type parameter_group: ParameterGroup
         """
         super().__init__()
+        self.setObjectName("parameter_form_section")
 
         self._parameter_group = parameter_group
         self._parameter_group.enabled_changed.connect(self._parameter_group_enabled_changed)
@@ -42,7 +45,6 @@ class ParameterFormSection(QWidget):
         for parameter in parameter_group.parameters:
             form_row = ParameterWidget.from_parameter(parameter)
             form_layout.addWidget(form_row)
-
         layout = QVBoxLayout(self)
         layout.addWidget(heading)
         layout.addWidget(form_body)
@@ -53,14 +55,24 @@ class ParameterFormSection(QWidget):
         The ParameterGroup of the ParameterFormSection.
         """
         return self._parameter_group
-    
+
     @Slot(bool)
     def _parameter_group_enabled_changed(self, new_value: bool) -> None:
         """
         Handle an enabled_changed from the ParameterGroup by setting 
         visibility accordingly.
-        
+
         :new_value param: the new value of enabled of the ParameterGroup
         :new_value type: bool
         """
         self.setVisible(new_value)
+
+    def paintEvent(self, event) -> None:
+        """
+        Override paintEvent so that QSS styling (background, border, 
+        etc.) is applied to this plain QWidget subclass.
+        """
+        opt = QStyleOption()
+        opt.initFrom(self)
+        painter = QPainter(self)
+        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, painter, self)

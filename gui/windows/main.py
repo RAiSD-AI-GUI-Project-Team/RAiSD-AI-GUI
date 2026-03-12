@@ -40,11 +40,13 @@ class MainWindow(QMainWindow):
     def _setup_ui(self):
         self.setWindowTitle("RAiSD-AI-GUI")
         central_widget = QWidget()
+        central_widget.setObjectName("central_widget")
         central_layout = QHBoxLayout(central_widget)
         self.setCentralWidget(central_widget)
 
         # Left sidebar
         left_sidebar = QWidget()
+        left_sidebar.setObjectName("left_sidebar")
         left_sidebar_layout = QVBoxLayout(left_sidebar)
         central_layout.addWidget(left_sidebar)
         self._setup_left_sidebar(left_sidebar_layout)
@@ -58,27 +60,27 @@ class MainWindow(QMainWindow):
     def _setup_left_sidebar(self, layout: QVBoxLayout):
         logo_widget = QWidget()
         logo_widget.setFixedSize(40, 40)
-        logo_widget.setStyleSheet("background-color: lightgray;")
+        logo_widget.setObjectName("logo_widget")
         layout.addWidget(logo_widget)
 
         # Run Button
         run_button = QPushButton()
         run_button.clicked.connect(self._run_button_clicked)
-        run_button.setStyleSheet("background-color: lightblue;")
+        run_button.setObjectName("run_button")
         run_button.setFixedSize(40, 40)
         layout.addWidget(run_button)
 
         # History Button
         history_button = QPushButton()
         history_button.clicked.connect(self._history_button_clicked)
-        history_button.setStyleSheet("background-color: lightgreen;")
+        history_button.setObjectName("history_button")
         history_button.setFixedSize(40, 40)
         layout.addWidget(history_button)
 
         # Settings Button
         settings_button = QPushButton()
         settings_button.clicked.connect(self._settings_button_clicked)
-        settings_button.setStyleSheet("background-color: lightyellow;")
+        settings_button.setObjectName("settings_button")
         settings_button.setFixedSize(40, 40)
         layout.addWidget(settings_button)
 
