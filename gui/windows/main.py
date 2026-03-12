@@ -84,7 +84,23 @@ class MainWindow(QMainWindow):
         settings_button.setFixedSize(40, 40)
         layout.addWidget(settings_button)
 
+        self._buttons = [
+            run_button,
+            history_button,
+            settings_button
+        ]
+
         layout.addStretch()
+
+    def _set_active_view(self, active_index: int) -> None:
+        for i, button in enumerate(self._buttons):
+            if i == active_index:
+                state = "active"
+            else:
+                state = "default"
+            button.setProperty("state", state)
+            button.style().unpolish(button)  # Required to apply styling dynamically
+            button.style().polish(button)
 
     def _setup_main_widget(self, layout: QStackedLayout):
         self.run_widget = RunWidget(self._parameter_group_list, self.command_executor)
@@ -98,14 +114,17 @@ class MainWindow(QMainWindow):
     @Slot()
     def _run_button_clicked(self) -> None:
         self.main_widget_layout.setCurrentWidget(self.run_widget)
+        self._set_active_view(0)
 
     @Slot()
     def _history_button_clicked(self) -> None:
         self.main_widget_layout.setCurrentWidget(self.history_widget)
+        self._set_active_view(1)
 
     @Slot()
     def _settings_button_clicked(self) -> None:
         self.main_widget_layout.setCurrentWidget(self.settings_widget)
+        self._set_active_view(2)
 
     
 

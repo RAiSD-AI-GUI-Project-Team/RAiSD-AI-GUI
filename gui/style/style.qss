@@ -19,6 +19,16 @@ QPushButton#settings_button{ /* Not possible to change color apparently */
     border-image: url("gui/style/resources/settings_icon.svg") 0 0 0 0 stretch stretch;
 }
 
+QPushButton#run_button[state="active"]{
+    border-image: url("gui/style/resources/run_icon_active.svg") 0 0 0 0 stretch stretch;
+}
+QPushButton#history_button[state="active"]{
+    border-image: url("gui/style/resources/history_icon_active.svg") 0 0 0 0 stretch stretch;
+}
+QPushButton#settings_button[state="active"]{
+    border-image: url("gui/style/resources/settings_icon_active.svg") 0 0 0 0 stretch stretch;
+}
+
 /* PARAMETER INPUT VIEW */
 QWidget#parameter_input_widget{
     background-color: #d7dbe9;
@@ -54,7 +64,7 @@ QWidget#parameter_form_section{
 
 /* STEP BUTTON BAR */
 QWidget#step_button_bar QPushButton{
-    padding: 20px 10px;
+    padding: 10px 20px;
     background-color: white;
     color: #9a9a9a;
     border: 2px solid #9a9a9a;
