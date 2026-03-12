@@ -88,7 +88,7 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         super().__init__()
         self._parameter = parameter
 
-    def _check_validity(self, widget: QWidget, valid: bool) -> None:
+    def _show_validity(self, widget: QWidget, valid: bool) -> None:
         if valid:
             widget.setStyleSheet("QLineEdit { border: 1px solid green; }")
         else:
@@ -250,7 +250,7 @@ class IntParameterWidget(ParameterWidget):
     @Slot(int, bool)
     def _parameter_value_changed(self, new_value: int, valid: bool) -> None:
         self._line_edit.setText(str(new_value))
-        self._check_validity(self._line_edit, valid)
+        self._show_validity(self._line_edit, valid)
 
 class FloatParameterWidget(ParameterWidget):
     """
@@ -304,7 +304,7 @@ class FloatParameterWidget(ParameterWidget):
     @Slot(float, bool)
     def _parameter_value_changed(self, new_value: float, valid: bool) -> None:
         self._line_edit.setText(str(new_value))
-        self._check_validity(self._line_edit, valid)
+        self._show_validity(self._line_edit, valid)
 
 
 
@@ -381,7 +381,7 @@ class StringParameterWidget(ParameterWidget):
     @Slot(str, bool)
     def _parameter_value_changed(self, new_value: str, valid: bool) -> None:
         self._line_edit.setText(new_value)
-        self._check_validity(self._line_edit, valid)
+        self._show_validity(self._line_edit, valid)
         if valid: # Styling can be changed in the future
             self._line_edit.setStyleSheet("QLineEdit { border: 1px solid green; }")
         else:
