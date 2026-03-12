@@ -272,17 +272,18 @@ class ParameterGroupList(QObject):
 
         for group in result.parameter_groups:
             for param in group.parameters:
-                dependencies = []
+                single_operation_conditions = []
                 for operation in param.operations:
-                    dependencies.append(
+                    single_operation_conditions.append(
                             cls.OperationEnabledCondition(
                             result,
                             operation,
                             parent=result,
                         )
                     )
+                operation_condition = OrCondition(single_operation_conditions)
                 Dependency(
-                    OrCondition(dependencies),
+                    operation_condition,
                     Parameter.EnabledEffect(param),
                     result,
                 )
