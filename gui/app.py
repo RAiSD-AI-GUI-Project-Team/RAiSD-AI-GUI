@@ -8,7 +8,7 @@ from gui.windows.main import MainWindow
 
 def main():
     app = QApplication(sys.argv)
-    with open("/home/taylankincir/RAiSD-AI-GUI/gui/style/style.qss", "r") as f:
+    with open("gui/style/style.qss", "r") as f:
         style = f.read()
     app.setStyleSheet(style)
 
