@@ -339,6 +339,49 @@ class ParameterGroupList(QObject):
                         max_length,
                         compiled_pattern,
                     )
+                case "file":
+                    accepted_formats = obj.get("formats", []) or []
+                    if not isinstance(accepted_formats, list):
+                        raise ValueError(
+                            "Invalid list of file formats for file parameter "
+                            + f"{name}: {accepted_formats}. Expected list or "
+                            + "null."
+                        )
+                    for format in accepted_formats:
+                        if not isinstance(format, str):
+                            raise ValueError(
+                                "Invalid accepted format for file parameter "
+                                + f"{name}: {format}. Expected string."
+                            )
+
+                    strict = obj.get("strict", False)
+                    if not isinstance(strict, bool):
+                        raise ValueError(
+                            "Invalid strict property for file parameter "
+                            + f"{name}: {strict}. Expected bool or null."
+                        )
+                    if strict and not accepted_formats:
+                        raise ValueError(
+                            f"Strict file parameter {name} has no accepted "
+                            + "file formats."
+                        )
+
+                    multiple = obj.get("multiple", False)
+                    if not isinstance(multiple, bool):
+                        raise ValueError(
+                            "Invalid multiple property for file parameter "
+                            + f"{name}: {multiple}. Expected bool or null."
+                        )
+
+                    parameter = FileParameter(
+                        name,
+                        description,
+                        flag,
+                        operations,
+                        accepted_formats,
+                        strict,
+                        multiple,
+                    )
                 case "optional":
                     default_value = obj.get("default", False)
                     if not isinstance(default_value, bool):
