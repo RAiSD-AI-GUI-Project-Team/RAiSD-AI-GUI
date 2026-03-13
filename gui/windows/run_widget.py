@@ -550,7 +550,13 @@ class RunResultsWidget(RunSubWidget):
         layout.addWidget(parameter_confirmation_label)
 
         results_widget = ResultsWidget(self._parameter_group_list)
-        layout.addWidget(results_widget, 1)
+
+        results_scroll = QScrollArea()
+        results_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        results_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        results_scroll.setWidgetResizable(True)
+        results_scroll.setWidget(results_widget )
+        layout.addWidget(results_scroll, 1)
         return widget
 
     def _setup_navigation_buttons(self) -> QWidget:
