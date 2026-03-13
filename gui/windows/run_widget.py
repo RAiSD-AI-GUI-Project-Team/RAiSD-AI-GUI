@@ -224,7 +224,7 @@ class ParameterInputWidget(RunSubWidget):
         parameter_input_label = QLabel("Parameter Input")
         layout.addWidget(parameter_input_label)
 
-        ## Add checkbox for imgage gen selection
+        ## Add checkbox for image gen selection
         mode_select_widget = QWidget()
         mode_select_layout = QHBoxLayout(mode_select_widget)
         layout.addWidget(mode_select_widget)
@@ -247,11 +247,12 @@ class ParameterInputWidget(RunSubWidget):
         parameter_form_scroll.setWidget(parameter_form)
         layout.addWidget(parameter_form_scroll)
 
-        self.submit_button = QPushButton("Submit")
         self._validity_label = QLabel("")
         self._validity_label.setStyleSheet("QLabel { color: red; }")
         layout.addWidget(self._validity_label)
-        self.submit_button.setEnabled(self._parameter_group_list.valid)
+
+        self.submit_button = QPushButton("Submit")
+      #  self.submit_button.setEnabled(self._parameter_group_list.valid)
         self._update_submit_button_state()
         for group in self._parameter_group_list.parameter_groups:
             for parameter in group.parameters:
