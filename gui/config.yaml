@@ -261,6 +261,9 @@ parameter_groups:
       - SWP-SCN
     parameters:
       "-w":
+        operations:
+          remove:
+            -IMG-GEN
         name: Window size
         description: The window size. The default value is empirically determined.
         cli: -w
@@ -576,6 +579,99 @@ parameter_groups:
           type: int
           min: 1
           default: 8
+  - name: Common outlier analysis
+    operations:
+      - CO
+      - RSD-DEF
+      - SWP-SCN
+    parameters:
+      "-CO":
+        operations:
+          remove:
+            - CO
+        name: Perform common outlier analysis
+        description: Do stuff #
+        type: optional
+        default: false
+        parameter:
+          name: Options
+          description: options for CO #
+          type: multi
+          parameters:
+          - name: SweeD report
+            description: The SweeD report file. The report must not contain a header.
+            type: file
+          - name: SweeD position index # ?
+            description: The column indices for positions.
+            default: 0 #Probably wrong
+            type: int
+          - name: SweeD score index # ?
+            description: The SweeD scores.
+            type: int
+            default: 0 #Probably wrong
+      "-CO-already-run": # This is wrong
+        operations:
+          remove:
+          - RSD-DEF
+          - SWP-SCN   
+        name: Common outlier analysis options 
+        description: options for CO # TO DO
+        type: multi
+        parameters:
+          - name: SweeD report
+            description: The SweeD report file. The report must not contain a header.
+            type: file
+          - name: SweeD position index # ?
+            description: The column indices for positions.
+            type: int
+            min: 1
+          - name: SweeD score index # ?
+            description: The SweeD scores.
+            type: int
+            min: 1
+            #position index != score index
+          - name: RAiSD report
+            description: The RAiSD report to be used for common outlier analysis. The report must not contain a header.
+            type: file
+          - name: RAiSD position index #Are these the same as the ones above?
+            description: The position index for the RAiSD report. 
+            type: int
+          - name: RAiSD column index
+            description: The index of the column you want to use, depending on the RAiSD report. To use the mu-statistic, set X=2 if RAiSD was invoked with the default parameters, or set Y=7 if -R was explicitly provided or implicitly activated through some other command-line parameter.
+            type: int
+      "-COT":
+        name: Cut-off threshold
+        description: The cut-off threshold for identifying top outliers per report.
+        cli: "-COT"
+        type: float
+        min: 0.0
+        max: 1.0
+        default: 0.05
+        conditions:
+          - type: or
+            conditions:
+              - type: enabled
+                parameter: -CO
+                value: true
+              - type: enabled
+                parameter: -CO-already-run
+                value: true
+      "-COD": # typically 100-400
+        name: Maximum distance
+        description: Provides the maximum distance (in number of sites) between outlier points in th eprovided reports to identify matching outlier positions reported by RAiSD and SweeD. Based on the accuracy of the implemented methods in SweeD and RAiSD, typically between 100 and 400.
+        cli: "-COD"
+        type: int
+        min: 0
+        default: 1
+        conditions:
+          - type: or
+            conditions:
+              - type: enabled
+                parameter: -CO
+                value: true
+              - type: enabled
+                parameter: -CO-already-run
+                value: true
   - name: RAiSD-AI data generation
     operations:
       - IMG-GEN
@@ -586,3 +682,16 @@ parameter_groups:
         cli: "-icl"
         type: str
         pattern: ".+"
+      "-its":
+        name: Image target site
+        description: The target site position for generating images, corresponding to the center of the first generated image. Should be smaller than region length
+        cli: "-its"
+        type: int
+        min: 1
+        # max: < region_length
+        default: 1
+      "-poc": 
+        name: Construct position-centered windows
+        description: Changes the data-generation mode from using SNP-driven windows to constructing position-centered windows. When SNP-driven windows are used, the SNP located to the image target site position becomes the central SNP in the window and an equal number of SNPs are placed on both sides. When position-centered windows are used, the image target site position is (as close as possible to) the midpoint between the leftmost and rightmost SNPs per window.
+        type: bool
+        default: false
