@@ -386,7 +386,7 @@ class ParameterGroupList(QObject):
                         multiple,
                     )
                 case "optional":
-                    default_value = obj.get("default", False)
+                    default_value = obj.get("default", False) or False
                     if not isinstance(default_value, bool):
                         raise ValueError(
                             "Invalid default value for optional parameter "
