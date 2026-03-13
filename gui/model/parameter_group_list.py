@@ -475,13 +475,9 @@ class ParameterGroupList(QObject):
 
             parameters: list[Parameter[Any]] = []
             for parameter_id, parameter_obj in obj["parameters"].items():
-                try:
-                    parameter = parse_parameter(parameter_obj, set(operations))
-                    parameters.append(parameter)
-                    id_to_parameter[parameter_id] = parameter
-
-                except ValueError as e:
-                    print(e) # This should not be ignored in the final code
+                parameter = parse_parameter(parameter_obj, set(operations))
+                parameters.append(parameter)
+                id_to_parameter[parameter_id] = parameter
             return ParameterGroup(name, parameters)
 
         def parse_condition(obj: dict) -> Dependency.Condition:
