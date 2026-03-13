@@ -19,11 +19,11 @@ class CommandExecutor(QObject):
     err_output = Signal(str)                        # line of stderr output
     execution_started = Signal(int)                 # number of processes to run
     execution_finished = Signal()   
-    execution_failed = Signal(int)                  # exit_code
+    execution_failed = Signal(int, QProcess.ProcessError)   # exit_code, process_error
     execution_stopped = Signal()
     process_started = Signal(int)                   # process_index
     process_finished = Signal(int)                  # process_index
-    process_failed = Signal(int, QProcess.ProcessError)  # process_index, process_error
+    process_failed = Signal(int, QProcess.ProcessError)     # process_index, process_error
     process_stopped = Signal(int)                   # process_index
 
     def __init__(self):
@@ -114,7 +114,7 @@ class CommandExecutor(QObject):
         Emits `error_occurred` with the error message.
         """
         self.process_failed.emit(self.get_process_index(), process_error)
-        self.execution_failed.emit(1) # general error exit code
+        self.execution_failed.emit(1, process_error) # general error exit code + process_error
 
     @Slot()
     def _process_finished(self, exit_code:int, exit_status:QProcess.ExitStatus) -> None:
@@ -135,7 +135,7 @@ class CommandExecutor(QObject):
                 self.execution_stopped.emit()
             else:
                 self.process_failed.emit(self.get_process_index(), None)
-                self.execution_failed.emit(exit_code)
+                self.execution_failed.emit(exit_code, None)
 
     @Slot()
     def _read_output(self) -> None:

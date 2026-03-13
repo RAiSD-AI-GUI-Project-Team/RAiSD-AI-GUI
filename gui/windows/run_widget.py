@@ -492,16 +492,18 @@ class RunViewWidget(RunSubWidget):
         print("Execution finished")
         self.run_ended.emit(True)
 
-    @Slot(int)
-    def _execution_failed(self, exit_code: int) -> None:
+    @Slot(int, QProcess.ProcessError)
+    def _execution_failed(self, exit_code: int, process_error: QProcess.ProcessError) -> None:
         """
         Handle CommandExecutor.execution_failed.
         """
         print(f"Execution failed with exit code '{exit_code}'")
-        self.run_ended.emit(False)
-        self.execution_output.append(f"Execution failed with exit code '{exit_code}'")
-        self.execution_error_dialog = ErrorDialog(self, f"Execution Failed ({exit_code})", f"Execution failed with exit code '{exit_code}'")
-        self.execution_error_dialog.exec()
+
+        if process_error is None: # otherwise _process_failed will show an error dialog:
+            self.run_ended.emit(False)
+            self.execution_output.append(f"Execution failed with exit code '{exit_code}'")
+            self.execution_error_dialog = ErrorDialog(self, f"Execution Failed ({exit_code})", f"Execution failed with exit code '{exit_code}'")
+            self.execution_error_dialog.exec()
     
     @Slot()
     def _execution_stopped(self) -> None:
