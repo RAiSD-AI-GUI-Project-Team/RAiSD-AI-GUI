@@ -36,20 +36,32 @@ class ResultsWidget(QWidget):
         # Summary widget
         results_summary_body = QWidget()
         results_summary_layout = QVBoxLayout(results_summary_body)
-        results_summary_layout.addWidget(QLabel("This run was succesfull!"))
+        self.status_label = QLabel()
+        results_summary_layout.addWidget(self.status_label)
         layout.addWidget(results_summary_body)
+        info__files_widget = QWidget()
+        self.info_files_layout = QVBoxLayout(info__files_widget)
+        layout.addWidget(info__files_widget)
 
         # Folder widget
-        folder_structure = QFileSystemModel()
-        folder_structure.setRootPath(QDir.currentPath())
-        folder_widget = QTreeView()
-        folder_widget.setModel(folder_structure)
-        folder_widget.setRootIndex(folder_structure.index(QDir.currentPath()))
-        folder_widget.header().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        layout.addWidget(folder_widget, 1)
+        self.folder_structure = QFileSystemModel()
+        self.folder_widget = QTreeView()
+        layout.addWidget(self.folder_widget, 1)
 
         # Parameter widget
         parameters_header = QLabel("Parameters used")
         parameter_form = ParameterForm(self._run_result.parameter_group_list)
         parameters_collapsible = Collapsible(parameters_header, parameter_form)
         layout.addWidget(parameters_collapsible)
+
+    def show_results(self) -> None:
+        # Update summary widgets
+        self.status_label.setText("This run was completed successfully. For more information, see the info files below.")
+        for file in self._run_result.info_files:
+            self.info_files_layout.addWidget(QLabel(file))
+
+        # Set folder widget to right folder
+        self.folder_structure.setRootPath(QDir.currentPath())
+        self.folder_widget.setModel(self.folder_structure)
+        self.folder_widget.setRootIndex(self.folder_structure.index(QDir.currentPath()))
+        self.folder_widget.header().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
