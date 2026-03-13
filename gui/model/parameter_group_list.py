@@ -102,24 +102,67 @@ class ParameterGroupList(QObject):
                 operations: set[str]
         ) -> Parameter[Any]:
             name = obj.get("name", "") or ""
+            if not isinstance(name, str):
+                raise ValueError(
+                    f"Invalid parameter name: {name}. Expected string or null."
+                )
 
             description = obj.get("description", "") or ""
+            if not isinstance(description, str):
+                raise ValueError(
+                    f"Invalid description for parameter {name}: {description}."
+                    + " Expected string or null."
+                )
 
             if "type" not in obj:
                 raise ValueError("Parameter type missing.")
             parameter_type = obj["type"]
 
             flag = obj.get("cli", "") or ""
+            if not isinstance(flag, str):
+                raise ValueError(
+                    f"Invalid CLI representation for parameter {name}: {flag}."
+                    + " Expected string or null."
+                )
 
             parameter_operations = set(operations)
 
             if "operations" in obj:
-                if "add" in obj["operations"]:
-                    for op in obj["operations"]["add"]:
-                        parameter_operations.add(op)
-                if "remove" in obj["operations"]:
-                    for op in obj["operations"]["remove"]:
-                        parameter_operations.remove(op)
+                operation_diffs_obj = obj["operations"]
+                if not isinstance(operation_diffs_obj, dict):
+                    raise ValueError(
+                        f"Invalid value of 'operations' for parameter {name}: "
+                        + f"{operation_diffs_obj}. Expected an object."
+                    )
+                if "add" in operation_diffs_obj:
+                    operations_add_list = operation_diffs_obj["add"]
+                    if not isinstance(operations_add_list, list):
+                        raise ValueError(
+                            "Invalid value of 'operations.add' for parameter "
+                            + f"{name}: {operations_add_list} Expected a list."
+                        )
+                    for operation_id in operations_add_list:
+                        if not isinstance(operation, str):
+                            raise ValueError(
+                                "Invalid operation ID added for parameter "
+                                + f"{name}: {operation_id}. Expected a string."
+                            )
+                        parameter_operations.add(operation_id)
+                if "remove" in operation_diffs_obj:
+                    operations_remove_list = operation_diffs_obj["remove"]
+                    if not isinstance(operations_remove_list, list):
+                        raise ValueError(
+                            "Invalid value of 'operations.remove' for "
+                            + f" parameter {name}: {operations_remove_list}. "
+                            + "Expected a list."
+                        )
+                    for operation_id in operations_remove_list:
+                        if not isinstance(operation, str):
+                            raise ValueError(
+                                "Invalid operation ID removed for parameter "
+                                + f"{name}: {operation_id}. Expected a string."
+                            )
+                        parameter_operations.remove(operation_id)
 
             parameter: Parameter
 
@@ -131,9 +174,26 @@ class ParameterGroupList(QObject):
                             + f"for int parameter {name}."
                         )
                     default_value = obj["default"]
+                    if not isinstance(default_value, int):
+                        raise ValueError(
+                            f"Invalid default value for int parameter {name}: "
+                            + f"{default_value}. Expected int."
+                        )
 
                     lower_bound = obj.get("min", None)
+                    if (lower_bound is not None
+                        and not isinstance(lower_bound, int)):
+                        raise ValueError(
+                            f"Invalid minimum for int parameter {name}: "
+                            + f"{lower_bound}. Expected int or null."
+                        )
                     upper_bound = obj.get("max", None)
+                    if (upper_bound is not None
+                        and not isinstance(upper_bound, int)):
+                        raise ValueError(
+                            f"Invalid maximum for int parameter {name}: "
+                            + f"{upper_bound}. Expected int or null."
+                        )
 
                     parameter = IntParameter(
                         name,
@@ -148,12 +208,29 @@ class ParameterGroupList(QObject):
                     if "default" not in obj:
                         raise ValueError(
                             "No default value provided "
-                            + f"for float parameter {name}"
+                            + f"for float parameter {name}."
                         )
                     default_value = obj["default"]
+                    if not isinstance(default_value, float):
+                        raise ValueError(
+                            f"Invalid default value for float parameter {name}"
+                            + f": {default_value}. Expected float."
+                        )
 
                     lower_bound = obj.get("min", None)
+                    if (lower_bound is not None
+                        and not isinstance(lower_bound, float)):
+                        raise ValueError(
+                            f"Invalid minimum for float parameter {name}: "
+                            + f"{lower_bound}. Expected float or null."
+                        )
                     upper_bound = obj.get("max", None)
+                    if (upper_bound is not None
+                        and not isinstance(upper_bound, float)):
+                        raise ValueError(
+                            f"Invalid maximum for float parameter {name}: "
+                            + f"{upper_bound}. Expected float or null."
+                        )
 
                     parameter = FloatParameter(
                         name,
@@ -171,6 +248,11 @@ class ParameterGroupList(QObject):
                             + f"for bool parameter {name}."
                         )
                     default_value = obj["default"]
+                    if not isinstance(default_value, bool):
+                        raise ValueError(
+                            f"Invalid default value for bool parameter {name}"
+                            + f": {default_value}. Expected bool."
+                        )
                     
                     parameter = BoolParameter(
                         name,
@@ -189,15 +271,28 @@ class ParameterGroupList(QObject):
                                 + f"for enum parameter {name}."
                             )
                         option_name = option_obj["name"]
-                        cli = option_obj.get("cli", "") or ""
-                        options.append((option_name, cli))
+                        if not isinstance(option_name, str):
+                            raise ValueError(
+                                f"Invalid option name for parameter {name}: "
+                                + f"{option_name}. Expected string."
+                            )
 
-                    if "default" not in obj:
+                        option_cli = option_obj.get("cli", "") or ""
+                        if not isinstance(option_cli, str):
+                            raise ValueError(
+                                "Invalid CLI representation for parameter "
+                                + f"{name}: {option_cli}. Expected string or "
+                                + "null."
+                            )
+
+                        options.append((option_name, option_cli))
+
+                    default_value = obj.get("default", 0)
+                    if not isinstance(default_value, int):
                         raise ValueError(
-                            "No default value provided "
-                            + f"for enum parameter {name}."
+                            f"Invalid default value for enum parameter {name}:"
+                            + f" {default_value}. Expected int or null."
                         )
-                    default_value = obj["default"]
                     
                     parameter = EnumParameter(
                         name,
@@ -209,13 +304,31 @@ class ParameterGroupList(QObject):
                     )
                 case "str":
                     default_value = obj.get("default", "") or ""
+                    if not isinstance(default_value, str):
+                        raise ValueError(
+                            "Invalid default value for string parameter "
+                            + f"{name}: {default_value}. Expected string or "
+                            + "null."
+                        )
 
                     max_length = obj.get("max_length", None)
+                    if (max_length is not None
+                        and not isinstance(max_length, int)):
+                        raise ValueError(
+                            f"Invalid max length for string parameter {name}: "
+                            + f"{max_length}. Expected int or null."
+                        )
 
                     pattern = obj.get("pattern", None)
-                    compiled_pattern = None
-                    if pattern:
+                    if pattern is None:
+                        compiled_pattern = None
+                    elif isinstance(pattern, str):
                         compiled_pattern = compile(pattern)
+                    else:
+                        raise ValueError(
+                            f"Invalid pattern for string parameter {name}: "
+                            + f"{pattern}. Expected string or null."
+                        )
 
                     parameter = StringParameter(
                         name,
@@ -228,6 +341,12 @@ class ParameterGroupList(QObject):
                     )
                 case "optional":
                     default_value = obj.get("default", False)
+                    if not isinstance(default_value, bool):
+                        raise ValueError(
+                            "Invalid default value for optional parameter "
+                            + f"{name}: {default_value}. Expected bool or "
+                            + "null."
+                        )
 
                     if "parameter" not in obj:
                         raise ValueError(
@@ -250,9 +369,15 @@ class ParameterGroupList(QObject):
                     if "parameters" not in obj:
                         raise ValueError(
                             f"Inner parameters not provided "
-                            + f"for mult-value parameter {name}."
+                            + f"for multi-value parameter {name}."
                         )
                     parameters_list = obj["parameters"]
+                    if not isinstance(parameters_list, list):
+                        raise ValueError(
+                            "Invalid inner parameter list for multi-value "
+                            + f"parameter {name}: {parameters_list}. Expected "
+                            + "a list."
+                        )
                     inner_parameters: list[Parameter[Any]] = []
                     for inner_parameter_obj in parameters_list:
                         inner_parameters.append(
@@ -270,11 +395,16 @@ class ParameterGroupList(QObject):
                     )
                 case _:
                     raise ValueError(
-                        f"Invalid parameter definition for parameter {name} "
-                        + f"in configuration file (type: {parameter_type})."
+                        f"Invalid or missing type for parameter {name}: "
+                        + f"{parameter_type}."
                     )
 
             condition_objs = obj.get("conditions", [])
+            if not isinstance(condition_objs, list):
+                raise ValueError(
+                    f"Invalid condition list for parameter {name}: "
+                    + f"{condition_objs}. Expected list or null."
+                )
             parameter_to_condition_objs[parameter] = condition_objs
 
             return parameter
@@ -291,8 +421,8 @@ class ParameterGroupList(QObject):
                     parameters.append(parameter)
                     id_to_parameter[parameter_id] = parameter
 
-                except ValueError:
-                    pass # This should not be ignored in the final code
+                except ValueError as e:
+                    print(e) # This should not be ignored in the final code
             return ParameterGroup(name, parameters)
 
         def parse_condition(obj: dict) -> Dependency.Condition:
