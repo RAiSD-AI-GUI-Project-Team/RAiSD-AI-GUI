@@ -394,15 +394,23 @@ class RunViewWidget(RunSubWidget):
                 self.confirm_stop_execution_dialog.close()
 
     def _start_execution(self):
-        # self._command_executor.start_execution(self._parameter_group_list.to_cli())
-        self._command_executor.start_execution([
+        # commands = self._parameter_group_list.to_cli()
+        commands = [
             "./RAiSD-AI -n TrainingData2DSNP -I ./datasets/train/msneutral1_100sims.out -L 100000 -its 50000 -op IMG-GEN -icl neutralTR -f -frm -O",
             "./RAiSD-AI -n TrainingData2DSNP -I datasets/train/msselection1_100sims.out -L 100000 -its 50000 -op IMG-GEN -icl sweepTR -f -O",
-            "./RAiSD-AI -n TestData2DSNP -I datasets/test/msneutral1_10sims.out -L 100000 -its 50000 -op IMG-GEN -icl neutralTE -f -frm -O",
-            "./RAiSD-AI -n TestData2DSNP -I datasets/test/msselection1_10sims.out -L 100000 -its 50000 -op IMG-GEN -icl neutralTE -f -frm -O",
-            "./RAiSD-AI -n FAST-NN-PT-2DSNP -I RAiSD_Images.TrainingData2DSNP -f -op MDL-GEN -O -frm -e 3",
-            "./RAiSD-AI -n FAST-NN-PT-2DSNP-SCAN -mdl RAiSD_Model.FAST-NN-PT-2DSNP -f -op SWP-SCN -I datasets/train/msselection1_100sims.out -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O",
-        ])
+            "./RAiSD-AI -n TestData2DSNP -I datasets/test/msneutral1_10sims.out -L 100000 -its 50000 -op IMG-GEN -icl neutralTE -f -frm -O"
+            # "./RAiSD-AI -n TestData2DSNP -I datasets/test/msselection1_10sims.out -L 100000 -its 50000 -op IMG-GEN -icl neutralTE -f -frm -O",
+            # "./RAiSD-AI -n FAST-NN-PT-2DSNP -I RAiSD_Images.TrainingData2DSNP -f -op MDL-GEN -O -frm -e 3",
+            # "./RAiSD-AI -n FAST-NN-PT-2DSNP-SCAN -mdl RAiSD_Model.FAST-NN-PT-2DSNP -f -op SWP-SCN -I datasets/train/msselection1_100sims.out -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O",
+        ]
+        # self._command_executor.start_execution(self._parameter_group_list.to_cli())
+        # TODO: implement info filename logic and command generation logic
+        self._run_result.commands = commands
+        info_files = ['RAiSD_Info.TrainingData2DSNP.neutralTR',
+                      'RAiSD_Info.TrainingData2DSNP.sweepTR',
+                      'RAiSD_Info.TestData2DSNP.neutralTE']
+        self._run_result.info_files = info_files
+        self._command_executor.start_execution(commands)
 
     @Slot()
     def _stop_execution(self):
