@@ -12,6 +12,7 @@ class TestBoolParameter:
             name="testbool", 
             description="Test bool parameter", 
             flag="--testbool", 
+            operations={'IMG-GEN', 'MDL-GEN'},
             default_value=False
         )
 
@@ -21,6 +22,7 @@ class TestBoolParameter:
         assert param.name == "testbool"
         assert param.description == "Test bool parameter"
         assert param.flag == "--testbool"
+        assert param.operations == {'IMG-GEN', 'MDL-GEN'}
         assert param.value is False
         assert param.default_value is False
 
@@ -45,25 +47,36 @@ class TestBoolParameter:
     def test_to_cli(self):
         """Test BoolParameter command-line representation."""
         param = self.bool_param
-        assert param.to_cli() == ""
+        assert param.to_cli('IMG-GEN') == ""
         param.value = True
-        assert param.to_cli() == param.flag
+        assert param.to_cli('SWP-SCN') == ""
+        assert param.to_cli('IMG-GEN') == param.flag
+        assert param.to_cli('MDL-GEN') == param.flag
+        param.enabled = False
+        assert param.to_cli('IMG-GEN') == ""
 
     def test_value_changed_signal_emitted(self):
         """Test that value_changed signal is emitted when BoolParameter value changes."""
+        # arrange
         param = self.bool_param
         self.signal_emitted = False
         self.new_value = True
+        self.value = False
+        self.valid = False
 
+        # act
         def on_value_changed(value, valid):
-            self.signal_emitted
             self.signal_emitted = True
-            assert value == self.new_value
-            assert valid is True
+            self.value = value
+            self.valid = valid
 
         param.value_changed.connect(on_value_changed)
         param.value = self.new_value
+
+        # arrange
         assert self.signal_emitted is True
+        assert self.value == self.new_value
+        assert self.valid == True
 
 class TestIntParameter:
     """Tests for IntParameter class."""
@@ -74,6 +87,7 @@ class TestIntParameter:
             name="testint", 
             description="Test int parameter", 
             flag="--testint", 
+            operations={'IMG-GEN', 'MDL-GEN'},
             default_value=0, 
             lower_bound=-10, 
             upper_bound=10
@@ -85,6 +99,7 @@ class TestIntParameter:
         assert param.name == "testint"
         assert param.description == "Test int parameter"
         assert param.flag == "--testint"
+        assert param.operations == {'IMG-GEN', 'MDL-GEN'}
         assert param.value == 0
         assert param.default_value == 0
         assert param.lower_bound == -10
@@ -117,41 +132,59 @@ class TestIntParameter:
     def test_to_cli(self):
         """Test IntParameter command-line representation."""
         param = self.int_param
-        assert param.to_cli() == f"{param.flag} {param.value}"
+        assert param.to_cli('IMG-GEN') == f"{param.flag} {param.value}"
         param.value = new_value = 5
-        assert param.to_cli() == f"{param.flag} {new_value}"
+        assert param.to_cli('MDL-GEN') == f"{param.flag} {new_value}"
+        assert param.to_cli('SWP_SCN') == ""
+        param.enabled = False
+        assert param.to_cli('IMG-GEN') == ""
 
     def test_value_changed_signal_emitted(self):
         """Test that value_changed signal is emitted when IntParameter value changes."""
+        # arrange
         param = self.int_param
         self.signal_emitted = False
+        self.value = 1
         self.new_value = 5
+        self.valid = False
 
+        # act
         def on_value_changed(value, valid):
-            self.signal_emitted
             self.signal_emitted = True
-            assert value == self.new_value
-            assert valid is True
+            self.value = value
+            self.valid = valid
 
         param.value_changed.connect(on_value_changed)
         param.value = self.new_value
+
+        # assert
         assert self.signal_emitted is True
+        assert self.value == self.new_value
+        assert self.valid == True
 
     def test_invalid_value_changed_signal_emitted(self):
         """Test that value_changed signal is emitted when IntParameter value changes."""
+        # arrange
         param = self.int_param
         self.signal_emitted = False
+        self.value = 1
         self.new_value = 15
+        self.valid = True
 
+        # act
         def on_value_changed(value, valid):
             self.signal_emitted
             self.signal_emitted = True
-            assert value == self.new_value
-            assert valid is False
+            self.value = value
+            self.valid = valid
 
         param.value_changed.connect(on_value_changed)
         param.value = self.new_value
+
+        # assert
         assert self.signal_emitted is True
+        assert self.value == self.new_value
+        assert self.valid == False
 
 class TestFloatParameter:
     """Tests for FloatParameter class."""
@@ -162,6 +195,7 @@ class TestFloatParameter:
             name="testfloat", 
             description="Test float parameter", 
             flag="--testfloat", 
+            operations={'IMG-GEN', 'MDL-GEN'},
             default_value=0.0, 
             lower_bound=-10.0, 
             upper_bound=10.0
@@ -173,6 +207,7 @@ class TestFloatParameter:
         assert param.name == "testfloat"
         assert param.description == "Test float parameter"
         assert param.flag == "--testfloat"
+        assert param.operations == {'IMG-GEN', 'MDL-GEN'}
         assert param.value == 0.0
         assert param.default_value == 0.0
         assert param.lower_bound == -10.0
@@ -205,41 +240,58 @@ class TestFloatParameter:
     def test_to_cli(self):
         """Test FloatParameter command-line representation."""
         param = self.float_param
-        assert param.to_cli() == f"{param.flag} {param.value}"
+        assert param.to_cli('IMG-GEN') == f"{param.flag} {param.value}"
         param.value = new_value = 5.0
-        assert param.to_cli() == f"{param.flag} {new_value}"
+        assert param.to_cli('MDL-GEN') == f"{param.flag} {new_value}"
+        assert param.to_cli('SWP-SCN') == ""
+        param.enabled = False
+        assert param.to_cli('IMG-GEN') == ""
 
     def test_value_changed_signal_emitted(self):
         """Test that value_changed signal is emitted when FloatParameter value changes."""
+        # arrange
         param = self.float_param
         self.signal_emitted = False
+        self.value = 1.0
         self.new_value = 5.0
+        self.valid = False
 
+        # act
         def on_value_changed(value, valid):
-            self.signal_emitted
             self.signal_emitted = True
-            assert value == self.new_value
-            assert valid is True
+            self.value = value
+            self.valid = valid
 
         param.value_changed.connect(on_value_changed)
         param.value = self.new_value
+
+        # assert
         assert self.signal_emitted is True
+        assert self.value == self.new_value
+        assert self.valid == True
 
     def test_invalid_value_changed_signal_emitted(self):
         """Test that value_changed signal is emitted when FloatParameter value changes."""
+        # arrange
         param = self.float_param
         self.signal_emitted = False
+        self.value = 1.0
         self.new_value = 15.0
+        self.valid = True
 
+        # act
         def on_value_changed(value, valid):
-            self.signal_emitted
             self.signal_emitted = True
-            assert value == self.new_value
-            assert valid is False
+            self.value = value
+            self.valid = valid
 
         param.value_changed.connect(on_value_changed)
         param.value = self.new_value
+
+        # assert
         assert self.signal_emitted is True
+        assert self.value == self.new_value
+        assert self.valid == False
 
 class TestStringParameter:
     """Tests for StringParameter class."""
@@ -250,6 +302,7 @@ class TestStringParameter:
             name="teststring",
             description="Test string parameter",
             flag="--teststring",
+            operations={'IMG-GEN', 'MDL-GEN'},
             default_value="default",
             max_length=20,
             pattern=re.compile(r"\b[a-z]+\b")
@@ -261,6 +314,7 @@ class TestStringParameter:
         assert param.name == "teststring"
         assert param.description == "Test string parameter"
         assert param.flag == "--teststring"
+        assert param.operations == {'IMG-GEN', 'MDL-GEN'}
         assert param.value == "default"
         assert param.default_value == "default"
         assert param.max_length == 20
@@ -299,38 +353,55 @@ class TestStringParameter:
     def test_to_cli(self):
         """Test StringParameter command-line representation."""
         param = self.string_param
-        assert param.to_cli() == f"{param.flag} {param.value}"
+        assert param.to_cli('IMG-GEN') == f"{param.flag} {param.value}"
         param.value = new_value = "new_value"
-        assert param.to_cli() == f"{param.flag} {new_value}"
+        assert param.to_cli('MDL-GEN') == f"{param.flag} {new_value}"
+        assert param.to_cli('SWP-SCN') == ""
+        param.enabled = False
+        assert param.to_cli('IMG-GEN') == ""
 
     def test_value_changed_signal_emitted(self):
         """Test that value_changed signal is emitted when StringParameter value changes."""
+        # arrange
         param = self.string_param
         self.signal_emitted = False
+        self.value = ""
         self.new_value = "newvalue"
+        self.valid = False
 
+        # act
         def on_value_changed(value, valid):
-            self.signal_emitted
             self.signal_emitted = True
-            assert value == self.new_value
-            assert valid is True
+            self.value = value
+            self.valid = valid
 
         param.value_changed.connect(on_value_changed)
         param.value = self.new_value
+
+        # assert
         assert self.signal_emitted is True
+        assert self.value == self.new_value
+        assert self.valid == True
 
     def test_invalid_value_changed_signal_emitted(self):
         """Test that value_changed signal is emitted when StringParameter value changes."""
+        # arrange
         param = self.string_param
         self.signal_emitted = False
+        self.value = "a"
         self.new_value = "invalid value"
+        self.valid = True
 
+        # act
         def on_value_changed(value, valid):
-            self.signal_emitted
             self.signal_emitted = True
-            assert value == self.new_value
-            assert valid is False
+            self.value = value
+            self.valid = valid
 
         param.value_changed.connect(on_value_changed)
         param.value = self.new_value
+
+        # assert
         assert self.signal_emitted is True
+        assert self.value == self.new_value
+        assert self.valid == False
