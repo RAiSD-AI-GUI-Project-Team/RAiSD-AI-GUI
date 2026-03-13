@@ -1,7 +1,6 @@
 *{
     font-size: 16px;
 }
-
 /* LEFT SIDE BAR */
 QWidget#left_sidebar, QWidget#central_widget{
     background-color: #fff;
@@ -62,6 +61,24 @@ QWidget#parameter_form_section{
     margin-bottom: 10px;
 }
 
+QWidget#parameter_form_section QComboBox {
+    background-color: white;
+    border: 1px solid #9a9a9a;
+    border-radius: 2px;
+    padding: 4px 8px;
+    selection-background-color: #9090c1;
+}
+
+QWidget#parameter_form_section QComboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+
+QWidget#parameter_form_section QComboBox::down-arrow {
+    image: url("gui/style/resources/drop_down_arrow_down.svg");
+    width: 20px;
+    height: 20px;
+}
 /* STEP BUTTON BAR */
 QWidget#step_button_bar QPushButton{
     padding: 10px 20px;
@@ -77,6 +94,6 @@ QWidget#step_button_bar QPushButton[step_role="active"]{
 }
 
 QWidget#step_button_bar QPushButton[step_role="past_step"]{
-    background-color: #3b3687;
+    background-color: #9090c1;
     color: white;
 }
