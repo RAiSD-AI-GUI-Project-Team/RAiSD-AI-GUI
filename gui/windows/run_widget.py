@@ -20,6 +20,7 @@ from gui.model.parameter_group_list import ParameterGroupList
 from gui.execution.command_executor import CommandExecutor
 from gui.widgets.parameter_form import ParameterForm
 from gui.windows.dialog import ConfirmDialog, ErrorDialog
+from gui.widgets.results_widget import ResultsWidget
 
 class RunWidget(QWidget):
     """
@@ -155,7 +156,6 @@ class RunWidget(QWidget):
 
 
 class RunSubWidget(QWidget):
-
     def __init__(self):
         super().__init__()
         widget = self._setup_widget()
@@ -549,6 +549,8 @@ class RunResultsWidget(RunSubWidget):
         parameter_confirmation_label = QLabel("Run Results")
         layout.addWidget(parameter_confirmation_label)
 
+        results_widget = ResultsWidget()
+        layout.addWidget(results_widget)
         return widget
 
     def _setup_navigation_buttons(self) -> QWidget:
