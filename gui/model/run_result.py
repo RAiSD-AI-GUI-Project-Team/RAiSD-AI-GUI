@@ -2,9 +2,12 @@ from gui.model.parameter_group_list import ParameterGroupList
 class RunResult():
     def __init__(
             self, 
-            parameter_group_list: ParameterGroupList
+            parameter_group_list: ParameterGroupList,
+            path: str,
+            run_completed: bool = False
         ):
-        self._results_path = None
+        self._run_completed = run_completed
+        self._results_path = path
         self._info_files = None
         self._commands = None
         self._parameter_group_list = parameter_group_list

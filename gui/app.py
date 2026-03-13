@@ -14,7 +14,7 @@ def main():
         "gui/..."
     ) # TODO: implement config file and write path
 
-    window = MainWindow(parameter_group_list=parameter_group_list)  
+    run_result = RunResult(parameter_group_list, QDir.currentPath())
     window.show()
     app.exec()
     print("App closed")
