@@ -25,6 +25,47 @@ class Parameter(ABC, QObject, Generic[T], metaclass=AbstractQObjectMeta):
     based on the type of value that the parameter stores.
     """
 
+    class EnabledCondition(Dependency.Condition):
+        """
+        A condition that track whether a parameter is enabled.
+        """
+
+        def __init__(
+                self,
+                parameter: "Parameter[Any]",
+                target_value: bool = True,
+                parent: QObject | None = None,
+        ) -> None:
+            """
+            Initialize a `Parameter.EnabledCondition` object.
+
+            :param parameter: the parameter to track
+            :type parameter: "Parameter[Any]"
+
+            :param target_value: the target value
+            :type target_value: bool
+
+            :param parent: the parent of this `QObject`
+            :type parent: QObject | None
+            """
+            self._parameter = parameter
+            self._target_value = target_value
+            super().__init__(
+                value=self._parameter.enabled == self._target_value,
+                parent=parent,
+            )
+
+            self._parameter.enabled_changed.connect(
+                self._parameter_enabled_changed
+            )
+        
+        @Slot(bool)
+        def _parameter_enabled_changed(
+            self,
+            new_enabled: bool,
+        ) -> None:
+            self.value = new_enabled == self._target_value
+
     class EnabledEffect(Dependency.Effect):
         def __init__(
                 self,
