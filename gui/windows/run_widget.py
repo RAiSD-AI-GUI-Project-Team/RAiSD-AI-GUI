@@ -194,8 +194,8 @@ class OperationSelectionWidget(RunSubWidget):
         widget.setStyleSheet("background-color: lightblue;")
         layout = QVBoxLayout(widget)
 
-        parameter_confirmation_label = QLabel("Operation Selection")
-        layout.addWidget(parameter_confirmation_label)
+        operation_selection_label = QLabel("Operation Selection")
+        layout.addWidget(operation_selection_label)
 
         # TODO: dynamicly add operation selection buttons
 
@@ -545,8 +545,8 @@ class RunResultsWidget(RunSubWidget):
         widget.setStyleSheet("background-color: lightblue;")
         layout = QVBoxLayout(widget)
 
-        parameter_confirmation_label = QLabel("Run Results")
-        layout.addWidget(parameter_confirmation_label)
+        run_results_label = QLabel("Run Results")
+        layout.addWidget(run_results_label)
 
         return widget
 
