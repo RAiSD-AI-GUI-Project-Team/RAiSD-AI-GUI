@@ -5,7 +5,8 @@ from PySide6.QtWidgets import (
     QLabel,
     QFileSystemModel,
     QTreeView,
-    QHeaderView
+    QHeaderView,
+    QPushButton
 )
 
 from PySide6.QtCore import (
@@ -70,7 +71,10 @@ class ResultsWidget(QWidget):
         # Update summary widgets
         self.status_label.setText("This run was completed successfully. For more information, see the info files below.")
         for file in self._run_result.info_files:
-            self.info_files_layout.addWidget(QLabel(file))
+            button = QPushButton(file)
+            path = f"{self._run_result.path}/{file}"
+            button.clicked.connect(lambda checked=False, p=path: self.open_file(path))
+            self.info_files_layout.addWidget(button)
 
         # Set folder widget to right folder
         self.folder_structure.setRootPath(QDir.currentPath())
