@@ -870,3 +870,109 @@ class TestParameterGroupListFromYaml:
         assert default_str.flag == "--default-str"
         assert default_str.default_value == "Hello"
         assert default_str.max_length == 20
+
+        # File
+        file_group = parameter_list.parameter_groups[5]
+        assert file_group.name == "File parameters"
+        assert len(file_group.parameters) == 6
+
+        any_file = file_group.parameters[0]
+        assert isinstance(any_file, FileParameter)
+        assert any_file.name == "Any file"
+        assert (
+            any_file.description
+            == "This allows one file of any type."
+        )
+        assert any_file.flag == "--any-file"
+        assert any_file.default_value == []
+        assert not any_file.strict
+        assert any_file.accepted_formats is None
+        assert any_file.expected_formats == [] # Should this be like this?
+        assert not any_file.multiple
+
+        any_files = file_group.parameters[1]
+        assert isinstance(any_files, FileParameter)
+        assert any_files.name == "Any files"
+        assert (
+            any_files.description
+            == "This allows many files of any type."
+        )
+        assert any_files.flag == "--any-files"
+        assert any_files.default_value == []
+        assert not any_files.strict
+        assert any_files.accepted_formats is None
+        assert any_files.expected_formats == [] # Should this be like this?
+        assert any_files.multiple
+
+        not_strict_file = file_group.parameters[2]
+        assert isinstance(not_strict_file, FileParameter)
+        assert not_strict_file.name == "Expected type file"
+        assert (
+            not_strict_file.description
+            == "One file of any type, image expected."
+        )
+        assert not_strict_file.flag == "--image"
+        assert not_strict_file.default_value == []
+        assert not not_strict_file.strict
+        assert not_strict_file.accepted_formats is None
+        assert not_strict_file.expected_formats == [
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".gif",
+            ".webp",
+        ]
+        assert not not_strict_file.multiple
+
+        not_strict_multiple_files = file_group.parameters[3]
+        assert isinstance(not_strict_multiple_files, FileParameter)
+        assert not_strict_multiple_files.name == "Expected type files"
+        assert (
+            not_strict_multiple_files.description
+            == "Multiple files, videos expected."
+        )
+        assert not_strict_multiple_files.flag == "--images"
+        assert not_strict_multiple_files.default_value == []
+        assert not not_strict_multiple_files.strict
+        assert not_strict_multiple_files.accepted_formats is None
+        assert not_strict_multiple_files.expected_formats == [
+            ".mp4",
+            ".webm",
+        ]
+        assert not_strict_multiple_files.multiple
+
+        strict_file = file_group.parameters[4]
+        assert isinstance(strict_file, FileParameter)
+        assert strict_file.name == "Specific type file"
+        assert (
+            strict_file.description
+            == "One audio file."
+        )
+        assert strict_file.flag == "--song"
+        assert strict_file.default_value == []
+        assert strict_file.strict
+        assert strict_file.accepted_formats == [
+            ".mp3",
+            ".wav",
+        ]
+        assert strict_file.expected_formats is None
+        assert not strict_file.multiple
+
+        strict_multiple_files = file_group.parameters[5]
+        assert isinstance(strict_multiple_files, FileParameter)
+        assert strict_multiple_files.name == "Specific type files"
+        assert (
+            strict_multiple_files.description
+            == "Multiple document files."
+        )
+        assert strict_multiple_files.flag == "--docs"
+        assert strict_multiple_files.default_value == []
+        assert strict_multiple_files.strict
+        assert strict_multiple_files.accepted_formats == [
+            ".doc",
+            ".docx",
+            ".odf",
+            ".pdf",
+        ]
+        assert strict_multiple_files.expected_formats is None
+        assert strict_multiple_files.multiple
