@@ -254,8 +254,8 @@ class ParameterInputWidget(RunSubWidget):
 
         self.submit_button = QPushButton("Submit")
         self._update_submit_button_state()
-        for group in self._parameter_group_list.parameter_groups:
-            for parameter in group.parameters:
+        for group in self._parameter_group_list:
+            for parameter in group:
                 parameter.value_changed.connect(self._update_submit_button_state)
         self.submit_button.clicked.connect(self._submit_button_clicked)
         layout.addWidget(self.submit_button)

@@ -57,7 +57,7 @@ class ParameterGroup(QObject):
         The group is valid if and only if every parameter in the group
         is valid.
         """
-        return all([param.valid for param in self.parameters])
+        return all([param.valid for param in self])
 
     @Slot(bool)
     def _parameter_enabled_changed(self, new_value: bool) -> None:
@@ -91,7 +91,7 @@ class ParameterGroup(QObject):
         :return: the command-line representation
         :rtype: str
         """
-        cli_params = [p.to_cli(operation) for p in self.parameters]
+        cli_params = [p.to_cli(operation) for p in self]
         nonempty_params = [p for p in cli_params if p]
         return " ".join(nonempty_params)
 

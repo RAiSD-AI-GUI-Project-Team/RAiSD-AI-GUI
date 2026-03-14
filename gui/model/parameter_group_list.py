@@ -286,7 +286,7 @@ class ParameterGroupList(QObject):
 
         The list is valid if and only if every group is valid.
         """
-        return all([group.valid for group in self.parameter_groups])
+        return all([group.valid for group in self])
 
     def to_cli(self) -> list[str]:
         """
