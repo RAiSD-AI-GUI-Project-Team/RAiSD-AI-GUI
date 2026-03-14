@@ -73,8 +73,11 @@ class ResultsWidget(QWidget):
         self.folder_widget.setRootIndex(self.folder_structure.index(QDir.currentPath()))
         self.folder_widget.header().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
+    def open_file(self, path) -> None:
+        QDesktopServices.openUrl(QUrl.fromLocalFile(path))
+
     @Slot(int)
     def _on_double_click(self, index) -> None:
         if not self.folder_structure.isDir(index):
             path = self.folder_structure.filePath(index)
-            QDesktopServices.openUrl(QUrl.fromLocalFile(path))
+            self.open_file(path)
