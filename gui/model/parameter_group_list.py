@@ -593,6 +593,17 @@ class ParameterGroupList(QObject):
                     if "values" not in obj:
                         raise ValueError("Enum condition has no list of target values.")
                     target_values = obj["values"]
+                    if not isinstance(target_values, list):
+                        raise ValueError(
+                            "Invalid target value list for enum condition: "
+                            + f"{target_values}. Expected a list of ints."
+                        )
+                    for target_value in target_values:
+                        if not isinstance(target_value, int):
+                            raise ValueError(
+                                f"Invalid target value for enum condition: "
+                                + f"{target_value}. Expected int."
+                            )
 
                     return EnumParameter.Condition(
                         parameter,
