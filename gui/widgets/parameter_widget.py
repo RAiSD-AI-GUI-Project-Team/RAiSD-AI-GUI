@@ -90,9 +90,11 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
 
     def _show_validity(self, widget: QWidget, valid: bool) -> None:
         if valid:
-            widget.setStyleSheet("QLineEdit { border: 1px solid green; }")
+            widget.setProperty("valid", "true")
         else:
-            widget.setStyleSheet("QLineEdit { border: 1px solid red; }")
+            widget.setProperty("valid", "false")
+        widget.style().unpolish(widget)
+        widget.style().polish(widget)
 
     @property
     def parameter(self) -> Parameter[Any]:
@@ -414,7 +416,9 @@ class FileParameterWidget(ParameterWidget):
               and parameter.accepted_formats is None
               and parameter.expected_formats is not None):
             self._error_label = QLabel("")
-            self._error_label.setStyleSheet("QLabel { color: red; }")
+            self._error_label.setProperty("valid", "false")
+            self._error_label.style().unpolish(self)
+            self._error_label.style().polish(self)
             layout.addWidget(self._error_label)
             expected = ', '.join(parameter.expected_formats)
             hint = QLabel(f"Select {mode} — Expected file types: {expected}. "

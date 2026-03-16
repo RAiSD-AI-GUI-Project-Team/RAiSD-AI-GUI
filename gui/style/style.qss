@@ -79,6 +79,23 @@ QWidget#parameter_form_section QComboBox::down-arrow {
     width: 20px;
     height: 20px;
 }
+QWidget#parameter_form_section QLineEdit{
+    border: 1px solid #9a9a9a;
+    border-radius: 2px;
+}
+
+QWidget#parameter_form_section QLineEdit[valid="true"]{
+    border-color: green;
+}
+
+QWidget#parameter_form_section QLineEdit[valid="false"]{
+    border-color: red;
+}
+
+QWidget#parameter_form_section QLabel[valid="false"]{
+    color: red;
+}
+
 /* STEP BUTTON BAR */
 QWidget#step_button_bar QPushButton{
     padding: 10px 20px;
