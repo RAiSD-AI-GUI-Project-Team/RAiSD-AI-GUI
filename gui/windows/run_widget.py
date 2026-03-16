@@ -259,11 +259,6 @@ class ParameterInputWidget(RunSubWidget):
         parameter_input_label = QLabel("Parameter Input")
         layout.addWidget(parameter_input_label)
 
-        ## Add checkbox for image gen selection
-        mode_select_widget = QWidget()
-        mode_select_layout = QHBoxLayout(mode_select_widget)
-        layout.addWidget(mode_select_widget)
-
         parameter_form = ParameterForm(self._parameter_group_list)
 
         parameter_form_scroll = QScrollArea()
