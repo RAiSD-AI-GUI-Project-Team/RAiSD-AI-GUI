@@ -606,6 +606,14 @@ class ParameterGroupList(QObject):
 
         config_obj = load(config_text, Loader=Loader)
 
+        if "executable" not in config_obj:
+            raise ValueError("Config file is missing executable name.")
+        executable = config_obj["executable"]
+        if not isinstance(executable, str):
+            raise ValueError(
+                f"Invalid executable name: {executable}. Expected string."
+            )
+
         operations = {}
         mode_list = config_obj.get("modes", []) or []
         for mode_obj in mode_list:
@@ -616,7 +624,7 @@ class ParameterGroupList(QObject):
         for parameter_group_obj in config_obj["parameter_groups"]:
             parameter_groups.append(parse_parameter_group(parameter_group_obj))
 
-        result = cls("./RAiSD-AI", operations, parameter_groups)
+        result = cls(executable, operations, parameter_groups)
 
         parameter_conditions: dict[Parameter[Any], list[Dependency.Condition]] = {}
 
