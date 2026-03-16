@@ -271,8 +271,8 @@ class ParameterInputWidget(RunSubWidget):
         self.back_button = QPushButton("Back")
         self.next_button = QPushButton("Next")
         
-        self.update_next_button_state()
-         for group in self._parameter_group_list.parameter_groups:
+        self._update_next_button_state()
+        for group in self._parameter_group_list.parameter_groups:
             for parameter in group.parameters:
                 parameter.value_changed.connect(self._update_next_button_state)
                 
