@@ -461,12 +461,13 @@ class FileParameter(Parameter[list[str]]):
         return all(
             Path(f).is_file()
             and os.access(Path(f), os.R_OK)
-            and (self.accepted_formats is None
-                 or self.accepted_formats
-                 and Path(f).suffix.lower() in self.accepted_formats
-                 or self.expected_formats
-                 and Path(f).suffix.lower() in self.expected_formats)
-            for f in self.value)
+            and (
+                    not self.strict
+                    or self.accepted_formats is None
+                    or Path(f).suffix.lower() in self.accepted_formats
+            )
+            for f in self.value
+        )
 
     @property
     def file_extensions(self) -> list[str]:
@@ -501,6 +502,6 @@ class FileParameter(Parameter[list[str]]):
         )
 
     def to_cli(self, operation: str) -> str:
-        if self.in_cli(operation):
+        if self.in_cli(operation) and self.valid:
             return " ".join(f"{self.flag} {f}" for f in self.value)
         return ""
