@@ -393,7 +393,6 @@ class RunViewWidget(RunSubWidget):
     @Slot(int)
     def run_start(self, number_of_processes: int) -> None:
         self.setup_execution_indicators(number_of_processes)
-        self.stop_run_button.setText("Stop")
         self.stop_run_button.setEnabled(True)
 
     @Slot(bool)
@@ -401,7 +400,6 @@ class RunViewWidget(RunSubWidget):
         """
         Update the execution buttons and close an open confirm dialog.
         """
-        self.stop_run_button.setText("Run Done")
         self.stop_run_button.setEnabled(False)
         if hasattr(self, "confirm_stop_execution_dialog"):
             if self.confirm_stop_execution_dialog is not None:
@@ -552,6 +550,7 @@ class RunViewWidget(RunSubWidget):
         self.set_execution_view_indicator(process_index, "red")
 
         if process_error is not None:
+            play_error_sound(self)
             print(f"Process '{process_index}' failed with process error '{process_error}'")
             self.execution_output.append(f"Process '{process_index}' failed with process error '{process_error}'")
             process_error_dialog = ErrorDialog(self, f"Process Failed ({process_error})", f"Process '{process_index}' failed with process error '{process_error}'")
