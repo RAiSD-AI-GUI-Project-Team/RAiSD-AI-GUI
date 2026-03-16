@@ -541,7 +541,9 @@ class ParameterGroupList(QObject):
 
                     parameter = id_to_parameter[parameter_id]
 
-                    target_value = obj.get("value", True) or True
+                    target_value = obj.get("value", True)
+                    if target_value is None:
+                        target_value = True
                     if not isinstance(target_value, bool):
                         raise ValueError(
                             "Invalid target value for enabled condition: "
@@ -571,7 +573,9 @@ class ParameterGroupList(QObject):
                             + f"{parameter_id}."
                         )
 
-                    target_value = obj.get("value", True) or True
+                    target_value = obj.get("value", True)
+                    if target_value is None:
+                        target_value = True
                     if not isinstance(target_value, bool):
                         raise ValueError(
                             "Invalid target value for bool condition: "
