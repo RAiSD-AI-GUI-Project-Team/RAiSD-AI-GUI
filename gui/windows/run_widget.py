@@ -136,6 +136,7 @@ class RunWidget(QWidget):
     @Slot()
     def _switch_to_parameter_input_widget(self) -> None:
         self.stacked_step_widget_layout.setCurrentWidget(self.parameter_input_widget)
+        self.parameter_input_widget._update_next_button_state()
 
     @Slot()
     def _switch_to_parameter_confirmation_widget(self) -> None:
@@ -233,13 +234,13 @@ class OperationSelectionWidget(RunSubWidget):
         widget = QWidget()
         layout = QVBoxLayout(widget)
 
-        for operation in self._parameter_group_list.operations:
-            operation_selector = self._operation_selector(operation, f"perform: {operation}") # TODO: Set description.
+        for operation, enabled in self._parameter_group_list.operations.items():
+            operation_selector = self._operation_selector(operation, enabled, f"perform: {operation}") # TODO: Set description.
             layout.addWidget(operation_selector)
             
         return widget 
 
-    def _operation_selector(self, operation: str, description: str) -> QWidget:
+    def _operation_selector(self, operation: str, enabled: bool, description: str) -> QWidget:
         """
         An operation selector widget containing a checkbox linked to the parameter_group_list and a description.
         """
@@ -247,6 +248,9 @@ class OperationSelectionWidget(RunSubWidget):
         layout = QHBoxLayout(widget)
 
         operation_button = QCheckBox(operation)
+        operation_button.setCheckState(
+            Qt.CheckState.Checked if enabled else Qt.CheckState.Unchecked
+        )
         operation_button.checkStateChanged.connect(
             lambda s: self._operation_selector_clicked(operation, s)
             )
