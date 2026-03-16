@@ -95,7 +95,7 @@ class RunWidget(QWidget):
         Set up the stacked step widget.
         """
         # Operation selection widget
-        self.operation_selection_widget = OperationSelectionWidget()
+        self.operation_selection_widget = OperationSelectionWidget(parameter_group_list=self._parameter_group_list)
         layout.addWidget(self.operation_selection_widget)
 
         # Parameter input widget
@@ -189,8 +189,11 @@ class NavigationButtonsWidget(QWidget):
 
 
 class OperationSelectionWidget(RunSubWidget):
-
-    def __init__(self):
+    """
+    
+    """    
+    def __init__(self, parameter_group_list: ParameterGroupList):
+        self._parameter_group_list = parameter_group_list
         super().__init__()
 
     def _setup_widget(self) -> QWidget:
@@ -198,10 +201,11 @@ class OperationSelectionWidget(RunSubWidget):
         widget.setStyleSheet("background-color: lightblue;")
         layout = QVBoxLayout(widget)
 
-        parameter_confirmation_label = QLabel("Operation Selection")
-        layout.addWidget(parameter_confirmation_label)
+        operation_selection_label = QLabel("Operation Selection")
+        layout.addWidget(operation_selection_label)
 
-        # TODO: dynamicly add operation selection buttons
+        operation_selection_widget = self._setup_operation_selection_widget()
+        layout.addWidget(operation_selection_widget, 1)
 
         return widget
 
@@ -209,6 +213,46 @@ class OperationSelectionWidget(RunSubWidget):
         return QWidget()
         # TODO: Implement
         # raise NotImplementedError
+
+    def _setup_operation_selection_widget(self) -> QWidget:
+        """
+        Creates the widget with operation selectors and their descriptions.
+        """
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+
+        for operation in self._parameter_group_list.operations:
+            operation_selector = self._operation_selector(operation, f"perform: {operation}") # TODO: Set description.
+            layout.addWidget(operation_selector)
+            
+        return widget 
+
+    def _operation_selector(self, operation: str, description: str) -> QWidget:
+        """
+        An operation selector widget containing a checkbox linked to the parameter_group_list and a description.
+        """
+        widget = QWidget()
+        layout = QHBoxLayout(widget)
+
+        operation_button = QCheckBox(operation)
+        operation_button.checkStateChanged.connect(
+            lambda s: self._operation_selector_clicked(operation, s)
+            )
+        layout.addWidget(operation_button)
+        
+        description_label = QLabel(description)
+        layout.addWidget(description_label, 1)
+
+        return widget
+    
+    def _operation_selector_clicked(self, operation: str, state: Qt.CheckState) -> None:
+        """
+        Set the operation using the given checkbox state.
+        """
+        if state == Qt.CheckState.Checked:
+            self._parameter_group_list.set_operation(operation, True)
+        elif state == Qt.CheckState.Unchecked:
+            self._parameter_group_list.set_operation(operation, False)
 
 
 class ParameterInputWidget(RunSubWidget):
@@ -224,20 +268,6 @@ class ParameterInputWidget(RunSubWidget):
         layout = QVBoxLayout(widget)
         parameter_input_label = QLabel("Parameter Input")
         layout.addWidget(parameter_input_label)
-
-        ## Add checkbox for image gen selection
-        mode_select_widget = QWidget()
-        mode_select_layout = QHBoxLayout(mode_select_widget)
-        layout.addWidget(mode_select_widget)
-
-        img_gen_checkbox = QCheckBox()
-        img_gen_checkbox.setChecked(True)
-        mode_select_layout.addWidget(img_gen_checkbox)
-
-        img_gen_label = QLabel("Perform IMG-GEN")
-        mode_select_layout.addWidget(img_gen_label, 1)
-
-        img_gen_checkbox.checkStateChanged.connect(self._img_gen_checkbox_clicked)
 
         parameter_form = ParameterForm(self._parameter_group_list)
 
@@ -280,16 +310,7 @@ class ParameterInputWidget(RunSubWidget):
         return QWidget()
         # TODO: Implement
         # raise NotImplementedError
-
-    @Slot()
-    def _img_gen_checkbox_clicked(self, state) -> None:
-        if state == Qt.CheckState.Checked:
-            self._parameter_group_list.set_operation("IMG-GEN", True)
-            print("IMG-GEN checked")
-        elif state == Qt.CheckState.Unchecked:
-            self._parameter_group_list.set_operation("IMG-GEN", False)
-            print("IMG-GEN unchecked")
-
+        
     @Slot()
     def _submit_button_clicked(self) -> None:
         # TODO: Check input valid
@@ -579,8 +600,8 @@ class RunResultsWidget(RunSubWidget):
         widget.setStyleSheet("background-color: lightblue;")
         layout = QVBoxLayout(widget)
 
-        parameter_confirmation_label = QLabel("Run Results")
-        layout.addWidget(parameter_confirmation_label)
+        run_results_label = QLabel("Run Results")
+        layout.addWidget(run_results_label)
 
         return widget
 
