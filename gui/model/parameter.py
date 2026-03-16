@@ -502,6 +502,6 @@ class FileParameter(Parameter[list[str]]):
         )
 
     def to_cli(self, operation: str) -> str:
-        if self.in_cli(operation) and self.valid:
+        if self.in_cli(operation):
             return " ".join(f"{self.flag} {f}" for f in self.value)
         return ""
