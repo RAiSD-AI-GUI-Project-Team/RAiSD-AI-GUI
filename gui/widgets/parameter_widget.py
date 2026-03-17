@@ -466,6 +466,7 @@ class StringParameterWidget(ParameterWidget):
 
         self._line_edit = QLineEdit()
         self._line_edit.setText(parameter.value)
+        self._line_edit.setReadOnly(self._locked)
         layout.addWidget(self._line_edit)
 
         if parameter.max_length is not None:
@@ -484,7 +485,6 @@ class StringParameterWidget(ParameterWidget):
     def _parameter_value_changed(self, new_value: str, valid: bool) -> None:
         self._line_edit.setText(new_value)
         self._show_validity(self._line_edit, valid)
-
 
 
 class FileParameterWidget(ParameterWidget):
