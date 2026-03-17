@@ -181,6 +181,46 @@ class OptionalParameter(Parameter[bool]):
     parameter.
     """
 
+    class Condition(Dependency.Condition):
+        """
+        A condition that tracks whether an optional parameter is used.
+        """
+
+        def __init__(
+                self,
+                parameter: "OptionalParameter",
+                target_value: bool = True,
+                parent: QObject | None = None,
+        ) -> None:
+            """
+            Initialize an `OptionalParameter.Condition` object.
+
+            :param parameter: the optional parameter to track
+            :type parameter: OptionalParameter
+
+            :param target_value: the target value of the optional
+            parameter
+            :type target_value: bool
+
+            :param parent: the parent of this `QObject`
+            :type parent: QObject | None
+            """
+            super().__init__(
+                value=parameter.value==target_value,
+                parent=parent,
+            )
+            self._parameter = parameter
+            self._target_value = target_value
+
+            self._parameter.value_changed.connect(self._parameter_value_changed)
+
+        @Slot(bool, bool)
+        def _parameter_value_changed(
+            self,
+            new_value: bool,
+        ) -> None:
+            self.value = new_value == self._target_value
+
     value_changed = Signal(bool, bool)
 
     def __init__(
@@ -306,7 +346,8 @@ class BoolParameter(Parameter[bool]):
             """
             super().__init__(
                 value=parameter.value==target_value,
-                parent=parent)
+                parent=parent,
+            )
             self._parameter = parameter
             self._target_value = target_value
 
