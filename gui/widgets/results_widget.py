@@ -71,7 +71,7 @@ class ResultsWidget(QWidget):
         for file in self._run_result.info_files:
             button = QPushButton(file)
             path = f"{self._run_result.path}/{file}"
-            button.clicked.connect(lambda checked=False, p=path: self.open_file(path))
+            button.clicked.connect(lambda _, p=path: self.open_file(p))
             self.info_files_layout.addWidget(button)
 
         # Set folder widget to right folder
