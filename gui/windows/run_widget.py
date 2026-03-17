@@ -341,7 +341,7 @@ class ParameterInputWidget(RunSubWidget):
         layout.addWidget(parameter_form_scroll)
 
         self._validity_label = QLabel("")
-        self._validity_label.setStyleSheet("QLabel { color: red; }")
+        self._validity_label.setObjectName("validity_label")
         layout.addWidget(self._validity_label)
 
         check_param_button = QPushButton("Check parameters")

@@ -163,3 +163,7 @@ QWidget#parameter_form_section QComboBox::down-arrow {
     width: 20px;
     height: 20px;
 }
+
+QLabel#validity_label{
+    color: red;
+}
