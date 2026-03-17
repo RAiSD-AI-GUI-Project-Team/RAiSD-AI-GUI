@@ -34,7 +34,7 @@ class Settings(QObject):
     def workspace_path(self, value: QDir) -> None:
         if self._workspace_path != value:
             self._workspace_path = value
-            self.workspace_path_changed.emit(value)
+            self.workspace_path_changed.emit(value.absolutePath())
 
     @property
     def executable_file_path(self) -> str:
@@ -44,7 +44,7 @@ class Settings(QObject):
     def executable_file_path(self, value: QFileInfo) -> None:
         if self._executable_file_path != value:
             self._executable_file_path = value
-            self.executable_file_path_changed.emit(value)
+            self.executable_file_path_changed.emit(value.absoluteFilePath())
 
     @property
     def executable_folder_path(self) -> str:
