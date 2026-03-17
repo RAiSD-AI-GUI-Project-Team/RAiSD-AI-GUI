@@ -387,6 +387,9 @@ class RunViewWidget(RunSubWidget):
         self._run_result = run_result
         self._parameter_group_list = self._run_result.parameter_group_list
         self._command_executor = command_executor
+
+        self.confirm_stop_execution_dialog = None
+        self.execution_still_running_dialog = None
         super().__init__()
 
     def _setup_widget(self) -> QWidget:
@@ -455,9 +458,10 @@ class RunViewWidget(RunSubWidget):
         Update the execution buttons and close an open confirm dialog.
         """
         self.stop_run_button.setEnabled(False)
-        if hasattr(self, "confirm_stop_execution_dialog"):
-            if self.confirm_stop_execution_dialog is not None:
-                self.confirm_stop_execution_dialog.close()
+        if self.confirm_stop_execution_dialog is not None:
+            self.confirm_stop_execution_dialog.close()
+        if self.execution_still_running_dialog is not None:
+            self.execution_still_running_dialog.close()
 
     def _start_execution(self):
         source_folder = app_settings.executable_folder_path
@@ -476,7 +480,11 @@ class RunViewWidget(RunSubWidget):
                       'RAiSD_Info.TrainingData2DSNP.sweepTR',
                       'RAiSD_Info.TestData2DSNP.neutralTE']
         self._run_result.info_files = info_files
-        self._command_executor.start_execution(commands)
+        try:
+            self._command_executor.start_execution(commands)
+        except Exception:
+            self.execution_still_running_dialog = ErrorDialog(self, "Execution still running", "A process is still running, try again later.")
+            self.execution_still_running_dialog.exec()
 
     @Slot()
     def _stop_execution(self):
@@ -623,7 +631,8 @@ class RunViewWidget(RunSubWidget):
         Handle CommandExecutor.process_stopped.
         """
         self.set_execution_view_indicator(process_index, "purple")
-    
+
+
 class RunResultsWidget(RunSubWidget):
     def __init__(self, run_result: RunResult):
         self._run_result = run_result
