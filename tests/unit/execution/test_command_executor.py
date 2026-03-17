@@ -43,17 +43,7 @@ class TestCommandExecutor:
         self.command_executor.stop_execution()
         self.command_executor._process.waitForFinished(3000)
 
-        print(f"output: {self.output}")
-        print(f"err_output: {self.err_output}")
-        print(f"execution_started: {self.execution_started}")
-        print(f"execution_finished: {self.execution_finished}")
-        print(f"execution_failed: {self.execution_failed}")
-        print(f"execution_stopped: {self.execution_stopped}")
-        print(f"process_started: {self.process_started}")
-        print(f"process_finished: {self.process_finished}")
-        print(f"process_failed: {self.process_failed}")
-
-    # ---------- test slots(+2 signals) ----------
+    # ---------- test slots(+ signals) ----------
     # test start_execution / execution_started
     def test_start_execution_emit_execution_started_empty(self, qtbot):
         # arrange
