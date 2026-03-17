@@ -409,7 +409,6 @@ class FloatParameterWidget(ParameterWidget):
         self._show_validity(self._line_edit, valid)
 
 
-
 class EnumParameterWidget(ParameterWidget):
     """
     A dropdown widget to edit an enumerated parameter.
@@ -429,6 +428,7 @@ class EnumParameterWidget(ParameterWidget):
         self._combo_box = QComboBox()
         self._combo_box.addItems(parameter.options)
         self._combo_box.setCurrentIndex(parameter.value)
+        self._combo_box.setEnabled(not self._locked)
         layout.addWidget(self._combo_box)
 
         self._combo_box.currentIndexChanged.connect(
