@@ -358,8 +358,11 @@ class ParameterConfirmationWidget(RunSubWidget):
 
     @Slot()
     def _run_button_clicked(self) -> None:
-        # TODO: Check input valid
-        self.start_run.emit()
+        if self._parameter_group_list.valid:
+            self.start_run.emit()
+        else:
+            dialog = ErrorDialog(self, "Invalid input", "Input parameters are invalid")
+            dialog.exec()
         pass
 
     @Slot()
