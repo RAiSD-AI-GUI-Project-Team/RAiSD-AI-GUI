@@ -75,9 +75,9 @@ class ResultsWidget(QWidget):
             self.info_files_layout.addWidget(button)
 
         # Set folder widget to right folder
-        self.folder_structure.setRootPath(QDir.currentPath())
+        self.folder_structure.setRootPath(self._run_result.path)
         self.folder_widget.setModel(self.folder_structure)
-        self.folder_widget.setRootIndex(self.folder_structure.index(QDir.currentPath()))
+        self.folder_widget.setRootIndex(self.folder_structure.index(self._run_result.path))
         self.folder_widget.header().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
     def open_file(self, path) -> None:
