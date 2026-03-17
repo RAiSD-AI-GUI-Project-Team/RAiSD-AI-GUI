@@ -80,7 +80,7 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         def _clicked(self) -> None:
             self._parameter.reset_value()
 
-    def __init__(self, parameter: Parameter[Any]):
+    def __init__(self, parameter: Parameter[Any], locked: bool):
         """
         Initialize a `ParameterWidget` object.
 
@@ -89,6 +89,7 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         """
         super().__init__()
         self._parameter = parameter
+        self._locked = locked
 
     def _show_validity(self, widget: QWidget, valid: bool) -> None:
         if valid:
@@ -104,7 +105,7 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         return self._parameter
 
     @classmethod
-    def from_parameter(cls, parameter: Parameter[Any]) -> "ParameterWidget":
+    def from_parameter(cls, parameter: Parameter[Any], locked: bool) -> "ParameterWidget":
         """
         Create a suitable `ParameterWidget` for a given `Parameter`.
 
@@ -120,21 +121,21 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         :rtype: ParameterWidget
         """
         if isinstance(parameter, OptionalParameter):
-            return OptionalParameterWidget(parameter)
+            return OptionalParameterWidget(parameter, locked)
         if isinstance(parameter, MultiParameter):
-            return MultiParameterWidget(parameter)
+            return MultiParameterWidget(parameter, locked)
         if isinstance(parameter, BoolParameter):
-            return BoolParameterWidget(parameter)
+            return BoolParameterWidget(parameter, locked)
         if isinstance(parameter, IntParameter):
-            return IntParameterWidget(parameter)
+            return IntParameterWidget(parameter, locked)
         if isinstance(parameter, FloatParameter):
-            return FloatParameterWidget(parameter)
+            return FloatParameterWidget(parameter, locked)
         if isinstance(parameter, EnumParameter):
-            return EnumParameterWidget(parameter)
+            return EnumParameterWidget(parameter, locked)
         if isinstance(parameter, StringParameter):
-            return StringParameterWidget(parameter)
+            return StringParameterWidget(parameter, locked)
         if isinstance(parameter, FileParameter):
-            return FileParameterWidget(parameter)
+            return FileParameterWidget(parameter, locked)
         raise NotImplementedError(f"ParameterWidget#from_parameter not implemented for {type(parameter)}!")
 
     def build_form_row(self) -> QWidget:
@@ -179,14 +180,14 @@ class OptionalParameterWidget(ParameterWidget):
     A widget to edit an optional parameter.
     """
 
-    def __init__(self, parameter: OptionalParameter) -> None:
+    def __init__(self, parameter: OptionalParameter, locked: bool) -> None:
         """
         Initialize an `OptionalParameterWidget` object.
 
         :param parameter: the optional parameter to reference
         :type parameter: OptionalParameter
         """
-        super().__init__(parameter)
+        super().__init__(parameter, locked)
 
         layout = QVBoxLayout(self)
         self._checkbox = QCheckBox()
@@ -210,7 +211,8 @@ class OptionalParameterWidget(ParameterWidget):
         # `self.parameter`` should always be of type OptionalParameter,
         # even though the type checker doesn't agree.
         child_widget = ParameterWidget.from_parameter(
-            self.parameter.parameter # type: ignore
+            self.parameter.parameter, # type: ignore
+            self._locked
         )
         child_row = child_widget.build_form_row()
         layout.addWidget(child_row)
@@ -236,8 +238,8 @@ class MultiParameterWidget(ParameterWidget):
     A widget to edit a multi-value parameter.
     """
 
-    def __init__(self, parameter: MultiParameter):
-        super().__init__(parameter)
+    def __init__(self, parameter: MultiParameter, locked: bool):
+        super().__init__(parameter, locked)
 
     def build_form_row(self) -> QWidget:
         row = QWidget()
@@ -249,7 +251,7 @@ class MultiParameterWidget(ParameterWidget):
         # This should always work, since the constructor is given a
         # MultiParameter object.
         for child_parameter in self.parameter.parameters: # type: ignore
-            child_widget = ParameterWidget.from_parameter(child_parameter)
+            child_widget = ParameterWidget.from_parameter(child_parameter, self._locked)
             child_row = child_widget.build_form_row()
             layout.addWidget(child_row)
 
@@ -261,14 +263,14 @@ class BoolParameterWidget(ParameterWidget):
     A widget to edit a boolean parameter.
     """
 
-    def __init__(self, parameter: Parameter[bool]) -> None:
+    def __init__(self, parameter: Parameter[bool], locked: bool) -> None:
         """
         Initialize a `BoolParameterWidget` object.
 
         :param parameter: the boolean parameter to reference
         :type parameter: Parameter[bool]
         """
-        super().__init__(parameter)
+        super().__init__(parameter, locked)
 
         layout = QVBoxLayout(self)
         self._checkbox = QCheckBox()
@@ -300,14 +302,14 @@ class IntParameterWidget(ParameterWidget):
     A widget to edit an integer parameter.
     """
 
-    def __init__(self, parameter: IntParameter) -> None:
+    def __init__(self, parameter: IntParameter, locked: bool) -> None:
         """
         Initialize an `IntParameterWidget` object.
 
         :param parameter: the integer parameter to reference
         :type parameter: IntParameter
         """
-        super().__init__(parameter)
+        super().__init__(parameter, locked)
 
         layout = QVBoxLayout(self)
 
@@ -351,14 +353,14 @@ class FloatParameterWidget(ParameterWidget):
     A widget to edit a float parameter.
     """
 
-    def __init__(self, parameter: FloatParameter) -> None:
+    def __init__(self, parameter: FloatParameter, locked: bool) -> None:
         """
         Initialize a `FloatParameterWidget` object.
 
         :param parameter: the float parameter to reference
         :type parameter: FloatParameter
         """
-        super().__init__(parameter)
+        super().__init__(parameter, locked)
 
         layout = QVBoxLayout(self)
 
@@ -407,14 +409,14 @@ class EnumParameterWidget(ParameterWidget):
     A dropdown widget to edit an enumerated parameter.
     """
 
-    def __init__(self, parameter: EnumParameter):
+    def __init__(self, parameter: EnumParameter, locked: bool):
         """
         Initialize an `EnumParameterWidget` object.
 
         :param parameter: the enum parameter to reference
         :type parameter: EnumParameter
         """
-        super().__init__(parameter)
+        super().__init__(parameter, locked)
 
         layout = QVBoxLayout(self)
 
@@ -442,7 +444,7 @@ class StringParameterWidget(ParameterWidget):
     A widget to edit a string parameter.
     """
 
-    def __init__(self, parameter: StringParameter) -> None:
+    def __init__(self, parameter: StringParameter, locked: bool) -> None:
         """
         Initialize a `StringParameterWidget` object.
 
@@ -452,7 +454,7 @@ class StringParameterWidget(ParameterWidget):
         :param parameter: the string parameter to reference
         :type parameter: StringParameter
         """
-        super().__init__(parameter)
+        super().__init__(parameter, locked)
 
         layout = QVBoxLayout(self)
 
@@ -489,8 +491,8 @@ class FileParameterWidget(ParameterWidget):
     Displays the currently selected file path(s).
     """
 
-    def __init__(self, parameter: FileParameter) -> None:
-        super().__init__(parameter)
+    def __init__(self, parameter: FileParameter, locked: bool) -> None:
+        super().__init__(parameter, locked)
         self.parameter: FileParameter
 
         layout = QVBoxLayout(self)
