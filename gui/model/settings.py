@@ -74,7 +74,12 @@ class Settings(QObject):
             self.environment_name_changed.emit(value)
 
     def set_workspace_folder(self) -> None:
-        new_workspace_folder_str = QFileDialog.getExistingDirectory()
+        new_workspace_folder_str = QFileDialog.getExistingDirectory(
+            None,
+            "Select Workspace Folder",
+            self._workspace_path.absolutePath(),
+            QFileDialog.Option.ShowDirsOnly | QFileDialog.Option.DontResolveSymlinks
+        )
         try:
             app_settings.workspace_path = QDir(new_workspace_folder_str)
         except:
