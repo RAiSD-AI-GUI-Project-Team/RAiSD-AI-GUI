@@ -91,10 +91,10 @@ class CommandExecutor(QObject):
         :param command: the command to be executed in the process
         :type command: str
         """
-        print(f"Starting process in environment:{app_settings.workspace_path}")
-        self._process.setWorkingDirectory(app_settings.workspace_path)
+        print(f"Starting process in environment:{app_settings.workspace_path.absolutePath()}")
+        self._process.setWorkingDirectory(app_settings.workspace_path.absolutePath())
         self._process.setProgram("bash")
-        self._process.setArguments(["-c", f"{app_settings.environment_manager} run -n {app_settings.environment_name} {app_settings.executable_file_path} {command}"])
+        self._process.setArguments(["-c", f"{app_settings.environment_manager.value} run -n {app_settings.environment_name} {app_settings.executable_file_path.absoluteFilePath()} {command}"])
         self._process.start()
 
     @Slot()
