@@ -1,5 +1,4 @@
 from PySide6.QtCore import (
-    Qt,
     Slot,
 )
 from PySide6.QtWidgets import (
@@ -10,14 +9,15 @@ from PySide6.QtWidgets import (
     QStackedLayout,
     QScrollArea,
     QPushButton,
-    QLabel,
 )
 
+from gui.model.settings import app_settings
 from gui.model.parameter_group_list import ParameterGroupList
 from gui.execution.command_executor import CommandExecutor
 from gui.windows.run_widget import RunWidget
 from gui.windows.history_widget import HistoryWidget
 from gui.windows.settings_widget import SettingsWidget
+from gui.widgets.status_bar import StatusBar
 from gui.model.run_result import RunResult
  
 class MainWindow(QMainWindow):
@@ -39,9 +39,12 @@ class MainWindow(QMainWindow):
 
     def _setup_ui(self):
         self.setWindowTitle("RAiSD-AI-GUI")
+        window_widget = QWidget(self)
+        window_layout = QVBoxLayout(window_widget)
+        self.setCentralWidget(window_widget)
+
         central_widget = QWidget()
         central_layout = QHBoxLayout(central_widget)
-        self.setCentralWidget(central_widget)
 
         # Left sidebar
         left_sidebar = QWidget()
@@ -54,6 +57,12 @@ class MainWindow(QMainWindow):
         self.main_widget_layout = QStackedLayout(main_widget)
         central_layout.addWidget(main_widget)
         self._setup_main_widget(self.main_widget_layout)
+
+        window_layout.addWidget(central_widget, 1)
+
+        self._status_bar = StatusBar()
+        app_settings.workspace_path_changed.connect(self._status_bar.workspace_path_changed)
+        window_layout.addWidget(self._status_bar)
 
     def _setup_left_sidebar(self, layout: QVBoxLayout):
         logo_widget = QWidget()
