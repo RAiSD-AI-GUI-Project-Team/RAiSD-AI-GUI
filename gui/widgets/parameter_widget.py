@@ -169,8 +169,9 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
 
         layout.addWidget(self)
 
-        reset_button = ParameterWidget.ResetButton(self.parameter)
-        layout.addWidget(reset_button)
+        if not self._locked:
+            reset_button = ParameterWidget.ResetButton(self.parameter)
+            layout.addWidget(reset_button)
 
         return row
 
