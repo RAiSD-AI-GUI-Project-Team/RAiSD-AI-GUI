@@ -15,7 +15,7 @@ class ParameterForm(QWidget):
     A form of parameters to be filled in by the user.
     """
 
-    def __init__(self, parameter_group_list: ParameterGroupList):
+    def __init__(self, parameter_group_list: ParameterGroupList, locked: bool):
         """
         Initialize a `ParameterForm` object.
 
@@ -24,6 +24,7 @@ class ParameterForm(QWidget):
         :type parameter_group_list: ParameterGroupList
         """
         super().__init__()
+        self._locked = locked
         self._parameter_group_list = parameter_group_list
         self._parameter_form_sections = []
         layout = QVBoxLayout(self)

@@ -284,7 +284,7 @@ class ParameterInputWidget(RunSubWidget):
         parameter_input_label = QLabel("Parameter Input")
         layout.addWidget(parameter_input_label)
 
-        parameter_form = ParameterForm(self._parameter_group_list)
+        parameter_form = ParameterForm(self._parameter_group_list, locked=False)
 
         parameter_form_scroll = QScrollArea()
         parameter_form_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
