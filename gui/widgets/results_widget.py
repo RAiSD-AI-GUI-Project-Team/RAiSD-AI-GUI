@@ -17,8 +17,6 @@ from PySide6.QtCore import (
 
 from PySide6.QtGui import QDesktopServices
 
-import subprocess
-
 from gui.model.parameter_group_list import ParameterGroupList
 from gui.widgets.parameter_form import ParameterForm
 from gui.widgets.collapsible import Collapsible

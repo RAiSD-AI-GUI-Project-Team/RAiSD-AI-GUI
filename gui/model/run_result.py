@@ -1,4 +1,6 @@
 from gui.model.parameter_group_list import ParameterGroupList
+
+
 class RunResult():
     def __init__(
             self, 
