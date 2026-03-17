@@ -322,6 +322,7 @@ class IntParameterWidget(ParameterWidget):
         regex = QRegularExpression(R"^(-)?[0-9]*$")
         validator = QRegularExpressionValidator(regex)
         self._line_edit.setValidator(validator)
+        self._line_edit.setReadOnly(self._locked)
         layout.addWidget(self._line_edit)
 
         match (parameter.lower_bound is None, parameter.upper_bound is None):
@@ -351,6 +352,7 @@ class IntParameterWidget(ParameterWidget):
         self._line_edit.setText(str(new_value))
         self._show_validity(self._line_edit, valid)
 
+
 class FloatParameterWidget(ParameterWidget):
     """
     A widget to edit a float parameter.
@@ -376,6 +378,7 @@ class FloatParameterWidget(ParameterWidget):
         )
         validator = QRegularExpressionValidator(regex)
         self._line_edit.setValidator(validator)
+        self._line_edit.setReadOnly(self._locked)
         layout.addWidget(self._line_edit)
 
         match (parameter.lower_bound is None, parameter.upper_bound is None):
