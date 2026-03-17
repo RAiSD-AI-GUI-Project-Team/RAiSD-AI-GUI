@@ -197,6 +197,7 @@ class OptionalParameterWidget(ParameterWidget):
             if parameter.value
             else Qt.CheckState.Unchecked
         )
+        self._checkbox.setEnabled(not self._locked)
         layout.addWidget(self._checkbox)
 
         self._checkbox.checkStateChanged.connect(self._check_state_changed)
@@ -280,6 +281,7 @@ class BoolParameterWidget(ParameterWidget):
             if parameter.value
             else Qt.CheckState.Unchecked
         )
+        self._checkbox.setEnabled(not self._locked)
         layout.addWidget(self._checkbox)
 
         self._checkbox.checkStateChanged.connect(self._check_state_changed)
