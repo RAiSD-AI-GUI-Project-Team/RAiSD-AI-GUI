@@ -12,7 +12,9 @@ from PySide6.QtWidgets import (
 
 
 class EnvironmentManager(Enum):
-    """Class to hold the allowed environment manager values."""
+    """
+    Class to hold the allowed environment manager values.
+    """
     CONDA = "conda"
     MINICONDA = "miniconda"
     MAMBA = "mamba"
