@@ -259,10 +259,11 @@ class OperationSelectionWidget(RunSubWidget):
 
     def _setup_widget(self) -> QWidget:
         widget = QWidget()
-        widget.setStyleSheet("background-color: lightblue;")
+        widget.setObjectName("operation_selection_widget")
         layout = QVBoxLayout(widget)
 
         operation_selection_label = QLabel("Operation Selection")
+        operation_selection_label.setObjectName("operation_selection_label")
         layout.addWidget(operation_selection_label)
 
         operation_selection_widget = self._setup_operation_selection_widget()

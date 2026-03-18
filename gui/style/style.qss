@@ -92,17 +92,19 @@ QWidget#navigation_buttons_widget QPushButton[highlight="true"] {
 
 /* ---- Parameter Input View ---- */
 
-QWidget#parameter_input_widget, QWidget#run_results_widget, QWidget#run_view_widget {
+QWidget#parameter_input_widget, QWidget#run_results_widget,
+QWidget#run_view_widget, QWidget#operation_selection_widget {
     background-color: #d7dbe9;
 }
 
 QWidget#parameter_input_widget QLabel,
 QWidget#run_results_widget QLabel,
-QWidget#run_view_widget QLabel{
+QWidget#run_view_widget QLabel,
+QWidget#operation_selection_widget QLabel{
     color: #0a0d4f;
 }
 
-QLabel#parameter_input_label, QLabel#run_results_label, QLabel#run_view_label{
+QLabel#parameter_input_label, QLabel#run_results_label, QLabel#run_view_label, QLabel#operation_selection_label{
     font-size: 24px;
     font-weight: 800;
     margin-left: 20px;
