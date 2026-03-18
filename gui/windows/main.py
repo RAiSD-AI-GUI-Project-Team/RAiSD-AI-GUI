@@ -28,9 +28,8 @@ class MainWindow(QMainWindow):
         """
         Initialize the main window.
 
-        :param parameter_group_list: the parameters to be filled in by
-        the user
-        :type parameter_group_list: ParameterGroupList
+        :param run_result: the run_result object used by the RunWidget
+        :type run_result: RunResult
         """
         super().__init__()
         self._run_result = run_result
@@ -108,10 +107,20 @@ class MainWindow(QMainWindow):
     def _settings_button_clicked(self) -> None:
         self.main_widget_layout.setCurrentWidget(self.settings_widget)
 
-    def _set_workspace_path_title(self, new_workspace: QDir) -> None:
+    def _set_workspace_path_title(self, new_workspace: QDir, max_len: int = 30) -> None:
+        """
+        Update the window title to reflect the new workspace path.
+
+        Shortens the path if it exceeds a certain length.
+        
+        :param new_workspace: the new workspace path
+        :type new_workspace: QDir
+
+        :param max_len: the maximum length of the path to display
+        :type max_len: int
+        """
         new_workspace_path = new_workspace.absolutePath()
-        max_len = 30
-        if len(new_workspace_path) > 30:
+        if len(new_workspace_path) > max_len:
             self.setWindowTitle(f"RAiSD-AI-GUI - '..{new_workspace_path[-max_len + 2:]}'")
         else:
             self.setWindowTitle(f"RAiSD-AI-GUI - '{new_workspace_path}'")
