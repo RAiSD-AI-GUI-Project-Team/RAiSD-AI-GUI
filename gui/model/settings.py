@@ -88,16 +88,6 @@ class Settings(QObject):
             self.executable_file_path_changed.emit(value)
 
     @property
-    def executable_folder_path(self) -> QDir:
-        """
-        Get the current folder path of the executable file.
-
-        :return: The current folder path.
-        :rtype: QDir
-        """
-        return self._executable_file_path.absoluteDir()
-
-    @property
     def environment_manager(self) -> EnvironmentManager:
         """
         Get the current environment manager.
