@@ -96,7 +96,7 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         self._locked = locked
 
     def _show_validity(self, widget: QWidget, valid: bool) -> None:
-        if valid:
+        if valid and not self._locked:
             widget.setStyleSheet("QLineEdit { border: 1px solid green; }")
         else:
             widget.setStyleSheet("QLineEdit { border: 1px solid red; }")
