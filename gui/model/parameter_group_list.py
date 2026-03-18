@@ -8,6 +8,7 @@ from PySide6.QtCore import (
     QObject,
     Signal,
     Slot,
+    QFileInfo,
 )
 
 from gui.model.parameter_group import ParameterGroup
@@ -48,6 +49,7 @@ class Directory(FileStructure):
 # Operation model class
 @dataclass
 class Operation(QObject):
+    cli: str
     requires: list[FileStructure]
     produces: FileStructure
 
@@ -57,6 +59,11 @@ class FileProducerNode(ABC):
     @property
     @abstractmethod
     def produces(self) -> FileStructure:
+        pass
+
+    @property
+    @abstractmethod
+    def file(self) -> QFileInfo | None:
         pass
 
 
@@ -94,10 +101,19 @@ class CommonParentDirectoryNode(FileProducerNode):
 class FilePickerNode(FileProducerNode):
     def __init__(self, produces: FileStructure):
         self._produces = produces
+        self._file: QFileInfo | None = None
 
     @property
     def produces(self) -> FileStructure:
         return self._produces
+
+    @property
+    def file(self) -> QFileInfo | None:
+        return self._file
+
+    @file.setter
+    def file(self, new_file: QFileInfo | None) -> None:
+        self._file = new_file
 
 
 class OperationNode():
