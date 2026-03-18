@@ -80,10 +80,12 @@ class Settings(QObject):
             self._workspace_path.absolutePath(),
             QFileDialog.Option.ShowDirsOnly | QFileDialog.Option.DontResolveSymlinks
         )
+        if not new_workspace_folder_str:  # Check for empty string (canceled)
+            return  
         try:
             app_settings.workspace_path = QDir(new_workspace_folder_str)
-        except:
-            pass
+        except Exception as e:
+            print(f"Error setting workspace: {e}")
 
 # create a global singleton instance
 app_settings = Settings()
