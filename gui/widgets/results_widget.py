@@ -62,10 +62,6 @@ class ResultsWidget(QWidget):
         files_layout.addWidget(self.folder_widget)
         layout.addWidget(files_widget, 1)
 
-        button = QPushButton("Bu bir örnektir")
-        button.setObjectName("file_button")
-        self.info_files_layout.addWidget(button)
-
         # Parameter widget
         parameters_header = QLabel("Parameters used")
         parameter_form = ParameterForm(self._run_result.parameter_group_list)
