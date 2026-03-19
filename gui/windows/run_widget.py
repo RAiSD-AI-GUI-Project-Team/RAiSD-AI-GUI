@@ -227,6 +227,12 @@ class OperationNodeWidget(QWidget):
     def __init__(self, operation_node: OperationNode):
         super().__init__()
         self._operation_node = operation_node
+        layout = QVBoxLayout(self)
+        name = QLabel(operation_node.name)
+        description = QLabel(operation_node.description)
+        description.setWordWrap(True)
+        layout.addWidget(name)
+        layout.addWidget(description)
 
 
 class FileConsumerWidget(QWidget):
