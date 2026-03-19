@@ -3,6 +3,7 @@ from PySide6.QtCore import (
     QProcess,
     Signal,
     Slot,
+    QFileInfo,
 )
 from PySide6.QtWidgets import (
     QWidget,
@@ -15,9 +16,22 @@ from PySide6.QtWidgets import (
     QTextEdit,
     QCheckBox,
     QMessageBox,
+    QFileDialog,
 )
 
-from gui.model.parameter_group_list import ParameterGroupList
+from PySide6.QtGui import QWindow
+
+from gui.model.parameter_group_list import (
+    Directory,
+    ParameterGroupList, 
+    OperationTree,
+    OperationNode,
+    FileConsumerNode,
+    FileProducerNode,
+    FilePickerNode,
+    CommonParentDirectoryNode,
+    SingleFile,
+)
 from gui.execution.command_executor import CommandExecutor
 from gui.widgets.parameter_form import ParameterForm
 from gui.windows.dialog import ConfirmDialog, ErrorDialog
@@ -202,6 +216,78 @@ class RunSubWidget(QWidget):
         raise NotImplementedError
 
 
+class OperationTreeWidget(QWidget):
+    def __init__(self, operation_tree: OperationTree):
+        super().__init__()
+        self._operation_tree = operation_tree
+
+
+class OperationNodeWidget(QWidget):
+    def __init__(self, operation_node: OperationNode):
+        super().__init__()
+        self._operation_node = operation_node
+
+
+class FileConsumerWidget(QWidget):
+    def __init__(self, file_consumer_node: FileConsumerNode):
+        super().__init__()
+        self._file_consumer_node = file_consumer_node
+
+
+        layout = QVBoxLayout(self)
+        self.button_widget = QWidget()
+        self.button_layout = QHBoxLayout(self.button_widget)
+        self.file_producer_widget = QWidget()
+        self.file_producer_layout = QStackedLayout(self.file_producer_widget)
+        for producer in self._file_consumer_node.producers:
+            if isinstance(producer, FilePickerNode):
+                button = QPushButton("Select a file")
+                widget = FilePickerWidget(producer)
+            elif isinstance(producer, OperationNode):
+                button = QPushButton("Generate a file")
+                widget = OperationNodeWidget(producer)
+            self.button_layout.addWidget(button)
+            self.file_producer_layout.addWidget(widget)
+            button.clicked.connect(lambda _, w=widget: self._button_clicked(w))
+        layout.addWidget(self.button_widget)
+        layout.addWidget(self.file_producer_widget)
+
+    def _button_clicked(self, widget: QWidget) -> None:
+        self.file_producer_layout.setCurrentWidget(widget)
+
+
+class FilePickerWidget(QWidget):
+    def __init__(self, file_picker: FilePickerNode):
+        super().__init__()
+        self._file_picker = file_picker
+
+        layout = QVBoxLayout(self)
+        self.button = QPushButton("Select a file")
+        self.button.clicked.connect(self._onpopup) 
+        layout.addWidget(self.button)
+        self._file_picker.file_changed.connect(self._file_picker_file_changed)
+        
+
+    def _onpopup(self):
+        self.dialog = QFileDialog()
+        if isinstance(self._file_picker.produces, Directory):
+            self.dialog.setFileMode(QFileDialog.FileMode.Directory)
+        self.dialog.show()
+        self.dialog.fileSelected.connect(self._file_selected)
+
+    def _file_selected(self, path):
+        self._file_picker.file = QFileInfo(path)
+
+    def _file_picker_file_changed(self, new_file: QFileInfo):
+        self.button.setText(new_file.fileName())
+
+
+class CommonParentDirectoryNode(QWidget):
+    def __init__(self, common_parent_directory: CommonParentDirectoryNode):
+        super().__init__()
+        self._common_parent_directory = common_parent_directory
+
+
 class OperationSelectionWidget(RunSubWidget):
     """
     
@@ -233,6 +319,12 @@ class OperationSelectionWidget(RunSubWidget):
         """
         widget = QWidget()
         layout = QVBoxLayout(widget)
+
+        file_picker_node = FilePickerNode(Directory([]))
+        file_picker_node2 = FilePickerNode(Directory([SingleFile([".ms"])]))
+        op_node = OperationNode(None, None)
+        file_consumer = FileConsumerNode(Directory([]), [file_picker_node, file_picker_node2, op_node])
+        layout.addWidget(FileConsumerWidget(file_consumer))
 
         for operation, enabled in self._parameter_group_list.operations.items():
             operation_selector = self._operation_selector(operation, enabled, f"perform: {operation}") # TODO: Set description.
