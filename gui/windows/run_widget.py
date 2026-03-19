@@ -258,24 +258,32 @@ class FileConsumerWidget(QWidget):
         super().__init__()
         self._file_consumer_node = file_consumer_node
 
-
         layout = QVBoxLayout(self)
+
         heading = QLabel(self._file_consumer_node.label)
         layout.addWidget(heading)
         self.button_widget = QWidget()
         self.button_layout = QHBoxLayout(self.button_widget)
         self.file_producer_widget = QWidget()
         self.file_producer_layout = QStackedLayout(self.file_producer_widget)
-        for producer in self._file_consumer_node.producers:
+        if len(self._file_consumer_node.producers) == 1:
+            producer = self._file_consumer_node.producers[0]
             if isinstance(producer, FilePickerNode):
-                button = QPushButton("Select a file")
                 widget = FilePickerWidget(producer)
             elif isinstance(producer, OperationNode):
-                button = QPushButton("Generate a file")
                 widget = OperationNodeWidget(producer)
-            self.button_layout.addWidget(button)
             self.file_producer_layout.addWidget(widget)
-            button.clicked.connect(lambda _, w=widget: self._button_clicked(w))
+        else:
+            for producer in self._file_consumer_node.producers:
+                if isinstance(producer, FilePickerNode):
+                    button = QPushButton("Select a file")
+                    widget = FilePickerWidget(producer)
+                elif isinstance(producer, OperationNode):
+                    button = QPushButton("Generate a file")
+                    widget = OperationNodeWidget(producer)
+                self.button_layout.addWidget(button)
+                self.file_producer_layout.addWidget(widget)
+                button.clicked.connect(lambda _, w=widget: self._button_clicked(w))
         layout.addWidget(self.button_widget)
         layout.addWidget(self.file_producer_widget)
 
