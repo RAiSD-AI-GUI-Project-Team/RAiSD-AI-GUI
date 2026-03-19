@@ -222,6 +222,14 @@ class OperationTreeWidget(QWidget):
         super().__init__()
         self._operation_tree = operation_tree
 
+        layout = QVBoxLayout(self)
+
+        heading = QLabel("Choose the operations to be performed.")
+        layout.addWidget(heading)
+
+        body = OperationNodeWidget(self._operation_tree.root)
+        layout.addWidget(body)
+
 
 class OperationNodeWidget(QWidget):
     def __init__(self, operation_node: OperationNode):
@@ -339,14 +347,7 @@ class OperationSelectionWidget(RunSubWidget):
         widget = QWidget()
         layout = QVBoxLayout(widget)
         file_picker_node = FilePickerNode(Directory([]))
-        file_consumer = FileConsumerNode(
-            Directory([]),
-            label="Input file",
-            cli="-I",
-        )
-        file_consumer.add_producer(file_picker_node)
-        file_consumer.add_producer(self._parameter_group_list.my_tree.root)
-        layout.addWidget(FileConsumerWidget(file_consumer))
+        layout.addWidget(OperationTreeWidget(self._parameter_group_list.my_tree))
 
         for operation, enabled in self._parameter_group_list.operations.items():
             operation_selector = self._operation_selector(operation, enabled, f"perform: {operation}") # TODO: Set description.
