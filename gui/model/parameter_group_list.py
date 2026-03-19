@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from re import compile
-from typing import Any, Iterator
+from typing import Any, Iterator, Protocol
 from yaml import load, Loader
 
 from PySide6.QtCore import (
@@ -33,17 +33,26 @@ from gui.model.dependency import (
 # File structure data classes
 @dataclass
 class FileStructure(ABC):
-    pass
+    @abstractmethod
+    def matches(self, file_info: QFileInfo) -> bool:
+        pass
 
 
 @dataclass
 class SingleFile(FileStructure):
     formats: list[str]
 
+    def matches(self, file_info: QFileInfo) -> bool:
+        return file_info.isFile()
+
 
 @dataclass
 class Directory(FileStructure):
     contents: list[FileStructure]
+
+    def matches(self, file_info: QFileInfo) -> bool:
+        # TODO: maybe check directory contents as well?
+        return file_info.isDir()
 
 
 # Operation model class
@@ -55,19 +64,21 @@ class Operation(QObject):
 
 
 # Operation tree classes
-class FileProducerNode(ABC):
+class FileProducerNode(Protocol):
     @property
-    @abstractmethod
     def produces(self) -> FileStructure:
-        pass
+        ...
 
     @property
-    @abstractmethod
     def file(self) -> QFileInfo | None:
-        pass
+        ...
+
+    @property
+    def valid(self) -> bool:
+        ...
 
 
-class FileConsumerNode:
+class FileConsumerNode():
     def __init__(
             self,
             requires: FileStructure,
@@ -75,6 +86,7 @@ class FileConsumerNode:
     ) -> None:
         self._requires = requires
         self._producers = producers
+        self._selected_index = 0
 
     @property
     def requires(self) -> FileStructure:
@@ -84,21 +96,62 @@ class FileConsumerNode:
     def producers(self) -> list[FileProducerNode]:
         return self._producers
 
+    @property
+    def selected_index(self) -> int:
+        return self._selected_index
 
-class CommonParentDirectoryNode(FileProducerNode):
+    @selected_index.setter
+    def selected_index(self, new_selected_index: int) -> None:
+        self._selected_index = new_selected_index
+
+    @property
+    def selected_producer(self) -> FileProducerNode:
+        return self.producers[self.selected_index]
+
+    @property
+    def valid(self) -> bool:
+        return self.selected_producer.valid
+
+
+class CommonParentDirectoryNode():
     def __init__(
             self,
-            produces: Directory,
+            producers: list[FileProducerNode],
     ) -> None:
-        self._produces = produces
+        self._producers = producers
+
+    @property
+    def producers(self) -> list[FileProducerNode]:
+        return self._producers
 
     @property
     def produces(self) -> FileStructure:
-        return self._produces
+        return Directory([p.produces for p in self.producers])
+
+    @property
+    def file(self) -> QFileInfo | None:
+        if self.producers[0].file:
+            dir = self.producers[0].file.dir()
+            path = dir.absolutePath()
+            return QFileInfo(path)
+        return None
+
+    @property
+    def valid(self) -> bool:
+        if not all(producer.valid for producer in self.producers):
+            return False
+
+        parent_directories = [
+            producer.file.dir()
+            for producer in self.producers
+            if producer.file
+        ]
+
+        # All child nodes must produce files with the same parent directory
+        return len(set(parent_directories)) == 1
 
 
-
-class FilePickerNode(FileProducerNode):
+class FilePickerNode():
     def __init__(self, produces: FileStructure):
         self._produces = produces
         self._file: QFileInfo | None = None
@@ -115,8 +168,14 @@ class FilePickerNode(FileProducerNode):
     def file(self, new_file: QFileInfo | None) -> None:
         self._file = new_file
 
+    @property
+    def valid(self) -> bool:
+        if self.file is None:
+            return False
+        return self.produces.matches(self.file)
 
-class OperationNode(FileProducerNode):
+
+class OperationNode():
     def __init__(self,
         operation: Operation,
         files_needed: list[FileConsumerNode],
@@ -137,6 +196,10 @@ class OperationNode(FileProducerNode):
         # TODO: make this return the file corresponding to the output
         # of the operation.
         return None
+
+    @property
+    def valid(self) -> bool:
+        return all([consumer.valid for consumer in self._files_needed])
 
 
 @dataclass
