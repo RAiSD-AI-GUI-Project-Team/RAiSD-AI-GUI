@@ -269,7 +269,6 @@ class FilePickerWidget(QWidget):
         self.button.clicked.connect(self._onpopup) 
         layout.addWidget(self.button)
         self._file_picker.file_changed.connect(self._file_picker_file_changed)
-        
 
     def _onpopup(self):
         self.dialog = QFileDialog()
