@@ -223,6 +223,10 @@ class OperationNode():
         return self._produces
 
     @property
+    def file_consumers(self) -> list[FileConsumerNode]:
+        return self._file_consumers
+
+    @property
     def file(self) -> QFileInfo | None:
         # TODO: make this return the file corresponding to the output
         # of the operation.
