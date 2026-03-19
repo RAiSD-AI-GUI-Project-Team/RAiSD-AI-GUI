@@ -227,12 +227,21 @@ class OperationNodeWidget(QWidget):
     def __init__(self, operation_node: OperationNode):
         super().__init__()
         self._operation_node = operation_node
+
         layout = QVBoxLayout(self)
+
         name = QLabel(operation_node.name)
+        layout.addWidget(name)
+
         description = QLabel(operation_node.description)
         description.setWordWrap(True)
-        layout.addWidget(name)
         layout.addWidget(description)
+
+        input_files_widget = QWidget()
+        input_files_layout = QHBoxLayout(input_files_widget)
+        for file_consumer in operation_node.file_consumers:
+            file_consumer_widget = FileConsumerWidget(file_consumer)
+            input_files_layout.addWidget(file_consumer_widget)
 
 
 class FileConsumerWidget(QWidget):
@@ -275,6 +284,7 @@ class FilePickerWidget(QWidget):
         self.button.clicked.connect(self._onpopup) 
         layout.addWidget(self.button)
         self._file_picker.file_changed.connect(self._file_picker_file_changed)
+        
 
     def _onpopup(self):
         self.dialog = QFileDialog()
