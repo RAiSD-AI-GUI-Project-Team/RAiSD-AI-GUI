@@ -242,6 +242,7 @@ class OperationNodeWidget(QWidget):
         for file_consumer in operation_node.file_consumers:
             file_consumer_widget = FileConsumerWidget(file_consumer)
             input_files_layout.addWidget(file_consumer_widget)
+        layout.addWidget(input_files_widget)
 
 
 class FileConsumerWidget(QWidget):
