@@ -320,7 +320,6 @@ class OperationSelectionWidget(RunSubWidget):
         """
         widget = QWidget()
         layout = QVBoxLayout(widget)
-
         file_picker_node = FilePickerNode(Directory([]))
         file_consumer = FileConsumerNode(
             Directory([]),
@@ -328,6 +327,7 @@ class OperationSelectionWidget(RunSubWidget):
             cli="-I",
         )
         file_consumer.add_producer(file_picker_node)
+        file_consumer.add_producer(self._parameter_group_list.my_tree.root)
         layout.addWidget(FileConsumerWidget(file_consumer))
 
         for operation, enabled in self._parameter_group_list.operations.items():

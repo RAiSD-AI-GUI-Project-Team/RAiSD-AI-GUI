@@ -286,12 +286,6 @@ mdl_gen = Operation(
     ),
 )
 
-my_tree = OperationTree(
-    root=OperationNode(
-        operation=mdl_gen,
-    )
-)
-
 
 class ParameterGroupList(QObject):
     """
@@ -300,6 +294,12 @@ class ParameterGroupList(QObject):
     The parameters are organized in `ParameterGroup` objects, based on
     the operation mode they correspond to and how they relate.
     """
+
+    my_tree = OperationTree(
+        root=OperationNode(
+            operation=mdl_gen,
+        )
+    )
 
     operations_changed = Signal()
 
