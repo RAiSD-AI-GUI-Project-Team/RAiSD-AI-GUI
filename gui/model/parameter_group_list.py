@@ -183,7 +183,10 @@ class CommonParentDirectoryNode():
         return len(set(parent_directories)) == 1
 
     def to_cli(self) -> list[str]:
-        return [consumer.to_cli() for consumer in self.file_consumers]
+        commands = []
+        for consumer in self.file_consumers:
+            commands.extend(consumer.to_cli())
+        return commands
 
 
 class FilePickerNode(QObject):
