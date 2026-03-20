@@ -344,8 +344,9 @@ class CommonParentDirectoryNodeWidget(QWidget):
 
 class OperationSelectionWidget(RunSubWidget):
     """
-    
-    """    
+    A widget that allows the user to select operations to be run.
+    """
+
     def __init__(self, parameter_group_list: ParameterGroupList):
         self._parameter_group_list = parameter_group_list
         super().__init__()
