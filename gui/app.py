@@ -1,11 +1,12 @@
 import sys
+import sass
 
 from PySide6.QtCore import (
     QDir,
     QFileInfo,
 )
 from PySide6.QtWidgets import (
-    QApplication, 
+    QApplication,
     QStyleFactory,
 )
 
@@ -15,11 +16,20 @@ from gui.windows.main import MainWindow
 from gui.model.run_result import RunResult
 
 
+
 def main():
     app = QApplication(sys.argv)
+
+    with open("gui/style/variables.scss", "r") as f:
+        variables = f.read()
+
     with open("gui/style/style.qss", "r") as f:
-        style = f.read()
-    app.setStyleSheet(style)
+        stylesheet = f.read()
+
+    final_stylesheet = variables + stylesheet
+    final_stylesheet = sass.compile(string=final_stylesheet)
+
+    app.setStyleSheet(final_stylesheet)
 
     app_settings.workspace_path = QDir()
     app_settings.executable_file_path = QFileInfo(QDir().absoluteFilePath("RAiSD-AI"))
