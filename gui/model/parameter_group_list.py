@@ -8,7 +8,6 @@ from PySide6.QtCore import (
     QObject,
     Signal,
     Slot,
-    QFileInfo,
 )
 
 from gui.model.file_structure import (
