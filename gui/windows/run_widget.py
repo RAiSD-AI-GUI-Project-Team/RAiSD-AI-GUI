@@ -21,17 +21,18 @@ from PySide6.QtWidgets import (
 
 from PySide6.QtGui import QWindow
 
-from gui.model.parameter_group_list import (
+from gui.model.file_structure import (
     Directory,
-    ParameterGroupList,
-    Operation,
+)
+from gui.model.operation_tree import(
     OperationTree,
     OperationNode,
     FileConsumerNode,
-    FileProducerNode,
     FilePickerNode,
     CommonParentDirectoryNode,
-    SingleFile,
+)
+from gui.model.parameter_group_list import (
+    ParameterGroupList,
 )
 from gui.execution.command_executor import CommandExecutor
 from gui.widgets.parameter_form import ParameterForm
