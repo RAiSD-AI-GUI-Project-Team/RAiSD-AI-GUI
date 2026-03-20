@@ -121,6 +121,10 @@ class FileConsumerNode():
         return self.producers[self.selected_index]
 
     @property
+    def file(self) -> QFileInfo | None:
+        return self.selected_producer.file
+
+    @property
     def valid(self) -> bool:
         return self.selected_producer.valid
 
