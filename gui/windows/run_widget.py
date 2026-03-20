@@ -272,6 +272,8 @@ class FileConsumerWidget(QWidget):
                 widget = FilePickerWidget(producer)
             elif isinstance(producer, OperationNode):
                 widget = OperationNodeWidget(producer)
+            else:
+                raise NotImplemented
             self.file_producer_layout.addWidget(widget)
         else:
             for producer in self._file_consumer_node.producers:
@@ -281,6 +283,8 @@ class FileConsumerWidget(QWidget):
                 elif isinstance(producer, OperationNode):
                     button = QPushButton("Generate a file")
                     widget = OperationNodeWidget(producer)
+                else:
+                    raise NotImplemented
                 self.button_layout.addWidget(button)
                 self.file_producer_layout.addWidget(widget)
                 button.clicked.connect(lambda _, w=widget: self._button_clicked(w))
