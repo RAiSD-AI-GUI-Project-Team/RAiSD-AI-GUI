@@ -109,6 +109,10 @@ class FileConsumerNode():
         return self._label
 
     @property
+    def cli_parameter(self) -> str:
+        return f"{self._cli} {self.file.path()}"
+
+    @property
     def selected_index(self) -> int:
         return self._selected_index
 
@@ -118,6 +122,7 @@ class FileConsumerNode():
 
     @property
     def selected_producer(self) -> FileProducerNode:
+        print(f"{self.label} {self.selected_index}")
         return self.producers[self.selected_index]
 
     @property
@@ -127,6 +132,9 @@ class FileConsumerNode():
     @property
     def valid(self) -> bool:
         return self.selected_producer.valid
+    
+    def to_cli(self) -> list[str]:
+        return self.selected_producer.to_cli()
 
 
 class CommonParentDirectoryNode():
@@ -174,6 +182,9 @@ class CommonParentDirectoryNode():
         # All child nodes must produce files with the same parent directory
         return len(set(parent_directories)) == 1
 
+    def to_cli(self) -> list[str]:
+        return [consumer.to_cli() for consumer in self.file_consumers]
+
 
 class FilePickerNode(QObject):
     file_changed = Signal(QFileInfo)
@@ -201,6 +212,9 @@ class FilePickerNode(QObject):
         if self.file is None:
             return False
         return self.produces.matches(self.file)
+    
+    def to_cli(self) -> list[str]:
+        return []
 
 
 class OperationNode():
@@ -240,19 +254,29 @@ class OperationNode():
 
     @property
     def file(self) -> QFileInfo | None:
-        # TODO: make this return the file corresponding to the output
-        # of the operation.
-        return None
+        return QFileInfo("RAiSD_Images.runID")
 
     @property
     def valid(self) -> bool:
         return all([consumer.valid for consumer in self._file_consumers])
 
+    def to_cli(self) -> list[str]:
+        commands = []
+        own_command = f"./RAiSD-AI {self._cli}"
+
+        for file_consumer in self.file_consumers:
+            commands.extend(file_consumer.to_cli())
+            own_command += f" {file_consumer.cli_parameter}"
+        commands.append(own_command)
+
+        return commands
 
 @dataclass
 class OperationTree(QObject):
     root: OperationNode
 
+    def to_cli(self) -> list[str]:
+        return self.root.to_cli()
 
 # Dummy data
 img_gen = Operation(

@@ -228,6 +228,10 @@ class OperationTreeWidget(QWidget):
         heading = QLabel("Choose the input for RAiSD-AI.")
         layout.addWidget(heading)
 
+        test_button = QPushButton("Print commands")
+        test_button.clicked.connect(lambda: print(operation_tree.to_cli()))
+        layout.addWidget(test_button)
+
         body = OperationNodeWidget(self._operation_tree.root)
         layout.addWidget(body)
 
@@ -278,7 +282,7 @@ class FileConsumerWidget(QWidget):
                 raise NotImplemented
             self.file_producer_widget.addWidget(widget)
         else:
-            for producer in self._file_consumer_node.producers:
+            for i, producer in enumerate(self._file_consumer_node.producers):
                 if isinstance(producer, FilePickerNode):
                     button = QPushButton("Upload a file")
                     widget = FilePickerWidget(producer)
@@ -292,12 +296,13 @@ class FileConsumerWidget(QWidget):
                     raise NotImplemented
                 self.button_layout.addWidget(button)
                 self.file_producer_widget.addWidget(widget)
-                button.clicked.connect(lambda _, w=widget: self._button_clicked(w))
+                button.clicked.connect(lambda _, i=i: self._button_clicked(i))
         layout.addWidget(self.button_widget)
         layout.addWidget(self.file_producer_widget)
 
-    def _button_clicked(self, widget: QWidget) -> None:
-        self.file_producer_widget.setCurrentWidget(widget)
+    def _button_clicked(self, i: int) -> None:
+        self._file_consumer_node.selected_index = i
+        self.file_producer_widget.setCurrentIndex(i)
 
 
 class FilePickerWidget(QWidget):
