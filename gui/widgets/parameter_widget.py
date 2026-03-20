@@ -557,7 +557,7 @@ class FileParameterWidget(ParameterWidget):
                 self.list_widget.addItems(self.parameter.value)
             else:
                 self.list_widget.addItem("No files selected")
-            self.list_widget.setMinimumWidth(self.list_widget.sizeHintForColumn(0)*1.05)
+            self.list_widget.setMinimumWidth(int(self.list_widget.sizeHintForColumn(0)*1.05))
             self.list_widget.setMaximumHeight(self.list_widget.sizeHintForRow(0)*self.list_widget.count())
             self.list_widget.doubleClicked.connect(self._on_double_click)
             layout.addWidget(self.list_widget)
@@ -617,7 +617,7 @@ class FileParameterWidget(ParameterWidget):
                 self.list_widget.addItems(file_paths)
             else:
                 self.list_widget.addItem("No files selected")
-            self.list_widget.setMinimumWidth(self.list_widget.sizeHintForColumn(0)*1.05)
+            self.list_widget.setMinimumWidth(int(self.list_widget.sizeHintForColumn(0)*1.05))
             self.list_widget.setMaximumHeight(self.list_widget.sizeHintForRow(0)*self.list_widget.count())
             return
         
