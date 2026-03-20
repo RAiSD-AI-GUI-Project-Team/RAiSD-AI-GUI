@@ -35,6 +35,20 @@ from gui.model.dependency import (
 
 
 # Dummy data
+rsd_def = Operation(
+    name="Standard RAiSD",
+    description="Perform a standard RAiSD sweep scan.",
+    cli="",
+    requires=[
+        (
+            "Input data",
+            "-I",
+            SingleFile([".ms"]),
+        )
+    ],
+    produces=SingleFile([".report"]),
+)
+
 img_gen = Operation(
     name="Image generation",
     description="Generate images.",
@@ -54,7 +68,7 @@ img_gen = Operation(
 mdl_gen = Operation(
     name="Model training",
     description="Train a CNN model.",
-    cli="MDL-GEN",
+    cli="-op MDL-GEN",
     requires=[
         (
             "Training data",
@@ -82,32 +96,79 @@ mdl_gen = Operation(
     ),
 )
 
-fake_mdl_gen = Operation(
-    name="Fake model training",
-    description="Imagine model training if it only wanted one class.",
-    cli="MDL-GEN-FAKE",
+mdl_tst = Operation(
+    name="Inference",
+    description="Test your CNN model.",
+    cli="-op MDL-TST",
     requires=[
         (
-            "Training data",
+            "Model",
+            "-mdl",
+            Directory([SingleFile([".pt"])])
+        ),
+        (
+            "Testing data",
             "-I",
-            Directory(
-                [
-                    Directory(
-                        [
-                            SingleFile([".png"]),
-                        ]
-                    ),
-                ]
-            )
-        )
+            Directory([Directory([SingleFile([".png"])]), Directory([SingleFile([".png"])])])
+        ),
     ],
-    produces=Directory(
-        [
-            SingleFile([".pt"]),
-        ],
-    ),
+    produces=SingleFile([".report"])
 )
 
+swp_scn = Operation(
+    name="Sweep scan",
+    description="Run a sweep scan with you CNN mode.",
+    cli="-op SWP-SCN",
+    requires=[
+        (
+            "Model",
+            "-mdl",
+            Directory([SingleFile([".pt"])]),
+        ),
+        (
+            "Testing data",
+            "-I",
+            SingleFile([".ms"]),
+        ),
+    ],
+    produces=SingleFile([".report"])
+)
+
+co = Operation(
+    name="Common outlier analysis",
+    description="Perform common outlier analysis for a previously completed sweep scan.",
+    cli="",
+    requires=[],
+    produces=SingleFile([".co-report"])
+)
+
+fasta_vcf = Operation(
+    name="FASTA to vcf conversion",
+    description="Convert a FASTA file to vcf",
+    cli="-E",
+    requires=[
+        (
+            "Input file",
+            "-I",
+            SingleFile([".fasta"])
+        ),
+    ],
+    produces=SingleFile([".vcf"])
+)
+
+vcf_ms = Operation(
+    name="vcf to ms conversion",
+    description="Convert a vcf file to ms",
+    cli="",
+    requires=[
+        (
+            "Input file",
+            "-I",
+            SingleFile([".vcf"]),
+        ),
+    ],
+    produces=SingleFile([".ms"])
+)
 
 
 class ParameterGroupList(QObject):
@@ -123,10 +184,9 @@ class ParameterGroupList(QObject):
     def __init__(
             self,
             command: str,
-            operations: dict[str, bool],
+            operation_trees: list[OperationTree],
             parameter_groups: list[ParameterGroup] | None = None,
             dependencies: list[Dependency] | None = None,
-            new_operations: dict[str, Operation] = {},
     ) -> None:
         """
         Initialize a `ParameterGroupList` object.
@@ -139,34 +199,12 @@ class ParameterGroupList(QObject):
         """
         super().__init__()
         self.command = command
-        self._operations = operations
+        self._operation_trees = operation_trees
+        self._selected_operation_tree_index = 0
         self._parameter_groups = parameter_groups or []
         self._dependencies = dependencies or []
-        self._operation_trees = OperationTree.build_trees(
-            new_operations.values()
-        )
-
-    class OperationEnabledCondition(Dependency.Condition):
-        def __init__(
-                self,
-                parameter_group_list: "ParameterGroupList",
-                operation: str,
-                target_value: bool = True,
-                parent: QObject | None = None,
-        ) -> None:
-            super().__init__(
-                value=parameter_group_list.operations[operation]==target_value,
-                parent=parent,
-            )
-            self._parameter_group_list = parameter_group_list
-            self._operation = operation
-            self._target_value = target_value
-
-            self._parameter_group_list.operations_changed.connect(self._operations_changed)
-
-        @Slot()
-        def _operations_changed(self) -> None:
-            self.value = self._parameter_group_list.operations[self._operation] == self._target_value
+        # Set using setter
+        self.selected_operation_tree_index = 0
 
     @classmethod
     def from_yaml(cls, file_path: str) -> "ParameterGroupList":
@@ -228,7 +266,7 @@ class ParameterGroupList(QObject):
                             + f"{name}: {operations_add_list} Expected a list."
                         )
                     for operation_id in operations_add_list:
-                        if not isinstance(operation, str):
+                        if not isinstance(operation_id, str):
                             raise ValueError(
                                 "Invalid operation ID added for parameter "
                                 + f"{name}: {operation_id}. Expected a string."
@@ -243,7 +281,7 @@ class ParameterGroupList(QObject):
                             + "Expected a list."
                         )
                     for operation_id in operations_remove_list:
-                        if not isinstance(operation, str):
+                        if not isinstance(operation_id, str):
                             raise ValueError(
                                 "Invalid operation ID removed for parameter "
                                 + f"{name}: {operation_id}. Expected a string."
@@ -715,17 +753,25 @@ class ParameterGroupList(QObject):
                 f"Invalid executable name: {executable}. Expected string."
             )
 
-        operations = {}
-        mode_list = config_obj.get("modes", []) or []
-        for mode_obj in mode_list:
-            for operation in mode_obj["operations"]:
-                operations[operation] = False
+        operations = {
+            "RSD-DEF": rsd_def,
+            "IMG-GEN": img_gen,
+            "MDL-GEN": mdl_gen,
+            "MDL-TST": mdl_tst,
+            "SWP-SCN": swp_scn,
+            "CO": co,
+            "FASTA-VCF": fasta_vcf,
+            "VCF-MS": vcf_ms,
+        }
+        # TODO: parse operations
 
         parameter_groups = []
         for parameter_group_obj in config_obj["parameter_groups"]:
             parameter_groups.append(parse_parameter_group(parameter_group_obj))
 
-        result = cls(executable, operations, parameter_groups, new_operations={"IMG-GEN": img_gen, "MDL-GEN": mdl_gen, "MDL-GEN-FAKE": fake_mdl_gen})
+        operation_trees, operation_conditions = OperationTree.build_trees(operations)
+
+        result = cls(executable, operation_trees, parameter_groups)
 
         parameter_conditions: dict[Parameter[Any], list[Dependency.Condition]] = {}
 
@@ -737,13 +783,9 @@ class ParameterGroupList(QObject):
                 )
 
             single_operation_conditions = []
-            for operation in param.operations:
+            for operation_id in param.operations:
                 single_operation_conditions.append(
-                        cls.OperationEnabledCondition(
-                        result,
-                        operation,
-                        parent=result,
-                    )
+                    operation_conditions[operation_id]
                 )
             parameter_conditions[param].append(
                 OrCondition(single_operation_conditions)
@@ -762,29 +804,18 @@ class ParameterGroupList(QObject):
         return self._operation_trees
 
     @property
-    def operations(self) -> dict[str, bool]:
-        """
-        The active operations of the parameter list.
+    def selected_operation_tree(self) -> OperationTree:
+        return self.operation_trees[self.selected_operation_tree_index]
 
-        """
-        return self._operations
+    @property
+    def selected_operation_tree_index(self) -> int:
+        return self._selected_operation_tree_index
 
-    def set_operation(self, operation: str, value: bool) -> None:
-        """
-        Set an operation to active or not.
-
-        :param operation: the operation to set.
-        :type operation: str
-
-        :param value: the value to set the operation to.
-        :type value: bool
-        """
-
-        if not operation in self._operations:
-            raise Exception(f"Setting an invalid operation: {operation}.")
-        self._operations[operation] = value
-
-        self.operations_changed.emit()
+    @selected_operation_tree_index.setter
+    def selected_operation_tree_index(self, new_index: int) -> None:
+        self.selected_operation_tree.enabled = False
+        self._selected_operation_tree_index = new_index
+        self.selected_operation_tree.enabled = True
 
     @property
     def parameter_groups(self) -> list[ParameterGroup]:
@@ -816,14 +847,6 @@ class ParameterGroupList(QObject):
         """
 
         instructions = []
-        operations = [operation for operation in self._operations if self._operations[operation]]
-        for operation in operations:
-            # For each operation get the cli representation from all param_groups
-            # The paramgroups handle the operation by passing it to the parameters
-            instruction = f"{self.command} -op {operation}"
-            for param_group in self._parameter_groups:
-                instruction = f"{instruction} {param_group.to_cli(operation)}"
-            instructions.append(instruction)
 
         return instructions
 

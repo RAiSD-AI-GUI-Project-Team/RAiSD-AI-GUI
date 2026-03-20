@@ -374,7 +374,7 @@ class OperationSelectionWidget(RunSubWidget):
         )
         scroll.setWidgetResizable(True)
         operation_selector = self.__class__.OperationSelector(
-            self._parameter_group_list.operation_trees
+            self._parameter_group_list
         )
         scroll.setWidget(operation_selector)
         layout.addWidget(scroll)
@@ -386,8 +386,10 @@ class OperationSelectionWidget(RunSubWidget):
         return NavigationButtonsWidget(right_button=self.next_button)
 
     class OperationSelector(QWidget):
-        def __init__(self, trees):
+        def __init__(self, parameter_group_list: ParameterGroupList):
             super().__init__()
+
+            self._parameter_group_list = parameter_group_list
 
             layout = QVBoxLayout(self)
 
@@ -396,20 +398,21 @@ class OperationSelectionWidget(RunSubWidget):
 
             self.operation_selected_widget = ResizableStackedWidget()
 
-            for tree in trees:
+            for i, tree in enumerate(self._parameter_group_list.operation_trees):
                 button = QPushButton(tree.root.name)
                 button_layout.addWidget(button)
 
                 widget = OperationTreeWidget(tree)
                 self.operation_selected_widget.addWidget(widget)
 
-                button.clicked.connect(lambda _, w=widget: self._button_clicked(w))
+                button.clicked.connect(lambda _, i=i: self._button_clicked(i))
 
             layout.addWidget(button_widget)
             layout.addWidget(self.operation_selected_widget)
 
-        def _button_clicked(self, widget: QWidget) -> None:
-            self.operation_selected_widget.setCurrentWidget(widget)
+        def _button_clicked(self, i: int) -> None:
+            self._parameter_group_list.selected_operation_tree_index = i
+            self.operation_selected_widget.setCurrentIndex(i)
 
 
 class ParameterInputWidget(RunSubWidget):    
