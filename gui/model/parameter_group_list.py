@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from re import compile
-from typing import Any, Iterator, Protocol
+from typing import Any, Collection, Iterator, Protocol
 from yaml import load, Loader
 
 from PySide6.QtCore import (
@@ -314,6 +314,7 @@ class ParameterGroupList(QObject):
             operations: dict[str, bool],
             parameter_groups: list[ParameterGroup] | None = None,
             dependencies: list[Dependency] | None = None,
+            new_operations: dict[str, Operation] = {},
     ) -> None:
         """
         Initialize a `ParameterGroupList` object.
@@ -329,6 +330,9 @@ class ParameterGroupList(QObject):
         self._operations = operations
         self._parameter_groups = parameter_groups or []
         self._dependencies = dependencies or []
+        self._operation_trees = ParameterGroupList.build_operation_trees(
+            new_operations.values()
+        )
 
     class OperationEnabledCondition(Dependency.Condition):
         def __init__(
@@ -352,6 +356,24 @@ class ParameterGroupList(QObject):
         def _operations_changed(self) -> None:
             self.value = self._parameter_group_list.operations[self._operation] == self._target_value
 
+    @classmethod
+    def build_operation_trees(cls, operations: Collection[Operation]) -> list[OperationTree]:
+        trees: list[OperationTree] = []
+        for root_operation in operations:
+            root_node = OperationNode(root_operation)
+            unexplored_nodes: list[OperationNode] = [root_node]
+            while unexplored_nodes:
+                current_node = unexplored_nodes[0]
+                unexplored_nodes = unexplored_nodes[1:]
+                for file_consumer in current_node.file_consumers:
+                    for candidate_operation in operations:
+                        if candidate_operation.produces == file_consumer.requires:
+                            operation_node = OperationNode(candidate_operation)
+                            file_consumer.add_producer(operation_node)
+                            unexplored_nodes.append(operation_node)
+            tree = OperationTree(root_node)
+            trees.append(tree)
+        return trees
 
     @classmethod
     def from_yaml(cls, file_path: str) -> "ParameterGroupList":
