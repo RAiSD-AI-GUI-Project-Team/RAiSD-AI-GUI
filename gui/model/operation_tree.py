@@ -368,7 +368,8 @@ class OperationTree(QObject):
                             unexplored_nodes.append(operation_node)
                     # If the consumer is expecting a directory, try
                     # producing that directory from multiple operations.
-                    if isinstance(file_consumer.requires, Directory):
+                    if (isinstance(file_consumer.requires, Directory)
+                        and len(file_consumer.requires.contents) > 1):
                         common_parent_dir = CommonParentDirectoryNode(file_consumer.requires)
                         possible_unexplored = []
                         possible_conditions = {operation_id: [] for operation_id in operations}
