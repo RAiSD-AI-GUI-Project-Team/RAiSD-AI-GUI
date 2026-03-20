@@ -952,7 +952,7 @@ class ParameterGroupList(QObject):
         for parameter_group_obj in config_obj["parameter_groups"]:
             parameter_groups.append(parse_parameter_group(parameter_group_obj))
 
-        result = cls(executable, operations, parameter_groups)
+        result = cls(executable, operations, parameter_groups, new_operations={"IMG-GEN": img_gen, "MDL-GEN": mdl_gen, "MDL-GEN-FAKE": fake_mdl_gen})
 
         parameter_conditions: dict[Parameter[Any], list[Dependency.Condition]] = {}
 
