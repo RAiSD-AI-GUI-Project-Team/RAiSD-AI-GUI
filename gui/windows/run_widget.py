@@ -18,17 +18,22 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QStyle,
     QStyleOption,
+    QListWidget,
+    QAbstractItemView
 )
-from PySide6.QtGui import QPainter
 
+from PySide6.QtGui import (
+    QGuiApplication,
+    QPainter
+)
+
+from gui.model.settings import app_settings
 from gui.model.parameter_group_list import ParameterGroupList
 from gui.model.run_result import RunResult
 from gui.execution.command_executor import CommandExecutor
 from gui.widgets.parameter_form import ParameterForm
 from gui.windows.dialog import ConfirmDialog, ErrorDialog
 from gui.widgets.results_widget import ResultsWidget
-
-
 
 class RunWidget(QWidget):
     """
@@ -172,6 +177,7 @@ class RunWidget(QWidget):
 
     @Slot()
     def _switch_to_parameter_confirmation_widget(self) -> None:
+        self.parameter_confirmation_widget.update_commands()
         self.stacked_step_widget_layout.setCurrentWidget(self.parameter_confirmation_widget)
         self._set_active_step(2)
 
@@ -211,7 +217,6 @@ class NavigationButtonsWidget(QWidget):
         layout = QHBoxLayout(self)
         for button, alignment in ((self.left_button, Qt.AlignmentFlag.AlignLeft), (self.middle_button, Qt.AlignmentFlag.AlignHCenter), (self.right_button, Qt.AlignmentFlag.AlignRight)):
             if button:
-                print(alignment)
                 layout.addWidget(button, alignment=alignment)
             else:
                 layout.addWidget(QWidget(), 1)
@@ -334,7 +339,7 @@ class ParameterInputWidget(RunSubWidget):
         parameter_input_label.setObjectName("parameter_input_label")
         layout.addWidget(parameter_input_label)
 
-        parameter_form = ParameterForm(self._parameter_group_list)
+        parameter_form = ParameterForm(self._parameter_group_list, editable=True)
         parameter_form.setObjectName("parameter_form")
 
         parameter_form_scroll = QScrollArea()
@@ -394,16 +399,54 @@ class ParameterConfirmationWidget(RunSubWidget):
     start_run = Signal()
 
     def __init__(self, run_result: RunResult):
+        self._run_result = run_result
         self._parameter_group_list = run_result.parameter_group_list
         super().__init__()
 
     def _setup_widget(self) -> QWidget:
+        """
+        Setup a ParameterConfirmationWidget, including a header,
+        a section for the commands to be run, and the ParameterForm,
+        in locked form.
+        """
         widget = QWidget()
         widget.setStyleSheet("background-color: lightblue;")
         layout = QVBoxLayout(widget)
 
+        # Header
         parameter_confirmation_label = QLabel("Parameter Confirmation")
         layout.addWidget(parameter_confirmation_label)
+
+        # Commands
+        commands_widget = QWidget()
+        commands_layout = QVBoxLayout(commands_widget)
+
+        commands_header = QWidget()
+        commands_header_layout = QHBoxLayout(commands_header)
+
+        commands_label = QLabel("Commands generated from the input:")
+        commands_header_layout.addWidget(commands_label, 1)
+
+        copy_button = QPushButton("Copy")
+        copy_button.clicked.connect(self._copy_all)
+        commands_header_layout.addWidget(copy_button)
+        commands_layout.addWidget(commands_header)
+
+        self.commands_view = QListWidget()
+        self.commands_view.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.commands_view.clicked.connect(self._copy_command)
+        commands_layout.addWidget(self.commands_view)
+        layout.addWidget(commands_widget)
+
+        # Parameters
+        parameter_form = ParameterForm(self._parameter_group_list, editable=False)
+
+        parameter_form_scroll = QScrollArea()
+        parameter_form_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        parameter_form_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        parameter_form_scroll.setWidgetResizable(True)
+        parameter_form_scroll.setWidget(parameter_form)
+        layout.addWidget(parameter_form_scroll, 1)
 
         return widget
 
@@ -412,6 +455,36 @@ class ParameterConfirmationWidget(RunSubWidget):
         self.run_button = QPushButton("Run")
         self.run_button.clicked.connect(self._run_button_clicked)
         return NavigationButtonsWidget(left_button=self.edit_button, right_button=self.run_button)
+
+    def update_commands(self) -> None:
+        """
+        Updates the ParameterConfirmationWidget with the commands from
+        the RunResult.
+        """
+        self._run_result.set_commands()
+        self.commands_view.clear()
+        if self._run_result.commands:
+            self.commands_view.addItems(self._run_result.commands)
+            self.commands_view.setMaximumHeight(self.commands_view.sizeHintForRow(0)*(self.commands_view.count()+1))
+
+    @Slot(int)
+    def _copy_command(self, index) -> None:
+        """
+        Copies a singular command from the QTreeWidget to the clipboard.
+        """
+        command = self.commands_view.itemFromIndex(index).text()
+        cb = QGuiApplication.clipboard()
+        cb.setText(command)
+
+    @Slot()
+    def _copy_all(self) -> None:
+        """
+        Copies all commands from the run result to the clipboard.
+        """
+        if self._run_result.commands:
+            string = '; '.join(self._run_result.commands)
+            cb = QGuiApplication.clipboard()
+            cb.setText(string)
 
     @Slot()
     def _run_button_clicked(self) -> None:
@@ -441,6 +514,9 @@ class RunViewWidget(RunSubWidget):
         self._run_result = run_result
         self._parameter_group_list = self._run_result.parameter_group_list
         self._command_executor = command_executor
+
+        self.confirm_stop_execution_dialog = None
+        self.execution_still_running_dialog = None
         super().__init__()
 
     def _setup_widget(self) -> QWidget:
@@ -514,28 +590,32 @@ class RunViewWidget(RunSubWidget):
         Update the execution buttons and close an open confirm dialog.
         """
         self.stop_run_button.setEnabled(False)
-        if hasattr(self, "confirm_stop_execution_dialog"):
-            if self.confirm_stop_execution_dialog is not None:
-                self.confirm_stop_execution_dialog.close()
+        if self.confirm_stop_execution_dialog is not None:
+            self.confirm_stop_execution_dialog.close()
+        if self.execution_still_running_dialog is not None:
+            self.execution_still_running_dialog.close()
 
     def _start_execution(self):
-        # commands = self._parameter_group_list.to_cli()
+        source_folder = app_settings.executable_file_path.absoluteDir().absolutePath()
         commands = [
-            "./RAiSD-AI -n TrainingData2DSNP -I ./datasets/train/msneutral1_100sims.out -L 100000 -its 50000 -op IMG-GEN -icl neutralTR -f -frm -O",
-            "./RAiSD-AI -n TrainingData2DSNP -I datasets/train/msselection1_100sims.out -L 100000 -its 50000 -op IMG-GEN -icl sweepTR -f -O",
-            "./RAiSD-AI -n TestData2DSNP -I datasets/test/msneutral1_10sims.out -L 100000 -its 50000 -op IMG-GEN -icl neutralTE -f -frm -O"
-            # "./RAiSD-AI -n TestData2DSNP -I datasets/test/msselection1_10sims.out -L 100000 -its 50000 -op IMG-GEN -icl neutralTE -f -frm -O",
-            # "./RAiSD-AI -n FAST-NN-PT-2DSNP -I RAiSD_Images.TrainingData2DSNP -f -op MDL-GEN -O -frm -e 3",
-            # "./RAiSD-AI -n FAST-NN-PT-2DSNP-SCAN -mdl RAiSD_Model.FAST-NN-PT-2DSNP -f -op SWP-SCN -I datasets/train/msselection1_100sims.out -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O",
+            f"-n TrainingData2DSNP -I {source_folder}/datasets/train/msneutral1_100sims.out -L 100000 -its 50000 -op IMG-GEN -icl neutralTR -f -frm -O",
+            # f"-n TrainingData2DSNP -I {source_folder}/datasets/train/msselection1_100sims.out -L 100000 -its 50000 -op IMG-GEN -icl sweepTR -f -O",
+            f"-n TestData2DSNP -I {source_folder}/datasets/test/msneutral1_10sims.out -L 100000 -its 50000 -op IMG-GEN -icl neutralTE -f -frm -O",
+            # f"-n TestData2DSNP -I {source_folder}/datasets/test/msselection1_10sims.out -L 100000 -its 50000 -op IMG-GEN -icl sweepTE -f -frm -O",
+            # f"-n FAST-NN-PT-2DSNP -I {source_folder}/RAiSD_Images.TrainingData2DSNP -f -op MDL-GEN -O -frm -e 3",
+            # f"-n FAST-NN-PT-2DSNP-SCAN -mdl {source_folder}/RAiSD_Model.FAST-NN-PT-2DSNP -f -op SWP-SCN -I {source_folder}/datasets/train/msselection1_100sims.out -L 100000 -frm -T 50000 -d 1000 -G 20 -pci 1 1 -O",
         ]
         # self._command_executor.start_execution(self._parameter_group_list.to_cli())
         # TODO: implement info filename logic and command generation logic
-        self._run_result.commands = commands
         info_files = ['RAiSD_Info.TrainingData2DSNP.neutralTR',
                       'RAiSD_Info.TrainingData2DSNP.sweepTR',
                       'RAiSD_Info.TestData2DSNP.neutralTE']
         self._run_result.info_files = info_files
-        self._command_executor.start_execution(commands)
+        try:
+            self._command_executor.start_execution(commands)
+        except Exception:
+            self.execution_still_running_dialog = ErrorDialog(self, "Execution still running", "A process is still running, try again later.")
+            self.execution_still_running_dialog.exec()
 
     @Slot()
     def _stop_execution(self):
@@ -682,7 +762,8 @@ class RunViewWidget(RunSubWidget):
         Handle CommandExecutor.process_stopped.
         """
         self.set_execution_view_indicator(process_index, "purple")
-    
+
+
 class RunResultsWidget(RunSubWidget):
     def __init__(self, run_result: RunResult):
         self._run_result = run_result
