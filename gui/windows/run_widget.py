@@ -359,10 +359,19 @@ class OperationSelectionWidget(RunSubWidget):
         operation_selection_label = QLabel("Operation Selection")
         layout.addWidget(operation_selection_label)
 
-        operation_selection_widget = self.__class__.OperationSelector(
-            self._parameter_group_list.operation_trees,
+        scroll = QScrollArea()
+        scroll.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded
         )
-        layout.addWidget(operation_selection_widget, 1)
+        scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        scroll.setWidgetResizable(True)
+        operation_selector = self.__class__.OperationSelector(
+            self._parameter_group_list.operation_trees
+        )
+        scroll.setWidget(operation_selector)
+        layout.addWidget(scroll)
 
         return widget
 
@@ -395,37 +404,6 @@ class OperationSelectionWidget(RunSubWidget):
 
         def _button_clicked(self, widget: QWidget) -> None:
             self.operation_selected_widget.setCurrentWidget(widget)
-
-    def _operation_selector(self, operation: str, enabled: bool, description: str) -> QWidget:
-        """
-        An operation selector widget containing a checkbox linked to the parameter_group_list and a description.
-        """
-        widget = QWidget()
-        layout = QHBoxLayout(widget)
-
-        operation_button = QCheckBox(operation)
-        operation_button.setCheckState(
-            Qt.CheckState.Checked if enabled else Qt.CheckState.Unchecked
-        )
-        operation_button.checkStateChanged.connect(
-            lambda s: self._operation_selector_clicked(operation, s)
-            )
-        layout.addWidget(operation_button)
-        
-        description_label = QLabel(description)
-        layout.addWidget(description_label, 1)
-
-        return widget
-    
-    def _operation_selector_clicked(self, operation: str, state: Qt.CheckState) -> None:
-        """
-        Set the operation using the given checkbox state.
-        """
-        if state == Qt.CheckState.Checked:
-            self._parameter_group_list.set_operation(operation, True)
-        elif state == Qt.CheckState.Unchecked:
-            self._parameter_group_list.set_operation(operation, False)
-
 
 
 class ParameterInputWidget(RunSubWidget):    

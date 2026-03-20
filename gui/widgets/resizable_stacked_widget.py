@@ -29,8 +29,8 @@ class ResizableStackedWidget(QStackedWidget):
                 continue
             if i == index:
                 w.setSizePolicy(
-                    QSizePolicy.Policy.Expanding,
-                    QSizePolicy.Policy.Expanding,
+                    QSizePolicy.Policy.Minimum,
+                    QSizePolicy.Policy.Minimum,
                 )
             else:
                 w.setSizePolicy(
