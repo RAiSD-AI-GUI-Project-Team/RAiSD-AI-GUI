@@ -35,6 +35,7 @@ from gui.model.parameter_group_list import (
 )
 from gui.execution.command_executor import CommandExecutor
 from gui.widgets.parameter_form import ParameterForm
+from gui.widgets.resizable_stacked_widget import ResizableStackedWidget
 from gui.windows.dialog import ConfirmDialog, ErrorDialog
 
 
@@ -264,8 +265,7 @@ class FileConsumerWidget(QWidget):
         layout.addWidget(heading)
         self.button_widget = QWidget()
         self.button_layout = QHBoxLayout(self.button_widget)
-        self.file_producer_widget = QWidget()
-        self.file_producer_layout = QStackedLayout(self.file_producer_widget)
+        self.file_producer_widget = ResizableStackedWidget()
         if len(self._file_consumer_node.producers) == 1:
             producer = self._file_consumer_node.producers[0]
             if isinstance(producer, FilePickerNode):
@@ -276,7 +276,7 @@ class FileConsumerWidget(QWidget):
                 widget = CommonParentDirectoryNodeWidget(producer)
             else:
                 raise NotImplemented
-            self.file_producer_layout.addWidget(widget)
+            self.file_producer_widget.addWidget(widget)
         else:
             for producer in self._file_consumer_node.producers:
                 if isinstance(producer, FilePickerNode):
@@ -291,13 +291,13 @@ class FileConsumerWidget(QWidget):
                 else:
                     raise NotImplemented
                 self.button_layout.addWidget(button)
-                self.file_producer_layout.addWidget(widget)
+                self.file_producer_widget.addWidget(widget)
                 button.clicked.connect(lambda _, w=widget: self._button_clicked(w))
         layout.addWidget(self.button_widget)
         layout.addWidget(self.file_producer_widget)
 
     def _button_clicked(self, widget: QWidget) -> None:
-        self.file_producer_layout.setCurrentWidget(widget)
+        self.file_producer_widget.setCurrentWidget(widget)
 
 
 class FilePickerWidget(QWidget):
