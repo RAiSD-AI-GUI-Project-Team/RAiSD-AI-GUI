@@ -72,7 +72,7 @@ class FileProducerNode(Protocol):
         ...
 
     @property
-    def file(self) -> QFileInfo | None:
+    def file(self) -> str | None:
         ...
 
     @property
@@ -113,7 +113,7 @@ class FileConsumerNode():
 
     @property
     def cli_parameter(self) -> str:
-        return f"{self._cli} {self.file.path()}"
+        return f"{self._cli} {self.file}"
 
     @property
     def selected_index(self) -> int:
@@ -129,7 +129,7 @@ class FileConsumerNode():
         return self.producers[self.selected_index]
 
     @property
-    def file(self) -> QFileInfo | None:
+    def file(self) -> str | None:
         return self.selected_producer.file
 
     @property
@@ -164,26 +164,16 @@ class CommonParentDirectoryNode():
         return self._file_consumers
 
     @property
-    def file(self) -> QFileInfo | None:
-        if self.file_consumers[0].file:
-            dir = self.file_consumers[0].file.dir()
-            path = dir.absolutePath()
-            return QFileInfo(path)
-        return None
+    def file(self) -> str | None:
+        return self.file_consumers[0].file
 
     @property
     def valid(self) -> bool:
         if not all(consumer.valid for consumer in self.file_consumers):
             return False
 
-        parent_directories = [
-            producer.file.dir()
-            for producer in self.file_consumers
-            if producer.file
-        ]
-
         # All child nodes must produce files with the same parent directory
-        return len(set(parent_directories)) == 1
+        return len(set(consumer.file for consumer in self.file_consumers)) == 1
 
     def to_cli(self) -> list[str]:
         commands = []
@@ -193,23 +183,23 @@ class CommonParentDirectoryNode():
 
 
 class FilePickerNode(QObject):
-    file_changed = Signal(QFileInfo)
+    file_changed = Signal(str)
 
     def __init__(self, produces: FileStructure):
         super().__init__()
         self._produces = produces
-        self._file: QFileInfo | None = None
+        self._file: str | None = None
 
     @property
     def produces(self) -> FileStructure:
         return self._produces
 
     @property
-    def file(self) -> QFileInfo | None:
+    def file(self) -> str | None:
         return self._file
 
     @file.setter
-    def file(self, new_file: QFileInfo | None) -> None:
+    def file(self, new_file: str | None) -> None:
         self._file = new_file
         self.file_changed.emit(self._file)
 
@@ -217,8 +207,8 @@ class FilePickerNode(QObject):
     def valid(self) -> bool:
         if self.file is None:
             return False
-        return self.produces.matches(self.file)
-    
+        return self.produces.matches(QFileInfo(self.file))
+
     def to_cli(self) -> list[str]:
         return []
 
@@ -259,8 +249,8 @@ class OperationNode():
         return self._file_consumers
 
     @property
-    def file(self) -> QFileInfo | None:
-        return QFileInfo("RAiSD_Images.runID")
+    def file(self) -> str | None:
+        return "RAiSD_Images.runID"
 
     @property
     def valid(self) -> bool:

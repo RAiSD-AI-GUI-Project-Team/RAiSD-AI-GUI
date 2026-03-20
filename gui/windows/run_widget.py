@@ -325,10 +325,10 @@ class FilePickerWidget(QWidget):
         self.dialog.fileSelected.connect(self._file_selected)
 
     def _file_selected(self, path):
-        self._file_picker.file = QFileInfo(path)
+        self._file_picker.file = path
 
-    def _file_picker_file_changed(self, new_file: QFileInfo):
-        self.button.setText(new_file.fileName())
+    def _file_picker_file_changed(self, new_file: str):
+        self.button.setText(new_file)
 
 
 class CommonParentDirectoryNodeWidget(QWidget):
