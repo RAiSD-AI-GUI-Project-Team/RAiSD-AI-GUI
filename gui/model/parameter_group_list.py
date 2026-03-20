@@ -11,6 +11,11 @@ from PySide6.QtCore import (
     QFileInfo,
 )
 
+from gui.model.file_structure import (
+    FileStructure,
+    SingleFile,
+    Directory,
+)
 from gui.model.parameter_group import ParameterGroup
 from gui.model.parameter import (
     Parameter,
@@ -28,31 +33,6 @@ from gui.model.dependency import (
     AndCondition,
     OrCondition,
 )
-
-
-# File structure data classes
-@dataclass
-class FileStructure(ABC):
-    @abstractmethod
-    def matches(self, file_info: QFileInfo) -> bool:
-        pass
-
-
-@dataclass
-class SingleFile(FileStructure):
-    formats: list[str]
-
-    def matches(self, file_info: QFileInfo) -> bool:
-        return file_info.isFile()
-
-
-@dataclass
-class Directory(FileStructure):
-    contents: list[FileStructure]
-
-    def matches(self, file_info: QFileInfo) -> bool:
-        # TODO: maybe check directory contents as well?
-        return file_info.isDir()
 
 
 # Operation model class
@@ -207,7 +187,7 @@ class FilePickerNode(QObject):
     def valid(self) -> bool:
         if self.file is None:
             return False
-        return self.produces.matches(QFileInfo(self.file))
+        return self.produces.matches(self.file)
 
     def to_cli(self) -> list[str]:
         return []
