@@ -238,10 +238,6 @@ class OperationTreeWidget(QWidget):
         heading = QLabel("Choose the input for RAiSD-AI.")
         layout.addWidget(heading)
 
-        test_button = QPushButton("Print commands")
-        test_button.clicked.connect(lambda: print(operation_tree.to_cli()))
-        layout.addWidget(test_button)
-
         body = OperationNodeWidget(self._operation_tree.root)
         layout.addWidget(body)
 
