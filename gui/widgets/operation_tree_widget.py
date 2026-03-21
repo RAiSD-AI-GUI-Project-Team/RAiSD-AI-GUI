@@ -118,18 +118,72 @@ class FilePickerNodeWidget(FileProducerNodeWidget):
         self._file_picker = file_picker
 
         layout = QVBoxLayout(self)
+
+        self._directory = isinstance(self._file_picker.produces, Directory)
+        # TODO: make this code cleaner and more reusable.
+        match self._file_picker.produces:
+            case SingleFile(formats=[single_format]):
+                heading_text = f"Select a {single_format} file."
+            case SingleFile(formats=[first_format, *other_formats]):
+                # TODO: preserve the order of the formats, maybe.
+                heading_text = (
+                    f"Select a {", ".join(other_formats)} "
+                    + f"or {first_format} file."
+                )
+            case Directory(
+                contents=[
+                    SingleFile(
+                        formats=[single_format]
+                    )
+                ]
+            ):
+                heading_text = (
+                    "Select a directory containing " 
+                    + f"{single_format} files."
+                )
+            case Directory(
+                contents=[
+                    Directory(
+                        contents=[
+                            SingleFile(
+                                formats=[first_format]
+                            )
+                        ]
+                    ),
+                    Directory(
+                        contents=[
+                            SingleFile(
+                                formats=[second_format]
+                            )
+                        ]
+                    )
+                ]
+            ) if first_format == second_format:
+                heading_text = (
+                    "Select a directory with two subdirectories, each "
+                    + f"containing {first_format} files."
+                )
+            case _:
+                heading_text = "Select a file."
+        heading = QLabel(heading_text)
+        heading.setWordWrap(True)
+        layout.addWidget(heading)
+
         self.button = QPushButton("Browse")
         self.button.clicked.connect(self._onpopup) 
         layout.addWidget(self.button)
+
         self._file_picker.file_changed.connect(self._file_picker_file_changed)
 
     @property
     def button_text(self) -> str:
-        return "Upload a file from your computer."
+        if self._directory:
+            return "Choose a directory on your computer."
+        return "Choose a file on your computer."
 
     def _onpopup(self):
         self.dialog = QFileDialog()
-        if isinstance(self._file_picker.produces, Directory):
+        if self._directory:
             self.dialog.setFileMode(QFileDialog.FileMode.Directory)
         self.dialog.show()
         self.dialog.fileSelected.connect(self._file_selected)
