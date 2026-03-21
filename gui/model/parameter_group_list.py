@@ -469,7 +469,6 @@ class ParameterGroupList(QObject):
                     + "null."
                 )
             if run_id:
-                print(parameter)
                 if type(parameter) is not StringParameter:
                     raise ValueError(
                         "Invalid parameter type for runid parameter "
