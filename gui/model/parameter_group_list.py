@@ -39,6 +39,7 @@ class ParameterGroupList(QObject):
 
     def __init__(
             self,
+            run_id_parameter: StringParameter | None,
             command: str,
             operations: dict[str, bool],
             parameter_groups: list[ParameterGroup] | None = None,
@@ -47,6 +48,9 @@ class ParameterGroupList(QObject):
         """
         Initialize a `ParameterGroupList` object.
 
+        :param run_id_parameter: the run id parameter
+        :type run_id_parameter: StringParameter | None
+
         :param command: the terminal command to use
         :type command: str
 
@@ -54,6 +58,7 @@ class ParameterGroupList(QObject):
         :type parameter_groups: list[ParameterGroup] | None
         """
         super().__init__()
+        self.run_id_parameter = run_id_parameter
         self.command = command
         self._operations = operations
         self._parameter_groups = parameter_groups or []
@@ -94,6 +99,7 @@ class ParameterGroupList(QObject):
         :rtype: Self
         """
 
+        run_id_parameter = None
         id_to_parameter: dict[str, Parameter[Any]] = {}
         parameter_to_condition_objs: dict[Parameter[Any], list[dict]] = {}
 
@@ -454,6 +460,24 @@ class ParameterGroupList(QObject):
                 )
             parameter_to_condition_objs[parameter] = condition_objs
 
+            # Check for runid
+            run_id = obj.get("runid", False) or False
+            if not isinstance(run_id, bool):
+                raise ValueError(
+                    "Invalid value for runid parameter "
+                    + f"{name}: {run_id}. Expected bool or "
+                    + "null."
+                )
+            if run_id:
+                print(parameter)
+                if type(parameter) is not StringParameter:
+                    raise ValueError(
+                        "Invalid parameter type for runid parameter "
+                        + f"{name}: {type(parameter)}. Expected StringParameter."
+                    )
+                nonlocal run_id_parameter
+                run_id_parameter = parameter
+
             return parameter
 
         def parse_parameter_group(obj: dict) -> ParameterGroup:
@@ -672,7 +696,7 @@ class ParameterGroupList(QObject):
         for parameter_group_obj in config_obj["parameter_groups"]:
             parameter_groups.append(parse_parameter_group(parameter_group_obj))
 
-        result = cls(executable, operations, parameter_groups)
+        result = cls(run_id_parameter, executable, operations, parameter_groups)
 
         parameter_conditions: dict[Parameter[Any], list[Dependency.Condition]] = {}
 

@@ -124,6 +124,7 @@ parameter_groups:
       - VCF-MS
     parameters:
       "-n":
+        runid: true
         name: Run name
         description: A unique run ID that is used to name the output files.
         cli: -n
