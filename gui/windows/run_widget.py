@@ -229,19 +229,10 @@ class OperationSelectionWidget(RunSubWidget):
         operation_selection_label = QLabel("Operation Selection")
         layout.addWidget(operation_selection_label)
 
-        scroll = QScrollArea()
-        scroll.setVerticalScrollBarPolicy(
-            Qt.ScrollBarPolicy.ScrollBarAsNeeded
-        )
-        scroll.setHorizontalScrollBarPolicy(
-            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
-        )
-        scroll.setWidgetResizable(True)
         operation_selector = self.__class__.OperationSelector(
             self._parameter_group_list
         )
-        scroll.setWidget(operation_selector)
-        layout.addWidget(scroll)
+        layout.addWidget(operation_selector)
 
         return widget
 
@@ -260,8 +251,16 @@ class OperationSelectionWidget(RunSubWidget):
             button_widget = QWidget()
             button_layout = QVBoxLayout(button_widget)
 
-            self.tree_stacked_widget = ResizableStackedWidget()
+            tree_scroll = QScrollArea()
+            tree_scroll.setVerticalScrollBarPolicy(
+                Qt.ScrollBarPolicy.ScrollBarAsNeeded
+            )
+            tree_scroll.setHorizontalScrollBarPolicy(
+                Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+            )
+            tree_scroll.setWidgetResizable(True)
 
+            self.tree_stacked_widget = ResizableStackedWidget()
             for i, tree in enumerate(
                     self._parameter_group_list.operation_trees
             ):
@@ -276,9 +275,10 @@ class OperationSelectionWidget(RunSubWidget):
                 self.tree_stacked_widget.addWidget(widget)
 
                 button.clicked.connect(lambda _, i=i: self._button_clicked(i))
+            tree_scroll.setWidget(self.tree_stacked_widget)
 
             layout.addWidget(button_widget)
-            layout.addWidget(self.tree_stacked_widget)
+            layout.addWidget(tree_scroll)
 
         def _button_clicked(self, i: int) -> None:
             self._parameter_group_list.selected_operation_tree_index = i
