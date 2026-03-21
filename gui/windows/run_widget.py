@@ -111,7 +111,7 @@ class RunWidget(QWidget):
         # Parameter input widget
         self.parameter_input_widget = ParameterInputWidget(run_result=self._run_result)
         self.parameter_input_widget.back_button.clicked.connect(self._switch_to_operation_selection_widget)
-        self.parameter_input_widget.next_button.clicked.connect(self._switch_to_parameter_confirmation_widget)
+        self.parameter_input_widget.next_button.clicked.connect(self._parameter_input_confirm_next)
         layout.addWidget(self.parameter_input_widget)
 
         # Parameter confirmation widget
@@ -160,6 +160,20 @@ class RunWidget(QWidget):
     @Slot()
     def _switch_to_run_results_widget(self) -> None:
         self.stacked_step_widget_layout.setCurrentWidget(self.run_results_widget)
+
+    # ---------- ... ----------
+    @Slot()
+    def _parameter_input_confirm_next(self) -> None:
+        if self._run_result.parameter_group_list.run_id_parameter is None: return
+        run_id = self._run_result.parameter_group_list.run_id_parameter.value
+        if app_settings.workspace_path.exists(run_id):
+            self.confirm_overwrite_folder_dialog = ConfirmDialog(self, "Overwrite Output Folder", f"You are about to overwrite the output folder: '{run_id}'. Are you sure?")
+            button_clicked = self.confirm_overwrite_folder_dialog.exec()
+            if button_clicked == QMessageBox.StandardButton.Cancel:
+                return
+            
+        # Either the folder does not exist or the user wants to overwrite it.
+        self._switch_to_parameter_confirmation_widget()
 
     # ---------- Handle signals ----------
     @Slot()
