@@ -566,8 +566,8 @@ class RunViewWidget(RunSubWidget):
         Stop the current execution after confirmation.
         """
         self.confirm_stop_execution_dialog = ConfirmDialog(self, "Stop Execution", "You are about to stop the current execution. Are you sure?")
-        button = self.confirm_stop_execution_dialog.exec()
-        if button == QMessageBox.StandardButton.Yes:
+        button_clicked = self.confirm_stop_execution_dialog.exec()
+        if button_clicked == QMessageBox.StandardButton.Yes:
             self._command_executor.stop_execution()
 
     @Slot(str)
