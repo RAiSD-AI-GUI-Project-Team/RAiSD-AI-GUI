@@ -83,7 +83,7 @@ class FileConsumerWidget(QWidget):
 
     def _button_clicked(self, i: int) -> None:
         self._file_consumer_node.selected_index = i
-        self.file_producer_widget.setCurrentIndex(i)
+        self.file_producer_widget.current_index = i
 
 
 class CommonParentDirectoryNodeWidget(FileProducerNodeWidget):

@@ -282,7 +282,7 @@ class OperationSelectionWidget(RunSubWidget):
 
         def _button_clicked(self, i: int) -> None:
             self._parameter_group_list.selected_operation_tree_index = i
-            self.tree_stacked_widget.setCurrentIndex(i)
+            self.tree_stacked_widget.current_index = i
 
 
 class ParameterInputWidget(RunSubWidget):    
