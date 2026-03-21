@@ -1,3 +1,6 @@
+from PySide6.QtCore import (
+    Qt,
+)
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QFileDialog,
@@ -156,7 +159,10 @@ class OperationNodeWidget(FileProducerNodeWidget):
         input_files_layout = QHBoxLayout(input_files_widget)
         for file_consumer in operation_node.file_consumers:
             file_consumer_widget = FileConsumerWidget(file_consumer)
-            input_files_layout.addWidget(file_consumer_widget)
+            input_files_layout.addWidget(
+                file_consumer_widget,
+                alignment=Qt.AlignmentFlag.AlignTop,
+            )
         layout.addWidget(input_files_widget)
 
     @property
@@ -169,7 +175,10 @@ class OperationTreeWidget(QWidget):
         super().__init__()
         self._operation_tree = operation_tree
 
-        layout = QVBoxLayout(self)
+        layout = QHBoxLayout(self)
 
         body = OperationNodeWidget(self._operation_tree.root)
-        layout.addWidget(body)
+        layout.addWidget(
+            body,
+            alignment=Qt.AlignmentFlag.AlignTop,
+        )
