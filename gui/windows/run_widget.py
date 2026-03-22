@@ -82,22 +82,27 @@ class RunWidget(QWidget):
         """
         self.operation_selection_button = QPushButton("Operation Selection")
         self.operation_selection_button.clicked.connect(self._switch_to_operation_selection_widget)
+        self.operation_selection_button.setProperty("step_role", "active")
         layout.addWidget(self.operation_selection_button)
 
         self.parameter_input_button = QPushButton("Parameter Input")
         self.parameter_input_button.clicked.connect(self._switch_to_parameter_input_widget)
+        self.parameter_input_button.setEnabled(False)
         layout.addWidget(self.parameter_input_button)
 
         self.parameter_confirmation_button = QPushButton("Parameter Confirmation")
         self.parameter_confirmation_button.clicked.connect(self._switch_to_parameter_confirmation_widget)
+        self.parameter_confirmation_button.setEnabled(False)
         layout.addWidget(self.parameter_confirmation_button)
 
         self.execution_view_button = QPushButton("Run")
         self.execution_view_button.clicked.connect(self._switch_to_run_view_widget)
+        self.execution_view_button.setEnabled(False)
         layout.addWidget(self.execution_view_button)
 
         self.results_button = QPushButton("Results")
         self.results_button.clicked.connect(self._switch_to_run_results_widget)
+        self.results_button.setEnabled(False)
         layout.addWidget(self.results_button)
 
         self._step_buttons = [
@@ -116,10 +121,12 @@ class RunWidget(QWidget):
         for i, button in enumerate(self._step_buttons):
             if i < active_index:
                 role = "past_step"
+                button.setEnabled(True)
             elif i == active_index:
                 role = "active"
             else:
                 role = "default"
+                button.setEnabled(False)
             button.setProperty("step_role", role)
             button.style().unpolish(button) #Required to apply styling dynamically
             button.style().polish(button)

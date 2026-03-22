@@ -56,6 +56,14 @@ QWidget#step_button_bar QPushButton[step_role="past_step"] {
     color: white;
 }
 
+QWidget#step_button_bar QPushButton[step_role="past_step"]:hover {
+    background-color: $button-hover;
+}
+
+QWidget#step_button_bar QPushButton[step_role="past_step"]:pressed {
+    background-color: $button-pressed;
+}
+
 
 /* ---- Navigation Buttons ---- */
 
