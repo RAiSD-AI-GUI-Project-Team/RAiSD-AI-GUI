@@ -1,3 +1,10 @@
+"""
+A module defining the widgets that allow the user to visualize and
+interact with an operation tree.
+
+Other modules only need to import `OperationTreeWidget`.
+"""
+
 from PySide6.QtCore import (
     Qt,
 )
@@ -27,11 +34,24 @@ from gui.widgets.resizable_stacked_widget import ResizableStackedWidget
 
 
 class FileProducerNodeWidget(QWidget):
+    """
+    An abstract widget class to display a `FileProducerNode`.
+
+    Use the `from_file_producer` class method to construct the suitable
+    widget for a `FileProducerNode` instance based on its class.
+    """
+
     @classmethod
     def from_file_producer(
             cls,
             file_producer: FileProducerNode
     ) -> "FileProducerNodeWidget":
+        """
+        Construct the suitable widget for a file producer node.
+
+        :param file_producer: the file producer node
+        :type file_producer: FileProducerNode
+        """
         match file_producer:
             case FilePickerNode():
                 return FilePickerNodeWidget(file_producer)
@@ -46,11 +66,30 @@ class FileProducerNodeWidget(QWidget):
 
     @property
     def button_text(self) -> str:
+        """
+        The text to be displayed on the button that selects this widget.
+        """
         raise NotImplementedError()
 
 
 class FileConsumerWidget(QWidget):
+    """
+    A widget to display a `FileConsumerNode`.
+
+    The widget explains to the user what purpose a file is needed for,
+    and presents the options for obtaining that file, i.e. the child
+    `FileProducerNode`s. If there are multiple such options, the user
+    can select one of them by a menu of radio buttons. The widget for
+    the currently selected option is displayed.
+    """
+
     def __init__(self, file_consumer_node: FileConsumerNode):
+        """
+        Initialize a `FileConsumerWidget` object.
+
+        :param file_consumer_node: the file consumer node to display
+        :type file_consumer_node: FileConsumerNode
+        """
         super().__init__()
         self._file_consumer_node = file_consumer_node
 
@@ -58,12 +97,19 @@ class FileConsumerWidget(QWidget):
 
         heading = QLabel(self._file_consumer_node.label)
         layout.addWidget(heading)
+
         self.file_producer_widget = ResizableStackedWidget()
         if len(self._file_consumer_node.producers) == 1:
+            # There is only one way to produce the required file, so
+            # simply display that to the user.
             producer = self._file_consumer_node.producers[0]
-            producer_widget = FileProducerNodeWidget.from_file_producer(producer)
+            producer_widget = FileProducerNodeWidget.from_file_producer(
+                producer,
+            )
             self.file_producer_widget.addWidget(producer_widget)
         else:
+            # There are multiple options for obtaining the file, so
+            # present the user with a choice through radio buttons.
             button_widget = QWidget()
             button_layout = QVBoxLayout(button_widget)
 
@@ -73,7 +119,9 @@ class FileConsumerWidget(QWidget):
             button_layout.addWidget(button_heading)
 
             for i, producer in enumerate(self._file_consumer_node.producers):
-                producer_widget = FileProducerNodeWidget.from_file_producer(producer)
+                producer_widget = FileProducerNodeWidget.from_file_producer(
+                    producer,
+                    )
                 button = QRadioButton(producer_widget.button_text)
                 button.setChecked(i == self._file_consumer_node.selected_index)
                 button_layout.addWidget(button)
@@ -90,7 +138,21 @@ class FileConsumerWidget(QWidget):
 
 
 class CommonParentDirectoryNodeWidget(FileProducerNodeWidget):
+    """
+    A widget to display a `CommonParentDirectoryNode`.
+
+    The widget displays all files that produce the necessary directory
+    in a vertical layout.
+    """
+
     def __init__(self, common_parent_directory: CommonParentDirectoryNode):
+        """
+        Initialize a `CommonParentDirectoryNodeWidget` object.
+
+        :param common_parent_directory: the common parent directory node to
+        display
+        :type common_parent_directory: CommonParentDirectoryNode
+        """
         super().__init__()
         self._common_parent_directory = common_parent_directory
 
@@ -113,13 +175,26 @@ class CommonParentDirectoryNodeWidget(FileProducerNodeWidget):
 
 
 class FilePickerNodeWidget(FileProducerNodeWidget):
+    """
+    A widget to display a `FilePickerNode`.
+
+    The widget explains to the user the type of file that is needed, and allows
+    the user to browse their files and select a suitable file or directory.
+    """
+
     def __init__(self, file_picker: FilePickerNode):
+        """
+        Initialize a `FilePickerNodeWidget` object.
+
+        :param file_picker: the file picker node to display
+        :type file_picker: FilePickerNode
+        """
         super().__init__()
         self._file_picker = file_picker
 
         layout = QVBoxLayout(self)
 
-        self._directory = isinstance(self._file_picker.produces, Directory)
+        self._is_directory = isinstance(self._file_picker.produces, Directory)
         # TODO: make this code cleaner and more reusable.
         match self._file_picker.produces:
             case SingleFile(formats=[single_format]):
@@ -177,13 +252,13 @@ class FilePickerNodeWidget(FileProducerNodeWidget):
 
     @property
     def button_text(self) -> str:
-        if self._directory:
+        if self._is_directory:
             return "Choose a directory on your computer."
         return "Choose a file on your computer."
 
     def _onpopup(self):
         self.dialog = QFileDialog()
-        if self._directory:
+        if self._is_directory:
             self.dialog.setFileMode(QFileDialog.FileMode.Directory)
         self.dialog.show()
         self.dialog.fileSelected.connect(self._file_selected)
@@ -196,7 +271,20 @@ class FilePickerNodeWidget(FileProducerNodeWidget):
 
 
 class OperationNodeWidget(FileProducerNodeWidget):
+    """
+    A widget to display an `OperationNode`.
+
+    The widget displays the name and description of the operation. The
+    necessary input files are displayed side by side below.
+    """
+
     def __init__(self, operation_node: OperationNode):
+        """
+        Initialize an `OperationNodeWidget` object.
+
+        :param operation_node: the operation node to display
+        :type operation_node: OperationNode
+        """
         super().__init__()
         self._operation_node = operation_node
 
@@ -225,7 +313,20 @@ class OperationNodeWidget(FileProducerNodeWidget):
 
 
 class OperationTreeWidget(QWidget):
+    """
+    A widget to display an `OperationTree`.
+
+    A widget is created for the root operation, which hierarchically
+    creates widgets for the other nodes in the tree.
+    """
+
     def __init__(self, operation_tree: OperationTree):
+        """
+        Initialize an `OperationTreeWidget` object.
+
+        :param operation_tree: the operation tree to display
+        :type operation_tree: OperationTree
+        """
         super().__init__()
         self._operation_tree = operation_tree
 
