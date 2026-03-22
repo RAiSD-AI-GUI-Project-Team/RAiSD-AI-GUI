@@ -22,3 +22,4 @@ class Operation():
     cli: str
     requires: list[tuple[str, str, FileStructure]]
     produces: FileStructure
+    output_path_prefix: str

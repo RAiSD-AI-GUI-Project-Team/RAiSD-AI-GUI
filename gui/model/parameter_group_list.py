@@ -48,6 +48,7 @@ rsd_def = Operation(
         )
     ],
     produces=SingleFile([".report"]),
+    output_path_prefix="RAiSD_Report.",
 )
 
 img_gen = Operation(
@@ -65,6 +66,7 @@ img_gen = Operation(
             ),
         ],
     ),
+    output_path_prefix="RAiSD_Images.",
 )
 
 mdl_gen = Operation(
@@ -97,6 +99,7 @@ mdl_gen = Operation(
             SingleFile([".pt"]),
         ],
     ),
+    output_path_prefix="RAiSD_Model.",
 )
 
 mdl_tst = Operation(
@@ -116,7 +119,8 @@ mdl_tst = Operation(
             Directory([Directory([SingleFile([".png"])]), Directory([SingleFile([".png"])])])
         ),
     ],
-    produces=SingleFile([".report"])
+    produces=SingleFile([".report"]),
+    output_path_prefix="RAiSD_Inference.", # TODO: find out what this is
 )
 
 swp_scn = Operation(
@@ -136,7 +140,8 @@ swp_scn = Operation(
             SingleFile([".ms"]),
         ),
     ],
-    produces=SingleFile([".report"])
+    produces=SingleFile([".report"]),
+    output_path_prefix="RAiSD_Report.",
 )
 
 co = Operation(
@@ -145,7 +150,8 @@ co = Operation(
     description="Perform common outlier analysis for a previously completed sweep scan.",
     cli="",
     requires=[],
-    produces=SingleFile([".co-report"])
+    produces=SingleFile([".co-report"]),
+    output_path_prefix="RAiSD_CommonOutlierAnalysis.", # TODO
 )
 
 fasta_vcf = Operation(
@@ -160,7 +166,8 @@ fasta_vcf = Operation(
             SingleFile([".fasta"])
         ),
     ],
-    produces=SingleFile([".vcf"])
+    produces=SingleFile([".vcf"]),
+    output_path_prefix="RAiSD_FastaVcf.", # TODO
 )
 
 vcf_ms = Operation(
@@ -175,7 +182,8 @@ vcf_ms = Operation(
             SingleFile([".vcf"]),
         ),
     ],
-    produces=SingleFile([".ms"])
+    produces=SingleFile([".ms"]),
+    output_path_prefix="RAiSD_VcfMs.", # TODO
 )
 
 
