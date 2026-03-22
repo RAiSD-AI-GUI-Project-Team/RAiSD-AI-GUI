@@ -7,6 +7,7 @@ Other modules only need to import `OperationTreeWidget`.
 
 from PySide6.QtCore import (
     Qt,
+    Slot,
 )
 from PySide6.QtWidgets import (
     QHBoxLayout,
@@ -29,6 +30,9 @@ from gui.model.operation_tree import (
     FilePickerNode,
     OperationNode,
     OperationTree,
+)
+from gui.widgets.label import (
+    InfoLabel,
 )
 from gui.widgets.resizable_stacked_widget import ResizableStackedWidget
 
@@ -278,6 +282,8 @@ class OperationNodeWidget(FileProducerNodeWidget):
     necessary input files are displayed side by side below.
     """
 
+    output_label_text = "The output of the operation will be stored at: "
+
     def __init__(self, operation_node: OperationNode):
         """
         Initialize an `OperationNodeWidget` object.
@@ -297,6 +303,11 @@ class OperationNodeWidget(FileProducerNodeWidget):
         description.setWordWrap(True)
         layout.addWidget(description)
 
+        self._output_info_label = InfoLabel(
+            self.output_label_text + self._operation_node.file
+        )
+        layout.addWidget(self._output_info_label)
+
         input_files_widget = QWidget()
         input_files_layout = QHBoxLayout(input_files_widget)
         for file_consumer in operation_node.file_consumers:
@@ -307,9 +318,15 @@ class OperationNodeWidget(FileProducerNodeWidget):
             )
         layout.addWidget(input_files_widget)
 
+        self._operation_node.file_changed.connect(self._file_changed)
+
     @property
     def button_text(self) -> str:
         return "Run an operation to generate the input file or directory."
+
+    @Slot(str)
+    def _file_changed(self, new_file: str) -> None:
+        self._output_info_label.text = self.output_label_text + new_file
 
 
 class OperationTreeWidget(QWidget):
