@@ -481,18 +481,18 @@ parameter_groups:
           type: multi
           parameters:
             - name: Selection target
-              description: Provide the selection target (in basepairs).
+              description: The selection target (in basepairs).
               cli: -T
               type: int
               min: 1
               default: 1 # Source: I made it up
             - name: Set maximum distance
-              description: 
+              description: Set the maximum distance from the selection target to calculate success rates, i.e., reported locations in the proximity of the target of selection (provided above).
               type: optional
               default: false
               parameter:
                 name: Maximum distance
-                description:
+                description: The maximum distance from the selection target (in basepairs).
                 cli: -d
                 type: int
                 min: 1
