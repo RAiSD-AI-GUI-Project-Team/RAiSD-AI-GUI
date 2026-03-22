@@ -214,12 +214,17 @@ parameter_groups:
       - SWP-SCN
     parameters:
       "-L":
-        name: Region length
-        description: The size of the region (in basepairs) for ms file. If not provided, it will be extracted at runtime.
+        name: Override default region length
+        description: Provide a custom size of the region for an ms file. If not provided, it will be extracted at runtime.
         cli: -L
-        type: int
-        min: 1
-        default: 1
+        type: optional
+        default: false
+        parameter:
+          name: Region length
+          description: The region size (in basepairs).
+          type: int
+          min: 1
+          default: 1
         conditions:
           - type: enum
             parameter: input-file-type
