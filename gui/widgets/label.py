@@ -44,9 +44,17 @@ class IconLabel(QWidget):
         icon_label.setPixmap(pixmap)
         layout.addWidget(icon_label)
 
-        text_label = QLabel(text)
-        text_label.setWordWrap(True)
-        layout.addWidget(text_label, stretch=1)
+        self.text_label = QLabel(text)
+        self.text_label.setWordWrap(True)
+        layout.addWidget(self.text_label, stretch=1)
+
+    @property
+    def text(self) -> str:
+        return self.text_label.text()
+
+    @text.setter
+    def text(self, new_text: str) -> None:
+        self.text_label.setText(new_text)
 
 
 class InfoLabel(IconLabel):
