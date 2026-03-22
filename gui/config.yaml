@@ -677,13 +677,13 @@ parameter_groups:
             description: The SweeD scores.
             type: int
             default: 0 #Probably wrong
-      "-CO-already-run": # This is wrong
+      "-CO-already-run":
         operations:
           remove:
             - RSD-DEF
             - SWP-SCN
         name: Common outlier analysis options 
-        description: options for CO # TO DO
+        description: options for CO
         type: multi
         parameters:
           - name: SweeD report
@@ -708,7 +708,7 @@ parameter_groups:
             type: int
             default: 1
           - name: RAiSD column index
-            description: The index of the column you want to use, depending on the RAiSD report. To use the mu-statistic, set X=2 if RAiSD was invoked with the default parameters, or set Y=7 if -R was explicitly provided or implicitly activated through some other command-line parameter.
+            description: The index of the column you want to use, depending on the RAiSD report. To use the mu-statistic, set X=2 if RAiSD was invoked with the default parameters, or set X=7 if -R was explicitly provided or implicitly activated through some other command-line parameter.
             type: int
             default: 1
       "-COT":
