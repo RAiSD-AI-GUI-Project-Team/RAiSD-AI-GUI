@@ -311,3 +311,8 @@ QWidget#process_indicator[indicator_state="stopped"] {
     qproperty-fillColor: $border-gray;
     qproperty-borderColor: $process-indicator-stopped-border;
 }
+
+QWidget#execution_output,
+QWidget#error_output{
+    font-size: $font-size - 4px;
+}

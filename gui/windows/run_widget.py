@@ -552,11 +552,13 @@ class RunViewWidget(RunSubWidget):
         layout.addWidget(output_widget)
 
         self.execution_output = QTextEdit(readOnly=True)
-        self.execution_output.setObjectName("execution_output") #Todo hide/reveal these with a button
+        self.execution_output.setObjectName("execution_output")
+        self.execution_output.setVisible(False)
         output_widget_layout.addWidget(self.execution_output)
 
         self.error_output = QTextEdit(readOnly=True)
-        self.error_output.setObjectName("error_output") #Todo hide/reveal these with a button
+        self.error_output.setObjectName("error_output")
+        self.error_output.setVisible(False)
         output_widget_layout.addWidget(self.error_output)
 
         self._command_executor.output.connect(self._command_executor_output)
@@ -572,17 +574,25 @@ class RunViewWidget(RunSubWidget):
         return widget
 
     def _setup_navigation_buttons(self) -> NavigationButtonsWidget:
-        self.stop_run_button = QPushButton("Stop Run") #TODO style this
+        self.stop_run_button = QPushButton("Stop Run")
         self.stop_run_button.setEnabled(False)
         self.stop_run_button.clicked.connect(self._stop_run_button_clicked)
-        
+
+        self.toggle_console_button = QPushButton("Toggle Console")
+        self.toggle_console_button.setEnabled(True)
+        self.toggle_console_button.clicked.connect(self._toggle_console_button_clicked)
+
         self.results_button = QPushButton("Results")
         self.results_button.setEnabled(False)
 
-        return NavigationButtonsWidget(middle_button=self.stop_run_button, right_button=self.results_button)
+        return NavigationButtonsWidget(left_button=self.stop_run_button, middle_button=self.toggle_console_button, right_button=self.results_button)
 
     def _stop_run_button_clicked(self) -> None:
         self._stop_execution()
+
+    def _toggle_console_button_clicked(self) -> None:
+        self.execution_output.setVisible(not self.execution_output.isVisible())
+        self.error_output.setVisible(not self.error_output.isVisible())
 
     # methods
     @Slot()
