@@ -573,7 +573,6 @@ class RunViewWidget(RunSubWidget):
     def _setup_navigation_buttons(self) -> NavigationButtonsWidget:
         self.stop_run_button = QPushButton("Stop Run") #TODO style this
         self.stop_run_button.setEnabled(False)
-        self.stop_run_button.setStyleSheet(f"background-color: purple;")
         self.stop_run_button.clicked.connect(self._stop_run_button_clicked)
         
         self.results_button = QPushButton("Results")

@@ -35,6 +35,13 @@ QPushButton#settings_button[state="active"] {
     border-image: url("gui/style/resources/settings_icon_active.svg") 0 0 0 0 stretch stretch;
 }
 
+QPushButton#run_button:hover, QPushButton#history_button:hover, QPushButton#settings_button:hover{
+    background-color: $sidebar-button-hover;
+}
+QPushButton#run_button:pressed, QPushButton#history_button:pressed, QPushButton#settings_button:pressed{
+    background-color: $sidebar-button-pressed;
+}
+
 
 /* ---- Step Button Bar ---- */
 
@@ -80,14 +87,29 @@ QWidget#navigation_buttons_widget QPushButton {
     font-weight: 500;
 }
 
-QWidget#navigation_buttons_widget QPushButton[highlight="false"]{
+QWidget#navigation_buttons_widget QPushButton:hover{
+    background-color: $button-hover;
+}
+
+QWidget#navigation_buttons_widget QPushButton:pressed{
+    background-color: $button-pressed;
+}
+
+QWidget#navigation_buttons_widget QPushButton#next_button[highlight="false"]{
     background-color: $button-disabled-background;
     color: $button-disabled-text-color;
     border: $button-disabled-border;
 }
 
-QWidget#navigation_buttons_widget QPushButton[highlight="true"] {
+QWidget#navigation_buttons_widget QPushButton#next_button[highlight="true"] {
     background-color: $accent-orange;
+}
+
+QWidget#navigation_buttons_widget QPushButton#next_button[highlight="true"]:hover{
+    background-color: $button-orange-hover;
+}
+QWidget#navigation_buttons_widget QPushButton#next_button[highlight="true"]:pressed{
+    background-color: $button-orange-pressed;
 }
 
 
