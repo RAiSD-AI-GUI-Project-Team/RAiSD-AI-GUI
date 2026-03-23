@@ -649,7 +649,7 @@ class TestOptionalParameter:
         self.optional_param = OptionalParameter(
             name="testoptional",
             description="Test optional parameter",
-            operations=set(),
+            operations={"IMG-GEN", "MDL-GEN"},
             default_value = True,
             parameter=self.int_param
         )
@@ -747,7 +747,8 @@ class TestMultiParameter:
             name="testmulti",
             description="Test multi parameter",
             flag="--testmulti",
-            parameters = [self.int_param, self.bool_param]
+            operations={"IMG-GEN", "MDL-GEN"},
+            parameters=[self.int_param, self.bool_param]
         )
 
     def test_init_values(self):
