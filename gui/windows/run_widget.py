@@ -691,13 +691,13 @@ class RunViewWidget(RunSubWidget):
 
     def set_execution_view_indicator(self, index: int, state: str) -> None:
         """
-        Set the indicator to the given color.
+        Set the indicator to the given state.
 
         :param index: the index of the indicator
         :type index: int
 
-        :param color: the new color of the indicator
-        :type color: str
+        :param state: the new state of the indicator
+        :type state: str
         """
         self.run_indicators[index].state = state
 
