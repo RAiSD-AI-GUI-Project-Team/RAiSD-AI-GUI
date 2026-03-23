@@ -172,6 +172,7 @@ class RunWidget(QWidget):
     @Slot()
     def _handle_run_end(self, run_successful: bool) -> None:
         if run_successful:
+            self._run_result.set_completed()
             self._run_result.save_to_history()            
             self._switch_to_run_results_widget()
             self.run_view_widget.results_button.setEnabled(True)

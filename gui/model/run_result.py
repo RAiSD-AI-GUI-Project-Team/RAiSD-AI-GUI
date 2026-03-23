@@ -139,6 +139,10 @@ class RunResult():
     def parameter_group_list(self) -> ParameterGroupList:
         return self._parameter_group_list
     
+    @property
+    def time_completed(self) -> datetime | None:
+        return self._time_completed
+    
     def set_name(self) -> None:
         self._folder_name = "Hi" # TODO: fix once merged with Steefs PR
 
@@ -149,3 +153,5 @@ class RunResult():
         """
         self._commands = self._parameter_group_list.to_cli()
 
+    def set_completed(self) -> None:
+        self._time_completed = datetime.now()
