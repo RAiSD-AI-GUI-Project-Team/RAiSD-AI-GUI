@@ -389,8 +389,16 @@ class ParameterInputWidget(RunSubWidget):
             self._validity_label.setText("")
         else:
             self.next_button.setProperty("highlight", "false")
-            self._validity_label.setText("Cannot continue: one or more parameters are invalid.")
-        self.next_button.style().unpolish(self.next_button)
+            invalid_params = [
+                parameter.name
+                for group in self._parameter_group_list.parameter_groups
+                for parameter in group.parameters
+                if not parameter.valid and parameter.enabled
+            ]
+            self._validity_label.setText(
+                "Cannot continue. Invalid parameters:" + "".join(f"  - {name}" for name in invalid_params)
+            )
+            self.next_button.style().unpolish(self.next_button)
         self.next_button.style().polish(self.next_button)
 
     @Slot()
