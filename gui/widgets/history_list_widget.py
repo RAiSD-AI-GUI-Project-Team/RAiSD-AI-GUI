@@ -10,7 +10,7 @@ from gui.widgets.history_record_widget import HistoryRecordWidget
 from gui.model.run_result import RunResult
 
 
-class OperationRecordList(QWidget):
+class HistoryListWidget(QWidget):
     """
     The widget that holds the all operation records to display in history_widget
     """

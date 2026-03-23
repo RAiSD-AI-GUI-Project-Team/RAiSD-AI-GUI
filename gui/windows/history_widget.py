@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Slot, Qt
 
 from gui.widgets.history_record_widget import HistoryRecordWidget
-from gui.widgets.operation_record_list_widget import OperationRecordList
+from gui.widgets.history_list_widget import HistoryListWidget
 from gui.widgets.results_widget import ResultsWidget
 
 
@@ -25,7 +25,7 @@ class HistoryWidget(QWidget):
 
     def __init__(self):
         super().__init__()
-        self._history_list: OperationRecordList = OperationRecordList()
+        self._history_list: HistoryListWidget = HistoryListWidget()
         self._setup_ui()
 
     def _setup_ui(self):
@@ -36,9 +36,9 @@ class HistoryWidget(QWidget):
 
         self._history_list.run_selected.connect(self._on_run_selected)
 
-        dummy_records = RunResult.from_history_file()
-        if dummy_records:
-            for op_rec in dummy_records:
+        history_records = RunResult.from_history_file()
+        if history_records:
+            for op_rec in history_records:
                 self._history_list.add_record(op_rec)
 
         splitter.addWidget(self._history_list)
