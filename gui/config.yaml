@@ -4,7 +4,7 @@ run_id_parameter:
   description: A name that identifies the run and is used to name the output files. Only letters, digits and underscores allowed
   cli: -n
   type: str
-  pattern: "([a-z][A-Z][0-9]_)+"
+  pattern: "[a-zA-Z0-9_]+"
 modes:
   - name: Standard RAiSD
     operations:
