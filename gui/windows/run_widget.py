@@ -28,6 +28,7 @@ from gui.model.settings import app_settings
 from gui.model.parameter_group_list import ParameterGroupList
 from gui.model.run_result import RunResult
 from gui.execution.command_executor import CommandExecutor
+from gui.widgets.parameter_widget import ParameterWidget
 from gui.widgets.parameter_form import ParameterForm
 from gui.windows.dialog import ConfirmDialog, ErrorDialog
 from gui.widgets.results_widget import ResultsWidget
@@ -226,6 +227,12 @@ class OperationSelectionWidget(RunSubWidget):
 
         operation_selection_label = QLabel("Operation Selection")
         layout.addWidget(operation_selection_label)
+
+        run_id_parameter_widget = ParameterWidget.from_parameter(
+            self._parameter_group_list.run_id_parameter,
+            editable=True,
+        )
+        layout.addWidget(run_id_parameter_widget.build_form_row())
 
         operation_selection_widget = self._setup_operation_selection_widget()
         layout.addWidget(operation_selection_widget, 1)
