@@ -3,7 +3,7 @@ from PySide6.QtCore import (
     QProcess,
     Signal,
     Slot,
-    QDir
+    QDir,
 )
 from PySide6.QtWidgets import (
     QWidget,
@@ -332,7 +332,15 @@ class ParameterInputWidget(RunSubWidget):
         if valid:
             self._validity_label.setText("")
         else:
-            self._validity_label.setText("Cannot continue: one or more parameters are invalid.")
+            invalid_params = [
+                parameter.name
+                for group in self._parameter_group_list.parameter_groups
+                for parameter in group.parameters
+                if not parameter.valid and parameter.enabled
+            ]
+            self._validity_label.setText(
+                "Cannot continue. Invalid parameters:" + "".join(f"  - {name}" for name in invalid_params)
+            )
         
     @Slot()
     def _check_param_button_clicked(self) -> None:
