@@ -828,8 +828,8 @@ void RSDNeuralNetwork_train (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLi
 		for(int i=0;i<RSDNeuralNetwork->classSize;i++)		
 			fprintf(fpClasses, "%s (%d)\n", RSDCommandLine->classPathList[i], i);
 			
-		fprintf(fpImgDim, "%s\n", RSDNeuralNetwork->cl4_1x_label);
-		fprintf(fpImgDim, "%s\n", RSDNeuralNetwork->cl4_x1_label);	
+		fprintf(fpClasses, "%s\n", RSDNeuralNetwork->cl4_1x_label);
+		fprintf(fpClasses, "%s\n", RSDNeuralNetwork->cl4_x1_label);	
 			
 		fprintf(fpClasses, "***DO_NOT_REMOVE_OR_EDIT_THIS_FILE***\n");
 		

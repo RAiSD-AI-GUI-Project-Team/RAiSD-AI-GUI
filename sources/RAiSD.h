@@ -41,8 +41,8 @@
 #endif
 
 #define MAJOR_VERSION 4
-#define MINOR_VERSION 2
-#define RELEASE_MONTH "January"
+#define MINOR_VERSION 3
+#define RELEASE_MONTH "March"
 #define RELEASE_YEAR 2026
 
 /*Testing*/
