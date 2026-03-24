@@ -860,18 +860,6 @@ class ParameterGroupList(QObject):
     @run_id.setter
     def run_id(self, new_run_id: str) -> None:
         self._run_id = new_run_id
-
-    @property
-    def run_id_parameter(self) -> StringParameter:
-        return self._run_id_parameter
-
-    @property
-    def run_id(self) -> str:
-        return self._run_id
-
-    @run_id.setter
-    def run_id(self, new_run_id: str) -> None:
-        self._run_id = new_run_id
         for operation_tree in self.operation_trees:
             operation_tree.run_id = new_run_id
 
