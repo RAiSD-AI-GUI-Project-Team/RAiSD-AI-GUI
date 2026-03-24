@@ -182,22 +182,10 @@ QWidget#navigation_buttons_widget QPushButton:pressed {
     background-color: $button-pressed;
 }
 
-QWidget#navigation_buttons_widget QPushButton#next_button[highlight="false"] {
+QWidget#navigation_buttons_widget QPushButton[highlight="false"] {
     background-color: $button-disabled-background;
     color: $button-disabled-text-color;
     border: $button-disabled-border;
-}
-
-QWidget#navigation_buttons_widget QPushButton#next_button[highlight="true"] {
-    background-color: $accent-orange;
-}
-
-QWidget#navigation_buttons_widget QPushButton#next_button[highlight="true"]:hover {
-    background-color: $button-orange-hover;
-}
-
-QWidget#navigation_buttons_widget QPushButton#next_button[highlight="true"]:pressed {
-    background-color: $button-orange-pressed;
 }
 
 /* PARAMETER INPUT VIEW */
@@ -210,8 +198,22 @@ QWidget#parameter_form {
 QWidget#parameter_form_section {
     background-color: white;
     border-radius: 12px;
-    padding: 16px;
+    padding: 32px, 16px;
     margin-bottom: 10px;
+}
+
+QWidget#heading{
+    font-size: $font-size + 2px;
+}
+
+QWidget#label_body{
+    font-size: $font-size - 2px;
+    font-weight: 300;
+}
+
+QCheckBox::indicator {
+    width: 20px;
+    height: 20px;
 }
 
 QWidget#parameter_form_section QLineEdit {

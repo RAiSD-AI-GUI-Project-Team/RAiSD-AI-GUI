@@ -106,6 +106,9 @@ class RunWidget(QWidget):
         self.results_button = QPushButton("Results")
         self.results_button.clicked.connect(self._switch_to_run_results_widget)
         self.results_button.setEnabled(False)
+        self.results_button.setProperty("highlight", "false")
+        self.results_button.style().unpolish(self.results_button)
+        self.results_button.style().polish(self.results_button)
         layout.addWidget(self.results_button)
 
         self._step_buttons = [
@@ -206,12 +209,18 @@ class RunWidget(QWidget):
     def _handle_run_start(self) -> None:
         self._switch_to_run_view_widget()
         self.run_view_widget.results_button.setEnabled(False)
+        self.run_view_widget.results_button.setProperty("highlight", "false")
+        self.run_view_widget.results_button.style().unpolish(self.run_view_widget.results_button)
+        self.run_view_widget.results_button.style().polish(self.run_view_widget.results_button)
 
     @Slot()
     def _handle_run_end(self, run_successful: bool) -> None:
         if run_successful:
             self._switch_to_run_results_widget()
             self.run_view_widget.results_button.setEnabled(True)
+            self.run_view_widget.results_button.setProperty("highlight", "true")
+            self.run_view_widget.results_button.style().unpolish(self.run_view_widget.results_button)
+            self.run_view_widget.results_button.style().polish(self.run_view_widget.results_button)
         else:
             self._switch_to_run_view_widget()
 
@@ -600,6 +609,7 @@ class RunViewWidget(RunSubWidget):
     def _setup_navigation_buttons(self) -> NavigationButtonsWidget:
         self.stop_run_button = QPushButton("Stop Run")
         self.stop_run_button.setEnabled(False)
+        self.stop_run_button.setProperty("highlight", "false")
         self.stop_run_button.clicked.connect(self._stop_run_button_clicked)
 
         self.toggle_console_button = QPushButton("Toggle Console")
@@ -608,6 +618,7 @@ class RunViewWidget(RunSubWidget):
 
         self.results_button = QPushButton("Results")
         self.results_button.setEnabled(False)
+        self.results_button.setProperty("highlight", "false")
 
         return NavigationButtonsWidget(left_button=self.stop_run_button, middle_button=self.toggle_console_button, right_button=self.results_button)
 
@@ -640,6 +651,9 @@ class RunViewWidget(RunSubWidget):
     def run_start(self, number_of_processes: int) -> None:
         self.setup_execution_indicators(number_of_processes)
         self.stop_run_button.setEnabled(True)
+        self.stop_run_button.setProperty("highlight", "true")
+        self.stop_run_button.style().unpolish(self.stop_run_button)
+        self.stop_run_button.style().polish(self.stop_run_button)
 
     @Slot(bool)
     def run_end(self, run_successful: bool) -> None:
@@ -647,6 +661,9 @@ class RunViewWidget(RunSubWidget):
         Update the execution buttons and close an open confirm dialog.
         """
         self.stop_run_button.setEnabled(False)
+        self.stop_run_button.setProperty("highlight", "false")
+        self.stop_run_button.style().unpolish(self.stop_run_button)
+        self.stop_run_button.style().polish(self.stop_run_button)
         if self.confirm_stop_execution_dialog is not None:
             self.confirm_stop_execution_dialog.close()
         if self.execution_still_running_dialog is not None:
