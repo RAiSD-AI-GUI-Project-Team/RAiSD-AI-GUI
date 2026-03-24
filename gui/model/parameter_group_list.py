@@ -39,7 +39,6 @@ class ParameterGroupList(QObject):
 
     def __init__(
             self,
-            command: str,
             run_id_parameter: StringParameter,
             operations: dict[str, bool],
             parameter_groups: list[ParameterGroup] | None = None,
@@ -48,14 +47,10 @@ class ParameterGroupList(QObject):
         """
         Initialize a `ParameterGroupList` object.
 
-        :param command: the terminal command to use
-        :type command: str
-
         :param parameter_groups: the groups of parameters
         :type parameter_groups: list[ParameterGroup] | None
         """
         super().__init__()
-        self.command = command
         self._run_id_parameter = run_id_parameter
         self._run_id = run_id_parameter.value
         self._run_id_parameter.value_changed.connect(
@@ -660,14 +655,6 @@ class ParameterGroupList(QObject):
 
         config_obj = load(config_text, Loader=Loader)
 
-        if "executable" not in config_obj:
-            raise ValueError("Config file is missing executable name.")
-        executable = config_obj["executable"]
-        if not isinstance(executable, str):
-            raise ValueError(
-                f"Invalid executable name: {executable}. Expected string."
-            )
-
         operations: dict[str, bool] = {}
         mode_list = config_obj.get("modes", []) or []
         for mode_obj in mode_list:
@@ -702,7 +689,7 @@ class ParameterGroupList(QObject):
         for parameter_group_obj in config_obj["parameter_groups"]:
             parameter_groups.append(parse_parameter_group(parameter_group_obj))
 
-        result = cls(executable, run_id_parameter, operations, parameter_groups)
+        result = cls(run_id_parameter, operations, parameter_groups)
 
         parameter_conditions: dict[Parameter[Any], list[Dependency.Condition]] = {}
 
@@ -808,7 +795,7 @@ class ParameterGroupList(QObject):
         for operation in operations:
             # For each operation get the cli representation from all param_groups
             # The paramgroups handle the operation by passing it to the parameters
-            instruction = f"{self.command} {self._run_id_parameter.to_cli(operation)} -op {operation}"
+            instruction = f"{self._run_id_parameter.to_cli(operation)} -op {operation}"
             for param_group in self._parameter_groups:
                 if (param_group.to_cli(operation) != ""): instruction = f"{instruction} {param_group.to_cli(operation)}"
             instructions.append(instruction)
