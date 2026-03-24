@@ -22,27 +22,8 @@ class HistoryRecordWidget(QWidget):
         layout.addWidget(name_label, 0, 0, Qt.AlignmentFlag.AlignLeft)
 
         # top right: indication of the completion time/date
-        time_label = QLabel(self._format_time_ago(self._history_record.time_completed))
-        layout.addWidget(time_label, 0, 1, Qt.AlignmentFlag.AlignRight)
-
-        # # middle (from left to right): input files with commas in between with elided text functionality
-        # files_label = QLabel(", ".join(run_result.input_files))
-        # files_label.setMaximumWidth(400)
-        # files_label.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
-        # files_label.setToolTip("\n".join(run_result.input_files))
-        # files_label.setText(files_label.fontMetrics().elidedText(
-        #     ", ".join(run_result.input_files), Qt.TextElideMode.ElideRight, 400
-        # ))
-        # layout.addWidget(files_label, 1, 0, 1, 2, Qt.AlignmentFlag.AlignLeft)
-
-        # # bottom left: output folder with elided text functionality
-        # output_label = QLabel()
-        # output_label.setMaximumWidth(250)
-        # output_label.setToolTip(str(run_result.output_folder))
-        # output_label.setText(output_label.fontMetrics().elidedText(
-        #     str(run_result.output_folder), Qt.TextElideMode.ElideRight, 250
-        # ))
-        # layout.addWidget(output_label, 2, 0, Qt.AlignmentFlag.AlignLeft)
+        self.time_label = QLabel(self._format_time_ago(self._history_record.time_completed))
+        layout.addWidget(self.time_label, 0, 1, Qt.AlignmentFlag.AlignRight)
 
         # bottom right: logic to add operation icons, not yet visible
         # operations_widget = QWidget()
@@ -83,3 +64,6 @@ class HistoryRecordWidget(QWidget):
             return f"{months} {'month' if months == 1 else 'months'} ago"
         else:
             return f"{years} {'year' if years == 1 else 'years'} ago"
+        
+    def update_time(self) -> None:
+        self.time_label.setText(self._format_time_ago(self._history_record.time_completed))

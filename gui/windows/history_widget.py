@@ -96,3 +96,6 @@ class HistoryWidget(QWidget):
             self.results_widget.show_results()
             self.results_panel.show()
             self._selected = history_record.name
+
+    def update_history_time(self) -> None:
+        self._history_list.update_time()

@@ -22,6 +22,7 @@ class HistoryListWidget(QWidget):
     ) -> None:
         super().__init__()
         self._history_records = history_records or []
+        self._history_widgets: list[HistoryRecordWidget] = []
 
         layout = QVBoxLayout(self)
 
@@ -42,13 +43,15 @@ class HistoryListWidget(QWidget):
         scroll_area.setWidget(self._list_container)
 
         for record in self._history_records:
-            self._add_record_widget(record)
+            widget = self._add_record_widget(record)
+            self._history_widgets.append(widget)
 
     def add_record(self, history_record: HistoryRecord) -> None:
         self._history_records.insert(0, history_record)
-        self._add_record_widget(history_record, at_top = True)
+        widget = self._add_record_widget(history_record, at_top = True)
+        self._history_widgets.append(widget)
 
-    def _add_record_widget(self, history_record: HistoryRecord, at_top: bool = False) -> None:
+    def _add_record_widget(self, history_record: HistoryRecord, at_top: bool = False) -> HistoryRecordWidget:
         widget = HistoryRecordWidget(history_record)
         widget.setMinimumHeight(100)
         widget.mousePressEvent = lambda _: self.run_selected.emit(history_record)
@@ -57,3 +60,8 @@ class HistoryListWidget(QWidget):
         else:
             count = self._list_layout.count()
             self._list_layout.insertWidget(count - 1, widget)
+        return widget
+
+    def update_time(self) -> None:
+        for widget in self._history_widgets:
+            widget.update_time()

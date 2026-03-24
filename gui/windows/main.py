@@ -102,6 +102,7 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def _history_button_clicked(self) -> None:
+        self.history_widget.update_history_time()
         self.main_widget_layout.setCurrentWidget(self.history_widget)
 
     @Slot()
