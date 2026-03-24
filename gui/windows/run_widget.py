@@ -35,7 +35,7 @@ from gui.widgets.parameter_widget import ParameterWidget
 from gui.widgets.parameter_form import ParameterForm
 from gui.windows.dialog import ConfirmDialog, ErrorDialog
 from gui.widgets.results_widget import ResultsWidget
-from gui.widgets.process_indicator_widget import ProcessIndicator
+from gui.widgets.process_indicator_widget import ProcessIndicator, IndicatorState
 
 class RunWidget(QWidget):
     """
@@ -617,8 +617,15 @@ class RunViewWidget(RunSubWidget):
         self._stop_execution()
 
     def _toggle_console_button_clicked(self) -> None:
-        self.execution_output.setVisible(not self.execution_output.isVisible())
-        self.error_output.setVisible(not self.error_output.isVisible())
+        previous_visibility = self.execution_output.isVisible()
+        self.execution_output.setVisible(not previous_visibility)
+        self.error_output.setVisible(not previous_visibility)
+
+        for indicator in self.run_indicators:
+            if previous_visibility:
+                indicator.set_indicator_size(120)
+            else:
+                indicator.set_indicator_size(90)
 
     # methods
     @Slot()
@@ -698,7 +705,6 @@ class RunViewWidget(RunSubWidget):
         for idx in range(max([number_of_indicators, number_of_processes])):
             if idx < number_of_processes and idx < number_of_indicators:
                 self.run_indicators[idx].setVisible(True)
-                self.run_indicators[idx].state = "pending"
             elif idx < number_of_processes and idx >= number_of_indicators:
                 self.add_indicator_widget(idx)
                 continue
@@ -709,13 +715,13 @@ class RunViewWidget(RunSubWidget):
         """
         Add an indicator widget to self.step_layout.
         """
-        indicator = ProcessIndicator(number=index + 1, size=90)
+        indicator = ProcessIndicator(number=index + 1, size=120)
         self._command_executor.process_started.connect(lambda idx=index: self._process_started(idx))
         self._command_executor.process_finished.connect(lambda idx=index: self._process_finished(idx))
         self.step_layout.addWidget(indicator)
         self.run_indicators.append(indicator)
 
-    def set_execution_view_indicator(self, index: int, state: str) -> None:
+    def set_execution_view_indicator(self, index: int, state: IndicatorState) -> None:
         """
         Set the indicator to the given state.
 
@@ -778,20 +784,20 @@ class RunViewWidget(RunSubWidget):
         """
         Handle CommandExecutor.process_started.
         """
-        self.set_execution_view_indicator(process_index, "running")
+        self.set_execution_view_indicator(process_index, IndicatorState.RUNNING)
     @Slot(int)
     def _process_finished(self, process_index: int) -> None:
         """
         Handle CommandExecutor.process_finished.
         """
-        self.set_execution_view_indicator(process_index, "finished")
+        self.set_execution_view_indicator(process_index, IndicatorState.FINISHED)
 
     @Slot(int, QProcess.ProcessError)
     def _process_failed(self, process_index: int, process_error: QProcess.ProcessError) -> None:
         """
         Handle CommandExecutor.process_failed.
         """
-        self.set_execution_view_indicator(process_index, "failed")
+        self.set_execution_view_indicator(process_index, IndicatorState.FAILED)
 
         if process_error is not None:
             print(f"Process '{process_index}' failed with process error '{process_error}'")
@@ -804,7 +810,7 @@ class RunViewWidget(RunSubWidget):
         """
         Handle CommandExecutor.process_stopped.
         """
-        self.set_execution_view_indicator(process_index, "stopped")
+        self.set_execution_view_indicator(process_index, IndicatorState.STOPPED)
 
 
 class RunResultsWidget(RunSubWidget):

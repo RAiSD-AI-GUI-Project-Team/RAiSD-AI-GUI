@@ -1,26 +1,49 @@
+from enum import Enum
+
 from PySide6.QtCore import Qt, Property
 from PySide6.QtGui import QPainter, QColor, QFont, QPen
 from PySide6.QtWidgets import QWidget, QSizePolicy
+
+
+class IndicatorState(Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    FINISHED = "finished"
+    FAILED = "failed"
+    STOPPED = "stopped"
 
 
 class ProcessIndicator(QWidget):
     """
     A circular indicator widget that displays a step number.
     """
+
     def __init__(self, number: int, size: int = 60):
         super().__init__()
         self._number = number
-        self._size = size
+        self._indicator_size = size
         self._fill_color = QColor()
         self._border_color = QColor()
         self._text_color = QColor()
-        self.setFixedSize(size, size)
+        self._state = IndicatorState.PENDING
+
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        self.setProperty("indicator_state", "pending")
         self.setObjectName("process_indicator")
+        self.setProperty("indicator_state", self._state.value)
+        self._apply_size()
 
-    # QSS-accessible properties
+    # Size
 
+    def set_indicator_size(self, size: int) -> None:
+        self._indicator_size = size
+        self._apply_size()
+        self.update()
+
+    def _apply_size(self) -> None:
+        self.setFixedSize(self._indicator_size, self._indicator_size)
+
+    # Color properties
+    
     def get_fill_color(self) -> QColor:
         return self._fill_color
 
@@ -46,15 +69,16 @@ class ProcessIndicator(QWidget):
     borderColor = Property(QColor, get_border_color, set_border_color)
     textColor = Property(QColor, get_text_color, set_text_color)
 
-    # State methods
+    # State management
 
     @property
-    def state(self) -> str:
-        return self.property("indicator_state")
+    def state(self) -> IndicatorState:
+        return self._state
 
     @state.setter
-    def state(self, new_state: str) -> None:
-        self.setProperty("indicator_state", new_state)
+    def state(self, new_state: IndicatorState) -> None:
+        self._state = new_state
+        self.setProperty("indicator_state", new_state.value)
         self.style().unpolish(self)
         self.style().polish(self)
         self.update()
@@ -65,8 +89,9 @@ class ProcessIndicator(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
+        size = self._indicator_size
         margin = 3
-        diameter = self._size - 2 * margin
+        diameter = size - 2 * margin
 
         # Fill
         painter.setPen(Qt.PenStyle.NoPen)
@@ -81,7 +106,7 @@ class ProcessIndicator(QWidget):
 
         # Number
         font = QFont()
-        font.setPixelSize(int(self._size * 0.4))
+        font.setPixelSize(int(size * 0.4))
         font.setBold(True)
         painter.setFont(font)
         painter.setPen(self._text_color)
