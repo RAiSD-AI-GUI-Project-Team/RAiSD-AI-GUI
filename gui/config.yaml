@@ -28,7 +28,7 @@ modes:
       IMG-GEN:
         name: Data formatting
         description: Make raw data into PNGs.
-        cli: -op IMG_GEN
+        cli: -op IMG-GEN
         input:
           - name: Input data
             cli: -I
@@ -48,7 +48,7 @@ modes:
       MDL-GEN:
         name: Model training
         description: Train a sweep detection CNN model.
-        cli: -op MDL_GEN
+        cli: -op MDL-GEN
         input:
           - name: Training data
             cli: -I
@@ -75,7 +75,7 @@ modes:
       MDL-TST:
         name: Model testing
         description: Evaluate a model.
-        cli: -op MDL_TST
+        cli: -op MDL-TST
         input:
           - name: Model
             cli: -mdl
@@ -108,7 +108,7 @@ modes:
       SWP-SCN:
         name: Sweep scan
         description: Use a trained model to scan for selective sweeps.
-        cli: -op SWP_SCN
+        cli: -op SWP-SCN
         input:
           - name: Model
             cli: -mdl
