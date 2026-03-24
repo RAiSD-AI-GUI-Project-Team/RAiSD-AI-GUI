@@ -902,7 +902,7 @@ class ParameterGroupList(QObject):
 
     @property
     def parameters(self) -> list[Parameter]:
-        result = []
+        result = [self.run_id_parameter]
         for parameter_group in self:
             result.extend(parameter_group)
         return result
