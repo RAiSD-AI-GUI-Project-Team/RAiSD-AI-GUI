@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QSplitter,
     QStackedWidget,
+    QScrollArea
 )
 from PySide6.QtCore import Slot, Qt
 
@@ -16,6 +17,7 @@ from gui.widgets.results_widget import ResultsWidget
 
 from gui.model.settings import app_settings
 from gui.model.run_result import RunResult
+from gui.model.history_record import HistoryRecord
 
 class HistoryWidget(QWidget):
     """
@@ -26,13 +28,14 @@ class HistoryWidget(QWidget):
     def __init__(self):
         super().__init__()
         self._history_list: HistoryListWidget = HistoryListWidget()
+        self._run_result = RunResult()
         self._setup_ui()
 
     def _setup_ui(self):
-        layout = QHBoxLayout(self)
+        results_layout = QHBoxLayout(self)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
-        layout.addWidget(splitter)
+        results_layout.addWidget(splitter)
 
         self._history_list.run_selected.connect(self._on_run_selected)
 
@@ -47,14 +50,23 @@ class HistoryWidget(QWidget):
         splitter.addWidget(self._right_panel)
 
         # Right panel: detail view. This will be changed with results view after it is implemented.
-        self._detail_panel = QWidget()
-        detail_layout = QVBoxLayout(self._detail_panel)
-        self._detail_label = QLabel("Select a run to see details.")
-        self._detail_label.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self._detail_label.setWordWrap(True)
-        detail_layout.addWidget(self._detail_label)
-        detail_layout.addStretch()
-        self._right_panel.addWidget(self._detail_panel)
+        self.results_panel = QWidget()
+        self.results_panel.setStyleSheet("background-color: lightblue;")
+        results_layout = QVBoxLayout(self.results_panel)
+
+        run_results_label = QLabel("Run Results")
+        results_layout.addWidget(run_results_label)
+
+        self.results_widget = ResultsWidget(self._run_result)
+
+        results_scroll = QScrollArea()
+        results_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        results_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        results_scroll.setWidgetResizable(True)
+        results_scroll.setWidget(self.results_widget )
+        results_layout.addWidget(results_scroll, 1)
+        self._right_panel.addWidget(self.results_panel)
+        # self.results_panel.hide()
 
         # Give the list 1/3 and the detail panel 2/3 of the width
         splitter.setSizes([200, 400])
