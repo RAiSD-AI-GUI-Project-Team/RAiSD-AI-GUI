@@ -768,7 +768,10 @@ class StringPairListParameter(Parameter[list[tuple[str, str]]]):
 
     @property
     def valid(self) -> bool:
-        return all(self.pair_valid(i) for i in range(len(self.value)))
+        return all(
+            left_valid and right_valid for left_valid, right_valid in
+            [self.pair_valid(i) for i in range(len(self.value))]
+        )
 
     def to_cli(self, operation: str) -> str:
         if not self.in_cli(operation):
