@@ -780,7 +780,7 @@ class RunViewWidget(RunSubWidget):
         """
         self.set_execution_view_indicator(process_index, "running")
     @Slot(int)
-    def _process_finished(self, index: int) -> None:
+    def _process_finished(self, process_index: int) -> None:
         """
         Handle CommandExecutor.process_finished.
         """
