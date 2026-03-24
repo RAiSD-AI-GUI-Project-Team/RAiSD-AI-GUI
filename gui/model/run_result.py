@@ -83,7 +83,7 @@ class RunResult():
             # If no history file exists
             with open(app_settings.workspace_path.absoluteFilePath("history.json"), "w") as f:
                 history = {}
-                history[self._name] = self.to_dict()
+                history[f"{self._time_completed}-{self._name}"] = self.to_dict()
                 json.dump(history, f, indent=4, default=str)
         else:    
             # If a file exists
