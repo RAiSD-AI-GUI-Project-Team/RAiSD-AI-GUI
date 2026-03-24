@@ -568,6 +568,14 @@ class StringPairListParameterWidget(ParameterWidget):
             layout.addWidget(self._delete_button)
 
         @property
+        def left_line_edit(self) -> QLineEdit:
+            return self._left_line_edit
+
+        @property
+        def right_line_edit(self) -> QLineEdit:
+            return self._right_line_edit
+
+        @property
         def values(self) -> tuple[str, str]:
             return (
                 self._left_line_edit.text(),
@@ -630,6 +638,9 @@ class StringPairListParameterWidget(ParameterWidget):
         self._parameter.value_changed.connect(
             self._parameter_value_changed,
         )
+        self._parameter.pair_valid_changed.connect(
+            self._pair_valid_changed,
+        )
 
     @Slot()
     def _add_clicked(self) -> None:
@@ -641,7 +652,6 @@ class StringPairListParameterWidget(ParameterWidget):
             new_value: list[tuple[str, str]],
             new_valid: bool,
     ) -> None:
-        print(new_value)
         current_count = len(self.rows)
         new_count = len(new_value)
 
@@ -676,6 +686,22 @@ class StringPairListParameterWidget(ParameterWidget):
                 )
                 self.rows.append(new_row)
                 self.row_layout.addWidget(new_row)
+
+    @Slot(int, bool, bool)
+    def _pair_valid_changed(
+        self,
+        index: int,
+        new_left_valid: bool, 
+        new_right_valid: bool,
+    ) -> None:
+        self._show_validity(
+            self.rows[index].left_line_edit,
+            new_left_valid,
+        )
+        self._show_validity(
+            self.rows[index].right_line_edit,
+            new_right_valid,
+        )
 
     @Slot(int, str, str)
     def _row_values_edited(self, index: int, left: str, right: str) -> None:
