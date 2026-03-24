@@ -60,21 +60,17 @@ class RunResult():
         return dict
 
     def parameter_to_value(self, parameter: Parameter) -> str | dict:
-        print(f"value of {parameter.name}: ")
         if type(parameter) is MultiParameter: 
             parameters = {}
-            print(f"multiparameter with {parameter.parameters}")
             for param in parameter.parameters:
                 parameters[param.name] = self.parameter_to_value(param)
             return parameters
         if type(parameter) is OptionalParameter:
-            print(f"optional parameter with {parameter.parameter}")
             value = {}
             value["enabled"] = parameter.value
             value[parameter.parameter.name] = self.parameter_to_value(parameter.parameter)
             return value
         else:
-            print(f"value: {parameter.value}")
             return parameter.value
 
     def save_to_history(self) -> None:
