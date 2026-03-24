@@ -116,7 +116,7 @@ class RunResult():
         return self._time_completed
     
     def set_name(self) -> None:
-        self._name = "Hi" # TODO: fix once merged with PR of run_id
+        self._name = self.parameter_group_list.run_id 
 
     def set_commands(self) -> None:
         """
@@ -126,6 +126,8 @@ class RunResult():
         self._commands = self._parameter_group_list.to_cli()
 
     def set_completed(self) -> None:
+        self._name = self.parameter_group_list.run_id
+        self._commands = self._parameter_group_list.to_cli()
         self._time_completed = datetime.now()
 
     def populate(self, history_record: HistoryRecord) -> None:
