@@ -706,6 +706,7 @@ class StringPairListParameter(Parameter[list[tuple[str, str]]]):
     """
 
     value_changed = Signal(list, bool)
+    pair_valid_changed = Signal(int, bool, bool)
 
     def __init__(
             self,
@@ -727,7 +728,7 @@ class StringPairListParameter(Parameter[list[tuple[str, str]]]):
             default_value=default_value,
             enabled=enabled,
         )
-        self.value = default_value.copy()
+        self._value = default_value.copy()
         self._separator = separator
         self._left_pattern = left_pattern
         self._right_pattern = right_pattern
@@ -739,16 +740,35 @@ class StringPairListParameter(Parameter[list[tuple[str, str]]]):
 
     def add_pair(self, pair=("", "")) -> None:
         self.value += [pair]
+        self.value_changed.emit(self.value, self.valid)
+
+    def pair_valid(self, index: int) -> tuple[bool, bool]:
+        left_valid = (
+            self._left_pattern is None
+            or self._left_pattern.fullmatch(self.value[index][0]) is not None
+        )
+        right_valid = (
+            self._right_pattern is None
+            or self._right_pattern.fullmatch(self.value[index][1]) is not None
+        )
+        return left_valid, right_valid
 
     def set_pair(self, index: int, pair: tuple[str, str]) -> None:
         self.value[index] = pair
         self.value_changed.emit(self.value, self.valid)
+        self.pair_valid_changed.emit(index, *self.pair_valid(index))
 
     def delete_pair(self, i: int) -> None:
         self.value = self.value[:i] + self.value[i+1:]
+        self.value_changed.emit(self.value, self.valid)
 
     def reset_value(self) -> None:
         self.value = self.default_value.copy()
+        self.value_changed.emit(self.value, self.valid)
+
+    @property
+    def valid(self) -> bool:
+        return all(self.pair_valid(i) for i in range(len(self.value)))
 
     def to_cli(self, operation: str) -> str:
         if not self.in_cli(operation):
