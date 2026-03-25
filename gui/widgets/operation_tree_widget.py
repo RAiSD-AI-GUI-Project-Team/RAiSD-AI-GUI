@@ -35,6 +35,7 @@ from gui.widgets.label import (
     InfoLabel,
 )
 from gui.widgets.resizable_stacked_widget import ResizableStackedWidget
+from gui.widgets.parameter_widget import ParameterWidget
 
 
 class FileProducerNodeWidget(QWidget):
@@ -302,6 +303,17 @@ class OperationNodeWidget(FileProducerNodeWidget):
         description = QLabel(operation_node.description)
         description.setWordWrap(True)
         layout.addWidget(description)
+
+        parameter_rows_widget = QWidget()
+        parameter_rows_layout = QVBoxLayout(parameter_rows_widget)
+        for parameter in self._operation_node.parameters.values():
+            parameter_widget = ParameterWidget.from_parameter(
+                parameter=parameter,
+                editable=True,
+            )
+            parameter_row = parameter_widget.build_form_row()
+            parameter_rows_layout.addWidget(parameter_row)
+        layout.addWidget(parameter_rows_widget)
 
         self._output_info_label = InfoLabel(
             self.output_label_text + self._operation_node.file

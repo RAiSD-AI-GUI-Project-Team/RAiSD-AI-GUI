@@ -600,6 +600,11 @@ class OperationNode(FileProducerNode):
             file_consumer.add_producer(file_picker)
             self._file_consumers.append(file_consumer)
             file_consumer.valid_changed.connect(self._consumer_valid_changed)
+        self._overwrite_parameter = operation.overwrite_parameter_builder()
+        self._parameters = {}
+        for parameter_id in operation.parameter_builders:
+            parameter_builder = operation.parameter_builders[parameter_id]
+            self._parameters[parameter_id] = parameter_builder()
         self._output_path = [
             OperationNode.PathFragmentGenerator.from_path_fragment(
                 path_fragment=path_fragment,
@@ -607,11 +612,6 @@ class OperationNode(FileProducerNode):
             )
             for path_fragment in operation.output_path
         ]
-        self._overwrite_parameter = operation.overwrite_parameter_builder()
-        self._parameters = {}
-        for parameter_id in operation.parameter_builders:
-            parameter_builder = operation.parameter_builders[parameter_id]
-            self._parameters[parameter_id] = parameter_builder()
         self._run_id = run_id
         self._enabled = enabled
 
