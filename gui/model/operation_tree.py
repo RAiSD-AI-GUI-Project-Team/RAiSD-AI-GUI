@@ -709,7 +709,7 @@ class OperationNode(FileProducerNode):
 
     @property
     def base_directory_path(self) -> str:
-        return self.base_directory_path
+        return self._base_directory_path
     
     @base_directory_path.setter
     def base_directory_path(self, new_base_directory_path: str) -> None:
