@@ -370,7 +370,7 @@ class FilePickerNode(FileProducerNode):
     """
     A node which allows the user to select an existing file.
 
-    Implements `FileProviderNode`.
+    Implements `FileProducerNode`.
     """
 
     def __init__(
@@ -472,7 +472,7 @@ class OperationNode(FileProducerNode):
                 parent: QObject | None = None,
         ) -> None:
             """
-            Initialize an `OperationNpde.EnabledCondition` object.
+            Initialize an `OperationNode.EnabledCondition` object.
 
             :param operation_node: the operation node to track
             :type operation_node: "OperationNode"
@@ -632,7 +632,7 @@ class OperationNode(FileProducerNode):
         :rtype: list[str]
         """
         commands = []
-        own_command_pieces = ["./RAiSD-AI", self._cli]
+        own_command_pieces = [self._cli]
 
         for file_consumer in self.file_consumers:
             commands.extend(file_consumer.to_cli(parameters))

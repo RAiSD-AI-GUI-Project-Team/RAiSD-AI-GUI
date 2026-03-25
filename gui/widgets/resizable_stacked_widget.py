@@ -18,7 +18,7 @@ class ResizableStackedWidget(QWidget):
         super().__init__()
 
         QVBoxLayout(self)
-        self._widgets = []
+        self._widgets : list[QWidget] = []
         self._current_index = 0
 
     @property
@@ -32,12 +32,6 @@ class ResizableStackedWidget(QWidget):
     def current_index(self, new_index: int) -> None:
         self._current_index = new_index
         self._show_current_widget()
-
-    def count(self) -> int:
-        layout = self.layout()
-        if layout:
-            return layout.count()
-        return 0
 
     def addWidget(self, widget: QWidget) -> None:
         layout = self.layout()

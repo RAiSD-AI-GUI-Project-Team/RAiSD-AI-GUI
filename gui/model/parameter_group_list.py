@@ -100,7 +100,7 @@ class ParameterGroupList(QObject):
                 raise ValueError("File structure type missing.")
             file_type = obj["type"]
             match file_type:
-                case "single" | "single file":
+                case "file" | "single" | "single file":
                     formats = obj.get("formats", [])
                     if not isinstance(formats, list):
                         raise ValueError("Invalid format list for single file.")
