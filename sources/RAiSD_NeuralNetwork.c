@@ -919,7 +919,7 @@ void RSDNeuralNetwork_createRunCommand (RSDNeuralNetwork_t * RSDNeuralNetwork, R
 	RSDNeuralNetwork_modelCheck (RSDNeuralNetwork, RSDCommandLine);
 	dir_exists_check (inputPath);
 	
-	char tstring[STRING_SIZE];	
+	char tstring[STRING_SIZE], runNameSanitized[STRING_SIZE/2], tstringF[STRING_SIZE];	
 	
 	strncpy(runCommand, "python3 ", STRING_SIZE);	
 	strcat(runCommand, RSDNeuralNetwork->pyPath);
@@ -988,10 +988,11 @@ void RSDNeuralNetwork_createRunCommand (RSDNeuralNetwork_t * RSDNeuralNetwork, R
 	
 	strcat(runCommand, " -w ");
 	sprintf(tstring, "%d", RSDNeuralNetwork->imageWidth);
-	strcat(runCommand, tstring);
+	strcat(runCommand, tstring);	
 	
-	strcat(runCommand, " -o ");
-	strcat(runCommand, "tempOutputFolder");
+	sanitizeString(RSDCommandLine->runName, runNameSanitized, STRING_SIZE/2);	
+	snprintf(tstringF, STRING_SIZE, " -o tempOutputFolder-%s-rsdai", runNameSanitized);	
+	strcat(runCommand, tstringF);
 
 	strcat(runCommand, " 2>/dev/null");
 	
@@ -1117,7 +1118,7 @@ void RSDNeuralNetwork_test (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLin
 	fprintf(fpOut, "\n");
 	fprintf(stdout, "\n");
 	
-	char tstring[STRING_SIZE], testCommand[STRING_SIZE];
+	char tstring[STRING_SIZE], testCommand[STRING_SIZE], tstringF[STRING_SIZE], runNameSanitized[STRING_SIZE/2];
 	int i=-1, j=-1, k=-1;	
 	
 	if(RSDCommandLine->numberOfClasses!=RSDNeuralNetwork->classSize)
@@ -1202,15 +1203,19 @@ void RSDNeuralNetwork_test (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLin
 		exec_command (testCommand);
 		
 		for(j=0;j<RSDCommandLine->numberOfClasses;j++)
-			predictionGrid[i*RSDCommandLine->numberOfClasses+j]=0;		
+			predictionGrid[i*RSDCommandLine->numberOfClasses+j]=0;
+			
 		
-		FILE * fp = fopen("tempOutputFolder/PredResults.txt", "r");
+		sanitizeString(RSDCommandLine->runName, runNameSanitized, STRING_SIZE/2);	
+		snprintf(tstringF, STRING_SIZE, "tempOutputFolder-%s-rsdai/PredResults.txt", runNameSanitized);	
+		FILE * fp = fopen(tstringF, "r");
 		assert(fp!=NULL);
 		
 		RSDNeuralNetwork_readPredictionFile (RSDNeuralNetwork, fp, i, RSDCommandLine->numberOfClasses, predictionGrid); 		
 		fclose(fp);
 
-		exec_command ("rm -r tempOutputFolder");
+		snprintf(tstringF, STRING_SIZE, "rm -r tempOutputFolder-%s-rsdai", runNameSanitized);
+		exec_command (tstringF);
 	}
 	
 	int samplesStrLen = 2;
