@@ -84,11 +84,6 @@ QLabel#settings_label {
 
 /* SHARED — SCROLL AREAS */
 
-QScrollBar {
-    width: 0px;
-    height: 0px;
-}
-
 QScrollArea#parameter_form_scroll,
 QScrollArea#results_scroll,
 QWidget#results_widget {
