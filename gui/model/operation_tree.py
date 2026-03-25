@@ -16,6 +16,7 @@ from PySide6.QtCore import (
     QObject,
     Signal,
     Slot,
+    QFileInfo,
     QDir,
 )
 
@@ -291,7 +292,7 @@ class CommonParentDirectoryNode(FileProducerNode):
         self._file_consumers = []
         for file_structure in self._produces.contents:
             file_consumer = FileConsumerNode(
-                Directory([file_structure]),
+                file_structure,
                 "",
                 "",
             )
@@ -319,7 +320,16 @@ class CommonParentDirectoryNode(FileProducerNode):
         The path to the directory produced by this node's children, if
         available.
         """
-        return self.file_consumers[0].file
+        parent_directory_paths: set[str] = set()
+        for consumer in self.file_consumers:
+            if consumer.file is None:
+                return None
+            parent_directory_paths.add(
+                QFileInfo(consumer.file).dir().absolutePath()
+            )
+        if len(parent_directory_paths) == 1:
+            return list(parent_directory_paths)[0]
+        return None
 
     def _set_run_id(self, new_run_id: str) -> None:
         for file_consumer in self.file_consumers:
@@ -362,7 +372,7 @@ class CommonParentDirectoryNode(FileProducerNode):
         if not all(consumer.valid for consumer in self.file_consumers):
             return False
 
-        return len(set(consumer.file for consumer in self.file_consumers)) == 1
+        return self.file is not None
 
     def to_cli(self, parameters: list[Parameter]) -> list[str]:
         """
@@ -388,7 +398,7 @@ class FilePickerNode(FileProducerNode):
     """
     A node which allows the user to select an existing file.
 
-    Implements `FileProviderNode`.
+    Implements `FileProducerNode`.
     """
 
     def __init__(
@@ -562,7 +572,7 @@ class OperationNode(FileProducerNode):
                 parent: QObject | None = None,
         ) -> None:
             """
-            Initialize an `OperationNpde.EnabledCondition` object.
+            Initialize an `OperationNode.EnabledCondition` object.
 
             :param operation_node: the operation node to track
             :type operation_node: "OperationNode"
@@ -624,6 +634,15 @@ class OperationNode(FileProducerNode):
             file_consumer.add_producer(file_picker)
             self._file_consumers.append(file_consumer)
             file_consumer.valid_changed.connect(self._consumer_valid_changed)
+        self._overwrite_parameter = operation.overwrite_parameter_builder()
+        self._parameters = {}
+        for parameter_id in operation.parameter_builders:
+            parameter_builder = operation.parameter_builders[parameter_id]
+            parameter = parameter_builder()
+            self._parameters[parameter_id] = parameter
+            # TODO: consider if there is a way to only connect the
+            # used parameters
+            parameter.value_changed.connect(self._parameter_value_changed)
         self._output_path = [
             OperationNode.PathFragmentGenerator.from_path_fragment(
                 path_fragment=path_fragment,
@@ -631,11 +650,6 @@ class OperationNode(FileProducerNode):
             )
             for path_fragment in operation.output_path
         ]
-        self._overwrite_parameter = operation.overwrite_parameter_builder()
-        self._parameters = {}
-        for parameter_id in operation.parameter_builders:
-            parameter_builder = operation.parameter_builders[parameter_id]
-            self._parameters[parameter_id] = parameter_builder()
         self._run_id = run_id
         self._base_directory_path = base_directory_path
         self._enabled = enabled
@@ -733,7 +747,11 @@ class OperationNode(FileProducerNode):
         """
         Whether the operation's inputs are in a valid state.
         """
-        return all([consumer.valid for consumer in self._file_consumers])
+        return all(
+            [self._overwrite_parameter.valid] # TODO: implement this
+            + [parameter.valid for parameter in self.parameters.values()]
+            + [consumer.valid for consumer in self._file_consumers]
+        )
 
     def to_cli(self, parameters: list[Parameter]) -> list[str]:
         """
@@ -750,11 +768,16 @@ class OperationNode(FileProducerNode):
         :rtype: list[str]
         """
         commands = []
-        own_command_pieces = ["./RAiSD-AI", self._cli]
+        own_command_pieces = [self._cli]
 
         for file_consumer in self.file_consumers:
             commands.extend(file_consumer.to_cli(parameters))
             own_command_pieces.append(file_consumer.cli_parameter)
+
+        own_command_pieces.append(self._overwrite_parameter.to_cli(self.id))
+
+        for parameter in self.parameters.values():
+            own_command_pieces.append(parameter.to_cli(self.id))
 
         for parameter in parameters:
             own_command_pieces.append(parameter.to_cli(self.id))
@@ -767,6 +790,11 @@ class OperationNode(FileProducerNode):
 
     @Slot(bool)
     def _consumer_valid_changed(self, new_valid: bool) -> None:
+        self.valid_changed.emit(self.valid)
+
+    @Slot()
+    def _parameter_value_changed(self) -> None:
+        self.file_changed.emit(self.file)
         self.valid_changed.emit(self.valid)
 
 

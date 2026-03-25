@@ -19,10 +19,21 @@ modes:
               type: single
               formats:
                 - .ms
+                - .mbs
+                - .vcf
+                - .fasta
         output:
           type: directory
           contents: []
-        prefix: RAiSD_Grid.
+        overwrite_parameter:
+          name: Overwrite existing RAiSD report?
+          description: You are about to overwrite existing data in the output folder. Are you sure?
+          cli: -f
+          type: bool
+          default: false
+        path:
+          - RAiSD_Grid.
+          - type: run id
   - name: RAiSD-AI
     operations:
       IMG-GEN:
@@ -43,10 +54,11 @@ modes:
               formats:
                 - .png
         overwrite_parameter:
-          name: Overwrite existing data?
+          name: Overwrite existing image data?
           description: You are about to overwrite existing data in the output folder. Are you sure?
-          type: bool
           cli: -f
+          type: bool
+          default: false
         parameters:
           "-icl":
             name: Image class label
@@ -54,6 +66,7 @@ modes:
             cli: "-icl"
             type: str
             pattern: ".+"
+            default: class_label
         path:
           - RAiSD_Images.
           - type: run id
@@ -86,7 +99,15 @@ modes:
             - type: single
               formats:
                 - .pt
-        prefix: RAiSD_Model.
+        overwrite_parameter:
+          name: Overwrite existing model?
+          description: You are about to overwrite existing data in the output folder. Are you sure?
+          cli: -f
+          type: bool
+          default: false
+        path:
+          - RAiSD_Model.
+          - type: run id
       MDL-TST:
         name: Model testing
         description: Evaluate a model.
@@ -119,7 +140,15 @@ modes:
           type: single
           formats:
             - .report
-        prefix: RAiSD_Inference.
+        overwrite_parameter:
+          name: Overwrite existing results?
+          description: You are about to overwrite existing data in the output folder. Are you sure?
+          cli: -f
+          type: bool
+          default: false
+        path:
+          - RAiSD_Inference. # probably wrong
+          - type: run id
       SWP-SCN:
         name: Sweep scan
         description: Use a trained model to scan for selective sweeps.
@@ -143,7 +172,15 @@ modes:
           type: single
           formats:
             - .report
-        prefix: RAiSD_Report.
+        overwrite_parameter:
+          name: Overwrite existing results?
+          description: You are about to overwrite existing data in the output folder. Are you sure?
+          cli: -f
+          type: bool
+          default: false
+        path:
+          - RAiSD_Grid.
+          - type: run id
   - name: Common outlier analysis
     operations:
       CO:
@@ -155,6 +192,15 @@ modes:
           type: single
           formats: 
             - .co-report
+        overwrite_parameter:
+          name: Overwrite existing results?
+          description: You are about to overwrite existing output data. Are you sure?
+          cli: -f
+          type: bool
+          default: false
+        path:
+          - RAiSD_CommonOutlierAnalysis.
+          - type: run id
   - name: File conversion
     operations:
       FASTA-VCF:
@@ -172,7 +218,15 @@ modes:
           type: single
           formats:
             - .vcf
-        prefix: RAiSD_FastaVcf
+        overwrite_parameter:
+          name: Overwrite existing data?
+          description: You are about to overwrite existing output data. Are you sure?
+          cli: -f
+          type: bool
+          default: false
+        path:
+          - RAiSD_FastaVcf.
+          - type: run id
       VCF-MS:
         name: VCF to ms
         description: Convert a vcf file to ms
@@ -188,7 +242,15 @@ modes:
           type: single
           formats:
             - .ms
-        prefix: RAiSD_VcfMs
+        overwrite_parameter:
+          name: Overwrite existing data?
+          description: You are about to overwrite existing output data. Are you sure?
+          cli: -f
+          type: bool
+          default: false
+        path:
+          - RAiSD_VcfMs.
+          - type: run id
 parameter_groups:
   - name: General
     operations:

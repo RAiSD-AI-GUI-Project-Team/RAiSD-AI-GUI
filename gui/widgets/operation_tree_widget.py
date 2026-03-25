@@ -34,7 +34,10 @@ from gui.model.operation_tree import (
 from gui.widgets.label import (
     InfoLabel,
 )
-from gui.widgets.resizable_stacked_widget import ResizableStackedWidget
+from gui.widgets.resizable_stacked_widget import (
+    ResizableStackedWidget,
+)
+from gui.widgets.parameter_widget import ParameterWidget
 
 
 class FileProducerNodeWidget(QWidget):
@@ -249,7 +252,7 @@ class FilePickerNodeWidget(FileProducerNodeWidget):
         layout.addWidget(heading)
 
         self.button = QPushButton("Browse")
-        self.button.clicked.connect(self._onpopup) 
+        self.button.clicked.connect(self._browse_button_clicked) 
         layout.addWidget(self.button)
 
         self._file_picker.file_changed.connect(self._file_picker_file_changed)
@@ -260,7 +263,7 @@ class FilePickerNodeWidget(FileProducerNodeWidget):
             return "Choose a directory on your computer."
         return "Choose a file on your computer."
 
-    def _onpopup(self):
+    def _browse_button_clicked(self):
         self.dialog = QFileDialog()
         if self._is_directory:
             self.dialog.setFileMode(QFileDialog.FileMode.Directory)
@@ -302,6 +305,17 @@ class OperationNodeWidget(FileProducerNodeWidget):
         description = QLabel(operation_node.description)
         description.setWordWrap(True)
         layout.addWidget(description)
+
+        parameter_rows_widget = QWidget()
+        parameter_rows_layout = QVBoxLayout(parameter_rows_widget)
+        for parameter in self._operation_node.parameters.values():
+            parameter_widget = ParameterWidget.from_parameter(
+                parameter=parameter,
+                editable=True,
+            )
+            parameter_row = parameter_widget.build_form_row()
+            parameter_rows_layout.addWidget(parameter_row)
+        layout.addWidget(parameter_rows_widget)
 
         self._output_info_label = InfoLabel(
             self.output_label_text + self._operation_node.file
