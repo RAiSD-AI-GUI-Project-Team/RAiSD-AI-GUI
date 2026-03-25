@@ -34,7 +34,9 @@ from gui.model.operation_tree import (
 from gui.widgets.label import (
     InfoLabel,
 )
-from gui.widgets.resizable_stacked_widget import ResizableStackedWidget
+from gui.widgets.resizable_stacked_widget import (
+    ResizableStackedWidget,
+)
 from gui.widgets.parameter_widget import ParameterWidget
 
 
@@ -250,7 +252,7 @@ class FilePickerNodeWidget(FileProducerNodeWidget):
         layout.addWidget(heading)
 
         self.button = QPushButton("Browse")
-        self.button.clicked.connect(self._onpopup) 
+        self.button.clicked.connect(self._browse_button_clicked) 
         layout.addWidget(self.button)
 
         self._file_picker.file_changed.connect(self._file_picker_file_changed)
@@ -261,7 +263,7 @@ class FilePickerNodeWidget(FileProducerNodeWidget):
             return "Choose a directory on your computer."
         return "Choose a file on your computer."
 
-    def _onpopup(self):
+    def _browse_button_clicked(self):
         self.dialog = QFileDialog()
         if self._is_directory:
             self.dialog.setFileMode(QFileDialog.FileMode.Directory)

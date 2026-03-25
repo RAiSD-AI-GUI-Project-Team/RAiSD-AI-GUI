@@ -100,7 +100,7 @@ class ParameterGroupList(QObject):
                 raise ValueError("File structure type missing.")
             file_type = obj["type"]
             match file_type:
-                case "single" | "single file":
+                case "file" | "single" | "single file":
                     formats = obj.get("formats", [])
                     if not isinstance(formats, list):
                         raise ValueError("Invalid format list for single file.")
@@ -546,19 +546,20 @@ class ParameterGroupList(QObject):
                         compiled_pattern,
                     )
                 case "file":
-                    accepted_formats = obj.get("formats", []) or []
-                    if not isinstance(accepted_formats, list):
+                    accepted_formats = obj.get("formats", None)
+                    if accepted_formats is not None and not isinstance(accepted_formats, list):
                         raise ValueError(
                             "Invalid list of file formats for file parameter "
                             + f"{name}: {accepted_formats}. Expected list or "
-                            + "null."
+                            + "None."
                         )
-                    for format in accepted_formats:
-                        if not isinstance(format, str):
-                            raise ValueError(
-                                "Invalid accepted format for file parameter "
-                                + f"{name}: {format}. Expected string."
-                            )
+                    if accepted_formats is not None:
+                        for format in accepted_formats:
+                            if not isinstance(format, str):
+                                raise ValueError(
+                                    "Invalid accepted format for file parameter "
+                                    + f"{name}: {format}. Expected string."
+                                )
 
                     strict = obj.get("strict", False)
                     if not isinstance(strict, bool):
@@ -959,12 +960,12 @@ class ParameterGroupList(QObject):
 
     @run_id.setter
     def run_id(self, new_run_id: str) -> None:
+        self.run_id_valid_changed.emit(self.run_id_valid)
         if self.run_id_parameter.value == new_run_id:
             return # Nothing actually changed
         self.run_id_parameter.value = new_run_id
         for operation_tree in self.operation_trees:
             operation_tree.run_id = new_run_id
-        self.run_id_valid_changed.emit(self.run_id_valid)
 
     @property
     def run_id_valid(self) -> bool:
