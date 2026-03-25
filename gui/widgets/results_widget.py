@@ -86,7 +86,7 @@ class ResultsWidget(QWidget):
             self.info_files_layout.addWidget(button)
 
         # Set folder widget to right folder
-        path = app_settings.workspace_path.filePath(self._run_result.name)
+        path = app_settings.workspace_path.filePath(self._run_result.parameter_group_list.run_id)
         self.folder_structure.setRootPath(path)
         self.folder_widget.setModel(self.folder_structure)
         self.folder_widget.setRootIndex(self.folder_structure.index(path))

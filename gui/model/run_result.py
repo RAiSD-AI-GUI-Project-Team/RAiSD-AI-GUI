@@ -11,12 +11,10 @@ from gui.model.parameter import Parameter, OptionalParameter, MultiParameter
 class RunResult():
     def __init__(
             self, 
-            name: str = "",
             commands: list[str] | None = None,
             parameter_group_list: ParameterGroupList = None,
             time_completed: datetime | None = None
         ):
-        self._name = name
         self._commands = commands
         self._parameter_group_list = parameter_group_list or ParameterGroupList.from_yaml(app_settings.yaml_path)
         self._time_completed = time_completed
@@ -28,7 +26,7 @@ class RunResult():
                 parameters_dict[parameter.name] = self.parameter_to_value(parameter)
         
         return HistoryRecord(
-            self.name,
+            self._parameter_group_list.run_id,
             self.commands,
             self._parameter_group_list.operations,
             parameters_dict,
@@ -42,7 +40,7 @@ class RunResult():
                 parameters_dict[parameter.name] = self.parameter_to_value(parameter)
 
         dict = {
-            "name": self.name,
+            "name": self._parameter_group_list.run_id,
             "commands": self._commands,
             "operations": self._parameter_group_list.operations,
             "parameters": parameters_dict,
@@ -70,7 +68,7 @@ class RunResult():
             # If no history file exists
             with open(app_settings.workspace_path.absoluteFilePath("history.json"), "w") as f:
                 history = {}
-                history[f"{self._time_completed}-{self._name}"] = self.to_dict()
+                history[f"{self._time_completed}-{self._parameter_group_list.run_id}"] = self.to_dict()
                 json.dump(history, f, indent=4, default=str)
         else:    
             # If a file exists
@@ -81,14 +79,9 @@ class RunResult():
                 except:
                     # File could not be parsed
                     print("Problem reading file: might be empty or incorrect format")
-                history[self._name] = self.to_dict()
+                history[f"{self._time_completed}-{self._parameter_group_list.run_id}"] = self.to_dict()
                 f.seek(0)
                 json.dump(history, f, indent=4, default=str)
-
-
-    @property
-    def name(self) -> str:
-        return self._name
     
     @property
     def commands(self) -> list[str] | None:
@@ -102,8 +95,6 @@ class RunResult():
     def time_completed(self) -> datetime | None:
         return self._time_completed
     
-    def set_name(self) -> None:
-        self._name = self.parameter_group_list.run_id 
 
     def set_commands(self) -> None:
         """
@@ -113,12 +104,11 @@ class RunResult():
         self._commands = self._parameter_group_list.to_cli()
 
     def set_completed(self) -> None:
-        self._name = self.parameter_group_list.run_id
         self._commands = self._parameter_group_list.to_cli()
         self._time_completed = datetime.now()
 
     def populate(self, history_record: HistoryRecord) -> None:
-        self._name = history_record.name
+        self.parameter_group_list.run_id_parameter.value = history_record.name
         self._commands = history_record.commands
         dictionary = history_record.parameters
         for parameter_group in self._parameter_group_list:
