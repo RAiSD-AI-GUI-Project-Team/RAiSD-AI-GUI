@@ -68,6 +68,11 @@ class FileProducerNode(QObject):
 
     run_id = property(fset=_set_run_id)
 
+    def _set_base_directory_path(self, new_base_directory_path: str) -> None:
+        raise NotImplementedError()
+    
+    base_directory_path = property(fset=_set_base_directory_path)
+
     @property
     def enabled(self) -> bool:
         """
@@ -203,6 +208,12 @@ class FileConsumerNode(QObject):
 
     run_id = property(fset=_set_run_id)
 
+    def _set_base_directory_path(self, new_base_directory_path: str):
+        for producer in self.producers:
+            producer.base_directory_path = new_base_directory_path
+
+    base_directory_path = property(fset=_set_base_directory_path)
+
     @property
     def enabled(self) -> bool:
         """
@@ -317,6 +328,13 @@ class CommonParentDirectoryNode(FileProducerNode):
 
     run_id = property(fset=_set_run_id)
 
+    def _set_base_directory_path(self, new_base_directory_path: str) -> None:
+        for file_consumer in self.file_consumers:
+            file_consumer.base_directory_path = new_base_directory_path
+        self.file_changed.emit(self.file)
+
+    base_directory_path = property(fset=_set_base_directory_path)
+
     @property
     def enabled(self) -> bool:
         """
@@ -416,6 +434,11 @@ class FilePickerNode(FileProducerNode):
         pass
 
     run_id = property(fset=_set_run_id)
+
+    def _set_base_directory_path(self, new_base_directory_path: str) -> None:
+        pass
+
+    base_directory_path = property(fset=_set_base_directory_path)
 
     @property
     def enabled(self) -> bool:
@@ -568,6 +591,7 @@ class OperationNode(FileProducerNode):
     def __init__(self,
         operation: Operation,
         run_id: str = "",
+        base_directory_path: str = "",
         enabled: bool = False,
     ) -> None:
         """
@@ -613,6 +637,7 @@ class OperationNode(FileProducerNode):
             parameter_builder = operation.parameter_builders[parameter_id]
             self._parameters[parameter_id] = parameter_builder()
         self._run_id = run_id
+        self._base_directory_path = base_directory_path
         self._enabled = enabled
 
     @property
@@ -669,6 +694,17 @@ class OperationNode(FileProducerNode):
         self.file_changed.emit(self.file)
 
     @property
+    def base_directory_path(self) -> str:
+        return self.base_directory_path
+    
+    @base_directory_path.setter
+    def base_directory_path(self, new_base_directory_path: str) -> None:
+        self.base_directory_path = new_base_directory_path
+        for file_consumer in self.file_consumers:
+            file_consumer.base_directory_path = self.base_directory_path
+        self.file_changed.emit(self.file)
+
+    @property
     def enabled(self) -> bool:
         """
         Whether the node is enabled. Setting this property sets the
@@ -688,7 +724,7 @@ class OperationNode(FileProducerNode):
         """
         The path to the output file of the operation.
         """
-        return QDir.current().absoluteFilePath(
+        return QDir(self.base_directory_path).absoluteFilePath(
             "".join(generator.value for generator in self._output_path)
         )
 
@@ -778,6 +814,11 @@ class OperationTree(QObject):
 
     run_id = property(fset=_set_run_id)
 
+    def _set_base_directory_path(self, new_base_directory_path: str) -> None:
+        self.root.base_directory_path = new_base_directory_path
+
+    base_directory_path = property(fset=_set_base_directory_path)
+
     @property
     def enabled(self) -> bool:
         """
@@ -799,6 +840,7 @@ class OperationTree(QObject):
             cls,
             operations: dict[str, Operation],
             run_id: str = "",
+            base_directory_path: str = "",
     ) -> tuple[list["OperationTree"], Mapping[str, Dependency.Condition]]:
         """
         For each operation in a given list, create an operation tree
@@ -839,6 +881,7 @@ class OperationTree(QObject):
             root_node = OperationNode(
                 root_operation,
                 run_id=run_id,
+                base_directory_path=base_directory_path,
             )
             # Create an EnabledCondition for the root node.
             operation_id_to_conditions[root_operation_id].append(
@@ -861,6 +904,7 @@ class OperationTree(QObject):
                             operation_node = OperationNode(
                                 candidate_operation,
                                 run_id=run_id,
+                                base_directory_path=base_directory_path,
                             )
                             file_consumer.add_producer(operation_node)
                             unexplored_nodes.append(operation_node)
@@ -895,6 +939,7 @@ class OperationTree(QObject):
                                     operation_node = OperationNode(
                                         candidate_operation,
                                         run_id=run_id,
+                                        base_directory_path=base_directory_path,
                                     )
                                     possible_conditions[candidate_id].append(
                                         OperationNode.EnabledCondition(
