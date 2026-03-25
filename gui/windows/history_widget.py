@@ -33,24 +33,23 @@ class HistoryWidget(QWidget):
         self._setup_ui()
 
     def _setup_ui(self):
+        # Main layout with a splitter
         results_layout = QHBoxLayout(self)
-
         splitter = QSplitter(Qt.Orientation.Horizontal)
         results_layout.addWidget(splitter)
 
         self._history_list.run_selected.connect(self._on_run_selected)
 
+        # Left panel with history records
         history_records = HistoryRecord.from_history_file()
         if history_records:
             for op_rec in history_records:
                 self._history_list.add_record(op_rec)
-
         splitter.addWidget(self._history_list)
 
+        # Right panel has results detail view
         self._right_panel = QStackedWidget()
         splitter.addWidget(self._right_panel)
-
-        # Right panel: detail view. This will be changed with results view after it is implemented.
         self.results_panel = QWidget()
         self.results_panel.setStyleSheet("background-color: lightblue;")
         results_layout = QVBoxLayout(self.results_panel)
@@ -59,7 +58,6 @@ class HistoryWidget(QWidget):
         results_layout.addWidget(run_results_label)
 
         self.results_widget = ResultsWidget(self._run_result)
-
         results_scroll = QScrollArea()
         results_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         results_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -98,4 +96,7 @@ class HistoryWidget(QWidget):
             self._selected = history_record
 
     def update_history_time(self) -> None:
+        """
+        Update the time labels of the history record widgets
+        """
         self._history_list.update_time()
