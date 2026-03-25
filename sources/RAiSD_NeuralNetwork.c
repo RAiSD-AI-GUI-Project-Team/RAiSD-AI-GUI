@@ -1306,22 +1306,8 @@ void RSDNeuralNetwork_printPackageDependency (char * dependency, FILE * fpOut)
 	char tstring[STRING_SIZE];	
 	strncpy(tstring, "pip3 show ", STRING_SIZE);
 	strcat(tstring, dependency);
-	strcat(tstring, ">PackageVersionREMOVE.txt");
-	
-	FILE * fp;
-	
-#ifdef _C1
-	int ret = system(tstring);
-	assert(ret!=-1);	
-#else
-	fp = popen(tstring);
-	assert(fp!=NULL);
 
-	int ret = pclose(fp);
-	assert(ret!=-1);	
-#endif
-
-	fp = fopen("PackageVersionREMOVE.txt", "r");
+	FILE * fp = popen(tstring, "r");
 	assert(fp!=NULL);
 	
 	int rcnt = fscanf(fp, "%s", tstring);
@@ -1342,13 +1328,33 @@ void RSDNeuralNetwork_printPackageDependency (char * dependency, FILE * fpOut)
 	fprintf(fpOut, " %s\n", tstring); // version
 	fprintf(stdout, " %s\n", tstring); // version
 	
-	fclose(fp);
-
-	ret = remove("PackageVersionREMOVE.txt");
-	assert(ret==0);	
+	int c=0;
+	while ((c = fgetc(fp)) != EOF);
+	
+	pclose(fp);
 	
 	fflush(fpOut);
 	fflush(stdout);	
+}
+
+void randomPermutation(const char *iString, char *oString) 
+{
+	assert(iString!=NULL);
+	assert(oString!=NULL);
+	
+	size_t len = strlen(iString);
+
+	/* copy input into output */
+	strcpy(oString, iString);
+
+	for (size_t i = len - 1; i > 0; i--) 
+	{
+		size_t j = rand() % (i + 1);
+
+		char tmp = oString[i];
+		oString[i] = oString[j];
+		oString[j] = tmp;
+	}
 }
 
 void RSDNeuralNetwork_printPythonVersion (FILE * fpOut)
@@ -1358,20 +1364,8 @@ void RSDNeuralNetwork_printPythonVersion (FILE * fpOut)
 	fprintf(fpOut, " Python\t\t     :\t");
 	fprintf(stdout, " Python\t\t     :\t");
 
-	FILE * fp;
+	FILE *fp = popen("python3 --version", "r");
 	
-#ifdef _C1
-	int ret = system("python3 --version >PythonVersion.txt");
-	assert(ret!=-1);	
-#else
-	fp = popen("python3 --version >PythonVersion.txt", "r");
-	assert(fp!=NULL);
-
-	int ret = pclose(fp);
-	assert(ret!=-1);	
-#endif
-
-	fp = fopen("PythonVersion.txt", "r");
 	assert(fp!=NULL);
 	
 	char tchar = (char)fgetc(fp);	
@@ -1384,11 +1378,8 @@ void RSDNeuralNetwork_printPythonVersion (FILE * fpOut)
 		tchar = (char)fgetc(fp);
 	}
 
-	fclose(fp);
-	
-	ret = remove("PythonVersion.txt");
-	assert(ret==0);	
-	
+	pclose(fp);
+		
 	fflush(fpOut);
 	fflush(stdout);
 }
