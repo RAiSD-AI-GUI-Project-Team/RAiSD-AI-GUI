@@ -39,12 +39,27 @@ modes:
         output:
           type: directory
           contents:
-            - type: directory
-              contents:
-                - type: single
-                  formats:
-                    - .png
-        prefix: RAiSD_Images.
+            - type: single
+              formats:
+                - .png
+        overwrite_parameter:
+          name: Overwrite existing data?
+          description: You are about to overwrite existing data in the output folder. Are you sure?
+          type: bool
+          cli: -f
+        parameters:
+          "-icl":
+            name: Image class label
+            description: The output folder will use this name.
+            cli: "-icl"
+            type: str
+            pattern: ".+"
+        path:
+          - RAiSD_Images.
+          - type: run id
+          - type: slash
+          - type: parameter
+            id: -icl
       MDL-GEN:
         name: Model training
         description: Train a sweep detection CNN model.
@@ -741,12 +756,6 @@ parameter_groups:
     operations:
       - IMG-GEN
     parameters:
-      "-icl":
-        name: Image class label
-        description: A folder with this name will be created in RAiSD_Images.runID.
-        cli: "-icl"
-        type: str
-        pattern: ".+"
       "-its":
         name: Image target site
         description: The target site position for generating images, corresponding to the center of the first generated image. Should be smaller than region length

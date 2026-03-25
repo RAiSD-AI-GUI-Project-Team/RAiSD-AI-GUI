@@ -10,7 +10,7 @@ The recommended way to construct operation trees is using the
 `OperationTree#build_trees` factory method.
 """
 
-from typing import Mapping
+from typing import Any, Mapping
 
 from PySide6.QtCore import (
     QObject,
@@ -460,6 +460,73 @@ class OperationNode(FileProducerNode):
     the operation.
     """
 
+    class PathFragmentGenerator:
+        @classmethod
+        def from_path_fragment(
+            cls,
+            path_fragment: Operation.PathFragment,
+            operation_node: "OperationNode",
+        ) -> "OperationNode.PathFragmentGenerator":
+            if isinstance(path_fragment, Operation.ConstPathFragment):
+                return OperationNode.ConstPathFragmentGenerator(
+                    value=path_fragment.value,
+                )
+            if isinstance(path_fragment, Operation.RunIdPathFragment):
+                return OperationNode.RunIdPathFragmentGenerator(
+                    operation_node=operation_node,
+                )
+            if isinstance(path_fragment, Operation.SlashPathFragment):
+                return OperationNode.SlashPathFragmentGenerator()
+            if isinstance(path_fragment, Operation.ParameterValuePathFragment):
+                return OperationNode.ParameterValuePathFragmentGenerator(
+                    parameter=operation_node.parameters[
+                        path_fragment.parameter_id
+                    ]
+                )
+            raise NotImplementedError("Unknown path fragment type!")
+
+        @property
+        def value(self) -> str:
+            raise NotImplementedError()
+
+    class ConstPathFragmentGenerator(PathFragmentGenerator):
+        def __init__(
+                self,
+                value: str,
+        ) -> None:
+            self._value = value
+
+        @property
+        def value(self) -> str:
+            return self._value
+
+    class RunIdPathFragmentGenerator(PathFragmentGenerator):
+        def __init__(
+                self,
+                operation_node: "OperationNode",
+        ) -> None:
+            self._operation_node = operation_node
+
+        @property
+        def value(self) -> str:
+            return self._operation_node.run_id
+
+    class SlashPathFragmentGenerator(PathFragmentGenerator):
+        @property
+        def value(self) -> str:
+            return "/"
+
+    class ParameterValuePathFragmentGenerator(PathFragmentGenerator):
+        def __init__(
+                self,
+                parameter: Parameter[Any],
+        ) -> None:
+            self._parameter = parameter
+
+        @property
+        def value(self) -> str:
+            return str(self._parameter.value)
+
     class EnabledCondition(Dependency.Condition):
         """
         A condition that tracks whether an operation node is enabled.
@@ -522,7 +589,6 @@ class OperationNode(FileProducerNode):
         self._description = operation.description
         self._cli = operation.cli
         self._produces = operation.produces
-        self._output_path_prefix = operation.output_path_prefix
         self._file_consumers = []
         for file_name, cli, file_structure in operation.requires:
             file_consumer = FileConsumerNode(
@@ -534,6 +600,18 @@ class OperationNode(FileProducerNode):
             file_consumer.add_producer(file_picker)
             self._file_consumers.append(file_consumer)
             file_consumer.valid_changed.connect(self._consumer_valid_changed)
+        self._output_path = [
+            OperationNode.PathFragmentGenerator.from_path_fragment(
+                path_fragment=path_fragment,
+                operation_node=self,
+            )
+            for path_fragment in operation.output_path
+        ]
+        self._overwrite_parameter = operation.overwrite_parameter_builder()
+        self._parameters = {}
+        for parameter_id in operation.parameter_builders:
+            parameter_builder = operation.parameter_builders[parameter_id]
+            self._parameters[parameter_id] = parameter_builder()
         self._run_id = run_id
         self._enabled = enabled
 
@@ -564,6 +642,10 @@ class OperationNode(FileProducerNode):
         The type of file produced by the operation.
         """
         return self._produces
+
+    @property
+    def parameters(self) -> dict[str, Parameter[Any]]:
+        return self._parameters
 
     @property
     def file_consumers(self) -> list[FileConsumerNode]:
@@ -607,7 +689,7 @@ class OperationNode(FileProducerNode):
         The path to the output file of the operation.
         """
         return QDir.current().absoluteFilePath(
-            f"{self._output_path_prefix}{self.run_id}",
+            "".join(generator.value for generator in self._output_path)
         )
 
     @property
