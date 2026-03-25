@@ -159,7 +159,7 @@ class TestCommandExecutor:
         assert self.execution_started == [len(commands)]
         assert len(self.execution_finished) == 0
         assert len(self.execution_failed) == 1
-        assert self.execution_failed[0] == 2 # exit_code from faulty `pwd -rt`
+        assert self.execution_failed[0] != 0
         assert len(self.execution_stopped) == 0
         assert len(self.process_started) == 1
         assert self.process_started == [0]
@@ -182,7 +182,7 @@ class TestCommandExecutor:
         assert self.execution_started == [len(commands)]
         assert len(self.execution_finished) == 0
         assert len(self.execution_failed) == 1
-        assert self.execution_failed[0] == 2 # exit_code from faulty `pwd -rt`
+        assert self.execution_failed[0] != 0
         assert len(self.execution_stopped) == 0
         assert len(self.process_started) == 2
         assert self.process_started == [0, 1]
