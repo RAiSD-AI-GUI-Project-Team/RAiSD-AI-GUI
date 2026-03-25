@@ -282,7 +282,8 @@ int 			getStringLengthDouble1 		(int prv, double in);
 int 			getStringLengthDouble5 		(int prv, double in); 
 int 			getStringLengthExp 		(int prv, double in);
 double 			maxd 				(double a, double b); 
-int 			skipToken			(FILE * fp); 
+int 			skipToken			(FILE * fp);
+void 			sanitizeString			(const char *input, char *output, size_t maxlen); 
 
 #ifdef _RSDAI
 int 			split_string 			(char * src, char * str1, char * str2, char delimiter);

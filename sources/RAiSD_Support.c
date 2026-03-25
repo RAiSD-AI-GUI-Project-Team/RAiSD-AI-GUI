@@ -34,7 +34,7 @@ inline void *	rsd_realloc	(void * p, size_t size);
 FILE * 	skipLine 		(FILE * fp);
 int	matchChromInList 	(char * newChromName, char ** chromList, int chromListSize);
 char ** addChromToList 		(char * newChromName, char ** chromList, int * chromListSize);
-
+void 	sanitizeString		(const char *input, char *output, size_t maxlen); 
 
 char POPCNT_U16_LUT [0x1u << 16];
 
@@ -1577,6 +1577,25 @@ int getStringLengthExp (int prv, double in)
 	sprintf(tstring, "%.3e", in);
 	int sLen = ((int)strlen(tstring))>prv?(int)strlen(tstring):prv;
 	return sLen;
+}
+
+void sanitizeString(const char *input, char *output, size_t maxlen)
+{
+    size_t j = 0;
+    for (size_t i = 0; input[i] != '\0' && j < maxlen - 1; i++)
+    {
+        char c = input[i];
+        if (isalnum((unsigned char)c) || c == '_' || c == '-' || c == '.')
+        {
+            output[j++] = c;
+        }
+        else
+        {
+            // replace dangerous character with underscore
+            output[j++] = '_';
+        }
+    }
+    output[j] = '\0';
 }
 
 #ifdef _RSDAI

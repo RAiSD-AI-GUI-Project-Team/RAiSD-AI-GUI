@@ -467,27 +467,43 @@ void RSDNeuralNetwork_init (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLin
 		exit(1);
 	}
 	assert(fp!=NULL);
-	fclose(fp);		
+	fclose(fp);	
+	
+	char 	filenameClassNumErr[STRING_SIZE/4], 
+		filenameClassNumErr2[STRING_SIZE/4], 
+		filenameClassNumCnt[STRING_SIZE/4], 
+		filenameClassLbl[STRING_SIZE/4], 
+		command[STRING_SIZE*2], 
+		runNameSanitized [STRING_SIZE/8];
+
+	sanitizeString(RSDCommandLine->runName, runNameSanitized, STRING_SIZE/8);
+	
+	snprintf(filenameClassNumErr, STRING_SIZE/4, "%s-%s-%s", "checkClassNumErr", runNameSanitized, "rsdai.txt");
+	snprintf(filenameClassNumErr2, STRING_SIZE/4, "%s-%s-%s", "checkClassNumErr2", runNameSanitized, "rsdai.txt");
+	snprintf(filenameClassNumCnt, STRING_SIZE/4, "%s-%s-%s", "checkClassNumCnt", runNameSanitized, "rsdai.txt");
+	snprintf(filenameClassLbl, STRING_SIZE/4, "%s-%s-%s", "checkClassLbl", runNameSanitized, "rsdai.txt");	 	
 	
 	if(RSDCommandLine->opCode==OP_TRAIN_CNN || RSDCommandLine->opCode==OP_TEST_CNN)
 	{	
-		exec_command("rm checkClassNumErr.txt 1>>/dev/null 2>>/dev/null");
-		exec_command("rm checkClassNumErr2.txt 1>>/dev/null 2>>/dev/null");
-		exec_command("rm checkClassNumCnt.txt 1>>/dev/null 2>>/dev/null");		
-		
-		strncpy(tstring, "find ", STRING_SIZE);
-		strcat(tstring, RSDCommandLine->inputFileName);
-		strcat(tstring, " -mindepth 1 -maxdepth 1 -type d 1> checkClassLbl.txt 2>>checkClassNumErr.txt");	
+		snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassNumErr);
+		exec_command(command);
 
-		exec_command(tstring);			
-	
-		strncpy(tstring, "find ", STRING_SIZE);
-		strcat(tstring, RSDCommandLine->inputFileName);
-		strcat(tstring, " -mindepth 1 -maxdepth 1 -type d 2>>checkClassNumErr.txt | wc -l 1>checkClassNumCnt.txt 2>>checkClassNumErr2.txt");	
+		snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassNumErr2);
+		exec_command(command);
 
-		exec_command(tstring);	
+		snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassNumCnt);
+		exec_command(command);
 		
-		fp = fopen("checkClassNumErr.txt", "r");
+		snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassLbl);
+		exec_command(command);		
+		
+		snprintf(command, STRING_SIZE*2, "find %s -mindepth 1 -maxdepth 1 -type d 1> %s 2>>%s", RSDCommandLine->inputFileName, filenameClassLbl, filenameClassNumErr);
+		exec_command(command);	
+		
+		snprintf(command, STRING_SIZE*2, "find %s -mindepth 1 -maxdepth 1 -type d 2>>%s | wc -l 1>%s 2>>%s", RSDCommandLine->inputFileName, filenameClassNumErr, filenameClassNumCnt, filenameClassNumErr2);
+		exec_command(command);		
+		
+		fp = fopen(filenameClassNumErr, "r");
 		assert(fp!=NULL);
 		
 		ret=fscanf(fp, "%s", tstring);
@@ -498,10 +514,17 @@ void RSDNeuralNetwork_init (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLin
 			fprintf(fpOut, "\nERROR: Directory %s not found!\n\n",RSDCommandLine->inputFileName);		
 			fprintf(stderr, "\nERROR: Directory %s not found!\n\n",RSDCommandLine->inputFileName);
 			
-			exec_command("rm checkClassNumErr.txt 1>>/dev/null 2>>/dev/null");
-			exec_command("rm checkClassNumErr2.txt 1>>/dev/null 2>>/dev/null");
-			exec_command("rm checkClassNumCnt.txt 1>>/dev/null 2>>/dev/null");
-			exec_command("rm checkClassLbl.txt 1>>/dev/null 2>>/dev/null");			
+			snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassNumErr);
+			exec_command(command);
+
+			snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassNumErr2);
+			exec_command(command);
+
+			snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassNumCnt);
+			exec_command(command);
+			
+			snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassLbl);
+			exec_command(command);		
 
 			fclose(fp);			
 			exit(1);
@@ -510,7 +533,7 @@ void RSDNeuralNetwork_init (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLin
 		{
 			fclose(fp);
 			
-			fp = fopen("checkClassNumCnt.txt", "r");
+			fp = fopen(filenameClassNumCnt, "r");
 			assert(fp!=NULL);
 			
 			int classes=-1;
@@ -530,10 +553,17 @@ void RSDNeuralNetwork_init (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLin
 														RSDCommandLine->networkArchitecture,
 														numOfClasses_NN_architecture(RSDCommandLine->networkArchitecture, RSDCommandLine->classification2x2En));
 				
-				exec_command("rm checkClassNumErr.txt 1>>/dev/null 2>>/dev/null");
-				exec_command("rm checkClassNumErr2.txt 1>>/dev/null 2>>/dev/null");
-				exec_command("rm checkClassNumCnt.txt 1>>/dev/null 2>>/dev/null");
-				exec_command("rm checkClassLbl.txt 1>>/dev/null 2>>/dev/null");	
+				snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassNumErr);
+				exec_command(command);
+
+				snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassNumErr2);
+				exec_command(command);
+
+				snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassNumCnt);
+				exec_command(command);
+				
+				snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassLbl);
+				exec_command(command);
 				
 				fclose(fp);			
 				exit(1);
@@ -544,7 +574,7 @@ void RSDNeuralNetwork_init (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLin
 				
 				if(RSDCommandLine->opCode==OP_TRAIN_CNN)
 				{				
-					fp = fopen("checkClassLbl.txt", "r");
+					fp = fopen(filenameClassLbl, "r");
 					assert(fp!=NULL);
 					
 					int i=-1;
@@ -564,10 +594,17 @@ void RSDNeuralNetwork_init (RSDNeuralNetwork_t * RSDNeuralNetwork, RSDCommandLin
 					fclose(fp);
 				}
 					
-				exec_command("rm checkClassNumErr.txt 1>>/dev/null 2>>/dev/null");
-				exec_command("rm checkClassNumErr2.txt 1>>/dev/null 2>>/dev/null");
-				exec_command("rm checkClassNumCnt.txt 1>>/dev/null 2>>/dev/null");
-				exec_command("rm checkClassLbl.txt 1>>/dev/null 2>>/dev/null");			
+				snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassNumErr);
+				exec_command(command);
+
+				snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassNumErr2);
+				exec_command(command);
+
+				snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassNumCnt);
+				exec_command(command);
+				
+				snprintf(command, STRING_SIZE, "rm %s 1>>/dev/null 2>>/dev/null", filenameClassLbl);
+				exec_command(command);			
 			}
 		}
 	}

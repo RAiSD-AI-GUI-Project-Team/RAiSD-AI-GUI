@@ -464,25 +464,6 @@ void flagCheck (char ** argv, int i, int * flagVector, int flagIndex)
 	flagVector[flagIndex]=1;
 }
 
-void sanitize_runName(const char *input, char *output, size_t maxlen)
-{
-    size_t j = 0;
-    for (size_t i = 0; input[i] != '\0' && j < maxlen - 1; i++)
-    {
-        char c = input[i];
-        if (isalnum((unsigned char)c) || c == '_' || c == '-' || c == '.')
-        {
-            output[j++] = c;
-        }
-        else
-        {
-            // replace dangerous character with underscore
-            output[j++] = '_';
-        }
-    }
-    output[j] = '\0';
-}
-
 void RSDCommandLine_load(RSDCommandLine_t * RSDCommandLine, int argc, char ** argv)
 {
 	int i, j;
@@ -501,7 +482,7 @@ void RSDCommandLine_load(RSDCommandLine_t * RSDCommandLine, int argc, char ** ar
 			if (i!=argc-1 && argv[i+1][0]!='-')
 			{
 				//strcpy(RSDCommandLine->runName, argv[++i]);
-				sanitize_runName(argv[++i], RSDCommandLine->runName, STRING_SIZE);
+				sanitizeString(argv[++i], RSDCommandLine->runName, STRING_SIZE);
 			}
 			else
 			{
