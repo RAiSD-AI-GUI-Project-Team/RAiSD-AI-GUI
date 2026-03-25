@@ -309,13 +309,15 @@ class CommonParentDirectoryNode(FileProducerNode):
         The path to the directory produced by this node's children, if
         available.
         """
-        parent_directories: set[QDir] = set()
+        parent_directory_paths: set[str] = set()
         for consumer in self.file_consumers:
             if consumer.file is None:
                 return None
-            parent_directories.add(QFileInfo(consumer.file).dir())
-        if len(parent_directories) == 1:
-            return list(parent_directories)[0].absolutePath()
+            parent_directory_paths.add(
+                QFileInfo(consumer.file).dir().absolutePath()
+            )
+        if len(parent_directory_paths) == 1:
+            return list(parent_directory_paths)[0]
         return None
 
     def _set_run_id(self, new_run_id: str) -> None:
