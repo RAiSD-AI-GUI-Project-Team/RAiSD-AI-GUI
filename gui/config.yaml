@@ -25,8 +25,9 @@ modes:
         overwrite_parameter:
           name: Overwrite existing RAiSD report?
           description: You are about to overwrite existing data in the output folder. Are you sure?
-          type: bool
           cli: -f
+          type: bool
+          default: false
         path:
           - RAiSD_Grid.
           - type: run id
@@ -46,14 +47,17 @@ modes:
         output:
           type: directory
           contents:
-            - type: single
-              formats:
-                - .png
+            - type: directory
+              contents:
+                - type: single
+                  formats:
+                    - .png
         overwrite_parameter:
           name: Overwrite existing image data?
           description: You are about to overwrite existing data in the output folder. Are you sure?
-          type: bool
           cli: -f
+          type: bool
+          default: false
         parameters:
           "-icl":
             name: Image class label
@@ -96,8 +100,9 @@ modes:
         overwrite_parameter:
           name: Overwrite existing model?
           description: You are about to overwrite existing data in the output folder. Are you sure?
-          type: bool
           cli: -f
+          type: bool
+          default: false
         path:
           - RAiSD_Model.
           - type: run id
@@ -136,8 +141,9 @@ modes:
         overwrite_parameter:
           name: Overwrite existing results?
           description: You are about to overwrite existing data in the output folder. Are you sure?
-          type: bool
           cli: -f
+          type: bool
+          default: false
         path:
           - RAiSD_Inference. # probably wrong
           - type: run id
@@ -167,8 +173,9 @@ modes:
         overwrite_parameter:
           name: Overwrite existing results?
           description: You are about to overwrite existing data in the output folder. Are you sure?
-          type: bool
           cli: -f
+          type: bool
+          default: false
         path:
           - RAiSD_Grid.
           - type: run id
@@ -186,8 +193,9 @@ modes:
         overwrite_parameter:
           name: Overwrite existing results?
           description: You are about to overwrite existing output data. Are you sure?
-          type: bool
           cli: -f
+          type: bool
+          default: false
         path:
           - RAiSD_CommonOutlierAnalysis.
           - type: run id
@@ -211,8 +219,9 @@ modes:
         overwrite_parameter:
           name: Overwrite existing data?
           description: You are about to overwrite existing output data. Are you sure?
-          type: bool
           cli: -f
+          type: bool
+          default: false
         path:
           - RAiSD_FastaVcf.
           - type: run id
@@ -234,8 +243,9 @@ modes:
         overwrite_parameter:
           name: Overwrite existing data?
           description: You are about to overwrite existing output data. Are you sure?
-          type: bool
           cli: -f
+          type: bool
+          default: false
         path:
           - RAiSD_VcfMs.
           - type: run id
