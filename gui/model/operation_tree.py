@@ -697,7 +697,11 @@ class OperationNode(FileProducerNode):
         """
         Whether the operation's inputs are in a valid state.
         """
-        return all([consumer.valid for consumer in self._file_consumers])
+        return all(
+            [self._overwrite_parameter.valid] # TODO: implement this
+            + [parameter.valid for parameter in self.parameters.values()]
+            + [consumer.valid for consumer in self._file_consumers]
+        )
 
     def to_cli(self, parameters: list[Parameter]) -> list[str]:
         """
@@ -719,6 +723,11 @@ class OperationNode(FileProducerNode):
         for file_consumer in self.file_consumers:
             commands.extend(file_consumer.to_cli(parameters))
             own_command_pieces.append(file_consumer.cli_parameter)
+
+        own_command_pieces.append(self._overwrite_parameter.to_cli(self.id))
+
+        for parameter in self.parameters.values():
+            own_command_pieces.append(parameter.to_cli(self.id))
 
         for parameter in parameters:
             own_command_pieces.append(parameter.to_cli(self.id))
