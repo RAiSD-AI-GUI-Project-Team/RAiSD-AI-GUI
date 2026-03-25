@@ -25,7 +25,7 @@ class HistoryRecordWidget(QWidget):
         self.time_label = QLabel(self._format_time_ago(self._history_record.time_completed))
         layout.addWidget(self.time_label, 0, 1, Qt.AlignmentFlag.AlignRight)
 
-        # bottom right: logic to add operation icons, not yet visible
+        # TODO add icons for operations. Alphan's code below:
         # operations_widget = QWidget()
         # operations_layout = QHBoxLayout(operations_widget)
         # operations_layout.setContentsMargins(0, 0, 0, 0)
@@ -66,4 +66,7 @@ class HistoryRecordWidget(QWidget):
             return f"{years} {'year' if years == 1 else 'years'} ago"
         
     def update_time(self) -> None:
+        """
+        Re-sets the time label of the widget.
+        """
         self.time_label.setText(self._format_time_ago(self._history_record.time_completed))
