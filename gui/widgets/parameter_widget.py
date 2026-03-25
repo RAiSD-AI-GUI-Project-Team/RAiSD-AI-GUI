@@ -96,8 +96,14 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         super().__init__()
         self._parameter = parameter
         self._editable = editable
+        self._touched = False #variable for activating _show_validity
 
     def _show_validity(self, widget: QWidget, valid: bool) -> None:
+        """
+        Validity is only shown after the user first interacts with it.
+        """
+        if not self._touched:
+            return
         if valid and self._editable:
             widget.setProperty("valid", "true")
         elif self._editable:
@@ -238,6 +244,7 @@ class OptionalParameterWidget(ParameterWidget):
 
     @Slot(Qt.CheckState)
     def _check_state_changed(self, new_check_state: Qt.CheckState) -> None:
+        self._touched = True
         match new_check_state:
             case Qt.CheckState.Checked:
                 self.parameter.value = True
@@ -315,6 +322,7 @@ class BoolParameterWidget(ParameterWidget):
 
     @Slot(Qt.CheckState)
     def _check_state_changed(self, new_check_state: Qt.CheckState) -> None:
+        self._touched = True
         match new_check_state:
             case Qt.CheckState.Checked:
                 self.parameter.value = True
@@ -369,20 +377,23 @@ class IntParameterWidget(ParameterWidget):
         self._line_edit.textChanged.connect(self._text_changed)
         parameter.value_changed.connect(self._parameter_value_changed)
 
-        parameter.enabled_changed.connect(
-            lambda enabled: self._show_validity(self._line_edit, self.parameter.valid)
-        )
-
     @Slot(str)
     def _text_changed(self) -> None:
+        self._touched = True
         try: 
             self.parameter.value = int(self._line_edit.text())
         except:
-            self._line_edit.setText(str(self.parameter.value))
+            pass
 
     @Slot(int, bool)
     def _parameter_value_changed(self, new_value: int, valid: bool) -> None:
-        self._line_edit.setText(str(new_value))
+        try:
+            current = int(self._line_edit.text())
+            values_differ = current != new_value
+        except ValueError:
+            values_differ = True
+        if values_differ:
+            self._line_edit.setText(str(new_value))
         self._show_validity(self._line_edit, valid)
 
 
@@ -432,20 +443,28 @@ class FloatParameterWidget(ParameterWidget):
         self._line_edit.textChanged.connect(self._text_changed)
         parameter.value_changed.connect(self._parameter_value_changed)
 
-        parameter.enabled_changed.connect(
-            lambda enabled: self._show_validity(self._line_edit, self.parameter.valid)
-        )
-
     @Slot(str)
     def _text_changed(self) -> None:
+        self._touched = True
         try:
             self.parameter.value = float(self._line_edit.text())
         except:
-            self._line_edit.setText(str(self.parameter.value))
+            pass
 
     @Slot(float, bool)
     def _parameter_value_changed(self, new_value: float, valid: bool) -> None:
         self._line_edit.setText(str(new_value))
+        self._show_validity(self._line_edit, valid)
+
+    @Slot(float, bool)
+    def _parameter_value_changed(self, new_value: float, valid: bool) -> None:
+        try:
+            current = float(self._line_edit.text())
+            values_differ = current != new_value
+        except ValueError:
+           values_differ = True
+        if values_differ:
+            self._line_edit.setText(str(new_value))
         self._show_validity(self._line_edit, valid)
 
 
@@ -478,6 +497,7 @@ class EnumParameterWidget(ParameterWidget):
 
     @Slot(int)
     def _combo_box_current_index_changed(self, new_index: int) -> None:
+        self._touched = True
         self.parameter.value = new_index
 
     @Slot(int, bool)
@@ -520,12 +540,9 @@ class StringParameterWidget(ParameterWidget):
         self._line_edit.textChanged.connect(self._text_changed)
         parameter.value_changed.connect(self._parameter_value_changed)
 
-        parameter.enabled_changed.connect(
-            lambda enabled: self._show_validity(self._line_edit, self.parameter.valid)
-        )
-
     @Slot(str)
     def _text_changed(self) -> None:
+        self._touched = True
         self.parameter.value = self._line_edit.text()
 
     @Slot(str, bool)
@@ -680,6 +697,7 @@ class FileParameterWidget(ParameterWidget):
         file selection. Otherwise, it uses `getOpenFileName` to allow
         only a single file.
         """
+        self._touched = True
         if self.parameter.multiple:
             filenames, _ = QFileDialog.getOpenFileNames(
                 self,
