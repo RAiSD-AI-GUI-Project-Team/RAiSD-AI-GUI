@@ -1012,15 +1012,13 @@ class RunRecord(QObject):
                     self.populate_parameter(parameter, dictionary[parameter.name])
                     #TODO: validiity checking?
         self._time_completed = history_record.time_completed
-        #TODO: complete with Vlad's pr
-        # for operation in history_record.operations:
-        #     self._parameter_group_list.set_operation(operation, history_record.operations[operation])
-
+    
     def populate_parameter(self, parameter: Parameter, value: dict | str) -> None:
         """
         Populates a parameter with the values from a dict or string. Uses
         recursion for optional parameters and multi parameters.
         """
+        # This could be moved to the parameters?
         if isinstance(parameter, MultiParameter):
             for param in parameter.parameters:
                 if isinstance(value, dict) and value[param.name]:
