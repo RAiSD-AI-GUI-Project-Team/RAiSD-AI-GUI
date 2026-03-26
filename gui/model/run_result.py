@@ -78,29 +78,6 @@ class RunResult():
             return value
         else:
             return parameter.value
-
-    def save_to_history(self) -> None:
-        """
-        Saves current run result to the history file of the workspace.
-        """
-        if not app_settings.workspace_path.exists("history.json"):
-            # If no history file exists
-            with open(app_settings.workspace_path.absoluteFilePath("history.json"), "w") as f:
-                history = {}
-                history[f"{self._time_completed}-{self._parameter_group_list.run_id}"] = self.to_dict()
-                json.dump(history, f, indent=4, default=str)
-        else:    
-            # If a file exists
-            with open(app_settings.workspace_path.absoluteFilePath("history.json"), "r+") as f:
-                history = {}
-                try:
-                    history = json.load(f)
-                except:
-                    # File could not be parsed
-                    print("Problem reading file: might be empty or incorrect format")
-                history[f"{self._time_completed}-{self._parameter_group_list.run_id}"] = self.to_dict()
-                f.seek(0)
-                json.dump(history, f, indent=4, default=str)
     
     @property
     def commands(self) -> list[str]:

@@ -4,6 +4,11 @@ from datetime import datetime
 
 from gui.model.settings import app_settings
 from gui.model.run_record import RunRecord
+from gui.model.parameter import (
+    Parameter,
+    MultiParameter,
+    OptionalParameter
+)
 
 class HistoryRecord():
     """
@@ -115,6 +120,87 @@ class HistoryRecord():
 
         return cls(name, commands, operations, parameters, time_completed)
     
+    @classmethod
+    def from_run_record(cls, run_record: RunRecord) -> "HistoryRecord":
+        """
+        Makes a history record with the information of the current RunResult.
+        """
+        parameters_dict = {}
+        for parameter_group in run_record.parameter_groups:
+            for parameter in parameter_group:
+                parameters_dict[parameter.name] = cls.parameter_to_value(parameter)
+        
+        operations = [tree.root.run_id for tree in run_record.operation_trees]
+
+        #TODO I do not like this, it is a temporary fix that will be resolved 
+        # if we remove the runresult
+
+        return cls(
+            run_record.run_id,
+            run_record.to_cli(),
+            operations,
+            parameters_dict,
+            datetime.now()
+        )
+    
+    def save_to_history(self) -> None:
+        """
+        Saves current run result to the history file of the workspace.
+        """
+        time = datetime.now()
+        if not app_settings.workspace_path.exists("history.json"):
+            # If no history file exists
+            with open(app_settings.workspace_path.absoluteFilePath("history.json"), "w") as f:
+                history = {}
+                history[f"{self.time_completed}-{self.name}"] = self.to_dict()
+                json.dump(history, f, indent=4, default=str)
+        else:    
+            # If a file exists
+            with open(app_settings.workspace_path.absoluteFilePath("history.json"), "r+") as f:
+                history = {}
+                try:
+                    history = json.load(f)
+                except:
+                    # File could not be parsed
+                    print("Problem reading file: might be empty or incorrect format")
+                history[f"{self.time_completed}-{self.name}"] = self.to_dict()
+                f.seek(0)
+                json.dump(history, f, indent=4, default=str)
+
+    def to_dict(self) -> dict:
+        """
+        Makes a dictionary with the information of the current RunResult. This
+        is used to store in the history file.
+        """
+
+        return {
+            "name": self.name,
+            "commands": self.commands,
+            "operations": self.operations,
+            "parameters": self.parameters,
+            "time_completed": self.time_completed
+        }
+    
+    # TODO this could be moved to parameter
+    @classmethod
+    def parameter_to_value(cls, parameter: Parameter) -> str | dict:
+        """
+        Makes the dictionary or string that is stored as the value of each 
+        parameter. Uses recursion for MultiParameter and OptionalParameter
+        """
+        if type(parameter) is MultiParameter: 
+            parameters = {}
+            for param in parameter.parameters:
+                parameters[param.name] = cls.parameter_to_value(param)
+            return parameters
+        if type(parameter) is OptionalParameter:
+            value = {}
+            value["enabled"] = parameter.value
+            value[parameter.parameter.name] = cls.parameter_to_value(parameter.parameter)
+            return value
+        else:
+            return parameter.value
+
     @property
     def name(self) -> str:
         """
