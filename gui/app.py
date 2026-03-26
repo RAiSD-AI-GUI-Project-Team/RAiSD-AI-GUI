@@ -20,6 +20,7 @@ from gui.model.run_result import RunResult
 def main():
     app = QApplication(sys.argv)
 
+    # Set styling
     with open("gui/style/variables.scss", "r") as f:
         variables = f.read()
 
@@ -31,13 +32,8 @@ def main():
 
     app.setStyleSheet(final_stylesheet)
 
-
-    parameter_group_list = ParameterGroupList.from_yaml("gui/config.yaml")
-
-    run_result = RunResult(parameter_group_list, app_settings.workspace_path)
-    app_settings.workspace_path_changed.connect(lambda path: setattr(run_result, 'path', path))
-
-    window = MainWindow(run_result)
+    # Set main window
+    window = MainWindow()
     window.resize(1200,800)
     window.show()
     app.exec()

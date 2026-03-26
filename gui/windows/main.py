@@ -28,7 +28,7 @@ class MainWindow(QMainWindow):
     """
     The main window of the RAiSD-AI GUI application.
     """
-    def __init__(self, run_result: RunResult):
+    def __init__(self):
         """
         Initialize the main window.
 
@@ -36,8 +36,13 @@ class MainWindow(QMainWindow):
         :type run_result: RunResult
         """
         super().__init__()
-        self._run_result = run_result
-        self.command_executor = CommandExecutor(run_result)
+        app_settings.settings_changed.connect(self._init_main_window)
+        self._init_main_window()
+
+    def _init_main_window(self) -> None:
+        parameter_group_list = ParameterGroupList.from_yaml(app_settings.config_path)
+        self.run_result = RunResult(parameter_group_list, app_settings.workspace_path)
+        self.command_executor = CommandExecutor(self.run_result)
         self._setup_ui()
 
     def _setup_ui(self):
@@ -115,7 +120,7 @@ class MainWindow(QMainWindow):
             button.style().polish(button)
 
     def _setup_main_widget(self, layout: QStackedLayout):
-        self.run_widget = RunWidget(self._run_result, self.command_executor)
+        self.run_widget = RunWidget(self.run_result, self.command_executor)
         self.history_widget = HistoryWidget()
         self.settings_widget = SettingsWidget()
 
