@@ -31,8 +31,8 @@ class MainWindow(QMainWindow):
         """
         Initialize the main window.
 
-        :param run_result: the run_result object used by the RunWidget
-        :type run_result: RunResult
+        :param run_record: the run_record object used by the RunWidget
+        :type run_record: RunResult
         """
         super().__init__()
         self._run_record = run_record

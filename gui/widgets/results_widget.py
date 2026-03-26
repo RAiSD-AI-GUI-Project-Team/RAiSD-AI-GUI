@@ -24,7 +24,7 @@ from gui.model.settings import app_settings
 from gui.model.run_record import RunRecord
 from gui.widgets.parameter_form import ParameterForm
 from gui.widgets.collapsible import Collapsible
-from gui.model.run_result import RunResult
+
 
 class ResultsWidget(QWidget):
     """
@@ -34,8 +34,8 @@ class ResultsWidget(QWidget):
         """
         Initialize a `ResultsWidget` object.
 
-        :param run_result: the result to display
-        :type run_result: RunResult
+        :param run_record: the result to display
+        :type run_record: RunResult
         """
         super().__init__()
         self._run_record = run_record
@@ -72,7 +72,7 @@ class ResultsWidget(QWidget):
 
     def show_results(self) -> None:
         """
-        Updates the ResultWidget with results in the RunResult.
+        Updates the ResultWidget with results in the RunRecord.
         """
         # Update summary widgets
         self.status_label.setText("This run was completed successfully. For more information, see the info files below.")
