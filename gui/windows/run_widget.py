@@ -430,8 +430,10 @@ class ParameterInputWidget(RunSubWidget):
                 
         return NavigationButtonsWidget(left_button=self.back_button, right_button=self.next_button)
 
-    def _connect_parameter(self, parameter: Parameter) -> None:
-        """Helper function to connect value_changed on all parameter types."""
+    def _connect_parameter_to_update_next_button_state(self, parameter: Parameter) -> None:
+        """
+        Helper function to connect `value_changed` to `update_next_button_state` on all parameter types.
+        """
         if isinstance(parameter, MultiParameter):
             for child in parameter.parameters:
                 self._connect_parameter(child)
