@@ -47,7 +47,7 @@ class HistoryRecord():
                     if not isinstance(data[key], dict):
                         raise ValueError(
                             f"Incorrect format in history.json for {key}: {data[key]}"
-                            + "Expected string."
+                            + "Expected dict."
                         )
                     history_records.append(cls.from_dict(data[key]))
                 return history_records
@@ -71,7 +71,7 @@ class HistoryRecord():
         if not isinstance(name, str):
             raise ValueError(
                 f"Invalid run name: {name}. "
-                + "Expected string name."
+                + "Expected string."
             )
 
         commands = dictionary.get("commands")
