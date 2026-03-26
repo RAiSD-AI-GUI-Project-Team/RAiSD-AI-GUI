@@ -16,7 +16,7 @@ from gui.widgets.results_widget import ResultsWidget
 
 
 from gui.model.settings import app_settings
-from gui.model.run_result import RunResult
+from gui.model.run_record import RunRecord
 from gui.model.history_record import HistoryRecord
 
 class HistoryWidget(QWidget):
@@ -28,7 +28,7 @@ class HistoryWidget(QWidget):
     def __init__(self):
         super().__init__()
         self._history_list: HistoryListWidget = HistoryListWidget()
-        self._run_result = RunResult()
+        self._run_record = RunRecord.from_yaml(app_settings.yaml_path)
         self._selected : HistoryRecord | None = None
         self._setup_ui()
 
@@ -57,12 +57,12 @@ class HistoryWidget(QWidget):
         run_results_label = QLabel("Run Results")
         results_layout.addWidget(run_results_label)
 
-        self.results_widget = ResultsWidget(self._run_result)
+        self.results_widget = ResultsWidget(self._run_record)
         results_scroll = QScrollArea()
         results_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         results_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         results_scroll.setWidgetResizable(True)
-        results_scroll.setWidget(self.results_widget )
+        results_scroll.setWidget(self.results_widget)
         results_layout.addWidget(results_scroll, 1)
         self._right_panel.addWidget(self.results_panel)
         self.results_panel.hide()
@@ -80,7 +80,7 @@ class HistoryWidget(QWidget):
         """
         self._history_list.add_record(history_record)
 
-    @Slot(RunResult)
+    @Slot(HistoryRecord)
     def _on_run_selected(self, history_record: HistoryRecord) -> None:
         """
         Update the detail panel when a record is selected from the list.
@@ -90,7 +90,7 @@ class HistoryWidget(QWidget):
             self.results_panel.hide()
             self._selected = None
         else:
-            self._run_result.populate(history_record)
+            self._run_record.populate(history_record)
             self.results_widget.show_results()
             self.results_panel.show()
             self._selected = history_record
