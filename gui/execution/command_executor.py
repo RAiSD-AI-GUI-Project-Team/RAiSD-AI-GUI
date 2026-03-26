@@ -5,6 +5,7 @@ from PySide6.QtCore import (
         QProcess, 
         Signal, 
         Slot,
+        QDir,
 )
 
 from gui.model.settings import app_settings
@@ -59,6 +60,15 @@ class CommandExecutor(QObject):
             raise Exception("Execution is still running")
         
         self.execution_started.emit(len(commands))
+        
+        run_id = self.run_result.parameter_group_list.run_id
+        if not app_settings.workspace_path.mkdir(run_id):
+            raise RuntimeError("Creating run folder failed.")
+
+        self.run_folder = QDir(app_settings.workspace_path)
+        if not self.run_folder.cd(run_id):
+            raise RuntimeError("Failed to move to run folder.")
+
         self._commands = commands
         self._command_queue = queue.Queue()
         for command in self._commands:
@@ -93,8 +103,8 @@ class CommandExecutor(QObject):
         :param command: the command to be executed in the process
         :type command: str
         """
-        print(f"Starting process in environment:{app_settings.workspace_path.absolutePath()}")
-        self._process.setWorkingDirectory(app_settings.workspace_path.absolutePath())
+        print(f"Starting process in folder:{self.run_folder.absolutePath()}")
+        self._process.setWorkingDirectory(self.run_folder.absolutePath())
         self._process.setProgram("bash")
         self._process.setArguments(["-c", f"{app_settings.environment_manager.value} run -n {app_settings.environment_name} {command}"])
         self._process.start()
