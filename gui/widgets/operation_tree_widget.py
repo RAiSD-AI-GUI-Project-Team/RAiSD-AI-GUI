@@ -329,6 +329,7 @@ class OperationNodeWidget(FileProducerNodeWidget):
             input_files_layout.addWidget(
                 file_consumer_widget,
                 alignment=Qt.AlignmentFlag.AlignTop,
+                stretch=1,
             )
         layout.addWidget(input_files_widget)
 
