@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
 )
 
 from gui.model.settings import app_settings, EnvironmentManager
-from gui.model.parameter_group_list import ParameterGroupList
+from gui.model.run_record import RunRecord
 from gui.windows.main import MainWindow
 from gui.model.run_result import RunResult
 

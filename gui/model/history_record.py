@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 
 from gui.model.settings import app_settings
-from gui.model.parameter_group_list import ParameterGroupList
+from gui.model.run_record import RunRecord
 
 class HistoryRecord():
     """

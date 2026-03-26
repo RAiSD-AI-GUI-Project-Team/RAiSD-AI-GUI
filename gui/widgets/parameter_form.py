@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
 
 from PySide6.QtCore import Slot
 
-from gui.model.parameter_group_list import ParameterGroupList
+from gui.model.run_record import RunRecord
 from gui.widgets.parameter_form_section import ParameterFormSection
 
 
@@ -15,7 +15,7 @@ class ParameterForm(QWidget):
     A form of parameters to be filled in by the user.
     """
 
-    def __init__(self, parameter_group_list: ParameterGroupList, editable: bool):
+    def __init__(self, parameter_group_list: RunRecord, editable: bool):
         """
         Initialize a `ParameterForm` object.
 

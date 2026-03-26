@@ -17,7 +17,7 @@ from PySide6.QtGui import (
 )
 
 from gui.model.settings import app_settings
-from gui.model.parameter_group_list import ParameterGroupList
+from gui.model.run_record import RunRecord
 from gui.execution.command_executor import CommandExecutor
 from gui.windows.run_widget import RunWidget
 from gui.windows.history_widget import HistoryWidget

@@ -1,4 +1,4 @@
-from gui.model.parameter_group_list import ParameterGroupList
+from gui.model.run_record import RunRecord
 
 import json
 from datetime import datetime 
@@ -10,11 +10,11 @@ class RunResult():
     def __init__(
             self, 
             commands: list[str] = [],
-            parameter_group_list: ParameterGroupList | None = None,
+            parameter_group_list: RunRecord | None = None,
             time_completed: datetime | None = None
         ):
         self._commands = commands
-        self._parameter_group_list = parameter_group_list or ParameterGroupList.from_yaml(app_settings.yaml_path)
+        self._parameter_group_list = parameter_group_list or RunRecord.from_yaml(app_settings.yaml_path)
         self._time_completed = time_completed
 
     def to_history_record(self) -> HistoryRecord:
@@ -107,7 +107,7 @@ class RunResult():
         return self._commands
     
     @property
-    def parameter_group_list(self) -> ParameterGroupList:
+    def parameter_group_list(self) -> RunRecord:
         return self._parameter_group_list
     
     @property

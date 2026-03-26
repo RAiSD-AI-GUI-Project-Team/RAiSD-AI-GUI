@@ -21,7 +21,7 @@ from PySide6.QtGui import QDesktopServices, QPainter
 
 
 from gui.model.settings import app_settings
-from gui.model.parameter_group_list import ParameterGroupList
+from gui.model.run_record import RunRecord
 from gui.widgets.parameter_form import ParameterForm
 from gui.widgets.collapsible import Collapsible
 from gui.model.run_result import RunResult

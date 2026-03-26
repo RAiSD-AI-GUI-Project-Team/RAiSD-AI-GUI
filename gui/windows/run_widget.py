@@ -30,7 +30,7 @@ from PySide6.QtGui import (
 import json
 
 from gui.model.settings import app_settings
-from gui.model.parameter_group_list import ParameterGroupList
+from gui.model.run_record import RunRecord
 from gui.model.run_result import RunResult
 from gui.model.history_record import HistoryRecord
 from gui.execution.command_executor import CommandExecutor
@@ -325,7 +325,7 @@ class OperationSelectionWidget(RunSubWidget):
         return NavigationButtonsWidget(right_button=self.next_button)
 
     class OperationSelector(QWidget):
-        def __init__(self, parameter_group_list: ParameterGroupList):
+        def __init__(self, parameter_group_list: RunRecord):
             super().__init__()
 
             self._parameter_group_list = parameter_group_list

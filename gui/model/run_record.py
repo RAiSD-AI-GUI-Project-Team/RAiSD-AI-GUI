@@ -34,7 +34,7 @@ from gui.model.dependency import (
 )
 
 
-class ParameterGroupList(QObject):
+class RunRecord(QObject):
     """
     A list of parameters for a terminal command.
 
@@ -79,7 +79,7 @@ class ParameterGroupList(QObject):
         self.selected_operation_tree_index = 0
 
     @classmethod
-    def from_yaml(cls, file_path: str) -> "ParameterGroupList":
+    def from_yaml(cls, file_path: str) -> "RunRecord":
         """
         Create a list of parameters from a YAML file.
 
