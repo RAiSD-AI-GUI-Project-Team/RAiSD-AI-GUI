@@ -8,6 +8,7 @@ from PySide6.QtCore import (
     Slot,
 )
 
+from gui.model.settings import app_settings
 from gui.model.file_structure import (
     FileStructure,
     SingleFile,
@@ -77,6 +78,10 @@ class ParameterGroupList(QObject):
         self._dependencies = dependencies or []
         # Set using setter
         self.selected_operation_tree_index = 0
+
+        app_settings.workspace_path_changed.connect(
+            self._workspace_path_changed,
+        )
 
     @classmethod
     def from_yaml(cls, file_path: str) -> "ParameterGroupList":
@@ -966,10 +971,15 @@ class ParameterGroupList(QObject):
         self.run_id_parameter.value = new_run_id
         for operation_tree in self.operation_trees:
             operation_tree.run_id = new_run_id
+            operation_tree.base_directory_path = self.base_directory_path
 
     @property
     def run_id_valid(self) -> bool:
         return self.run_id_parameter.valid
+
+    @property
+    def base_directory_path(self) -> str:
+        return app_settings.workspace_path.absoluteFilePath(self.run_id)
 
     @property
     def operation_trees(self) -> list[OperationTree]:
@@ -1052,3 +1062,8 @@ class ParameterGroupList(QObject):
     @Slot(bool)
     def _operation_tree_valid_changed(self, new_valid: bool) -> None:
         self.operations_valid_changed.emit(self.operations_valid)
+
+    @Slot()
+    def _workspace_path_changed(self) -> None:
+        for tree in self.operation_trees:
+            tree.base_directory_path = self.base_directory_path
