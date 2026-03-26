@@ -220,7 +220,7 @@ class RunWidget(QWidget):
     @Slot()
     def _handle_run_end(self, run_successful: bool) -> None:
         if run_successful:
-            history_record = HistoryRecord.from_run_record(self._run_record)  
+            history_record = self._run_record.to_history_record()  
             history_record.save_to_history()     
             self._switch_to_run_results_widget()
             self.run_view_widget.results_button.setEnabled(True)
@@ -447,7 +447,7 @@ class ParameterInputWidget(RunSubWidget):
     @Slot()
     def _check_param_button_clicked(self) -> None:
         """
-        Prints the current result of `parameter_group_list.to_cli()`.
+        Prints the current result of `run_record.to_cli()`.
         """
         print("check parameters:")
         print(self._run_record.to_cli())
@@ -571,7 +571,7 @@ class RunViewWidget(RunSubWidget):
     run_ended = Signal(bool)  # Run successful
 
     def __init__(self, run_record: RunRecord, command_executor: CommandExecutor):
-        self._run_result = run_record
+        self._run_record = run_record
         self._command_executor = command_executor
 
         self.confirm_stop_execution_dialog = None
