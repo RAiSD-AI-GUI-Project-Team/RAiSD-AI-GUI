@@ -713,7 +713,7 @@ class OperationNode(FileProducerNode):
     
     @base_directory_path.setter
     def base_directory_path(self, new_base_directory_path: str) -> None:
-        self.base_directory_path = new_base_directory_path
+        self._base_directory_path = new_base_directory_path
         for file_consumer in self.file_consumers:
             file_consumer.base_directory_path = self.base_directory_path
         self.file_changed.emit(self.file)

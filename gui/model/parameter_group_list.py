@@ -1079,13 +1079,9 @@ class ParameterGroupList(QObject):
 
     @run_id.setter
     def run_id(self, new_run_id: str) -> None:
-        self.run_id_valid_changed.emit(self.run_id_valid)
         if self.run_id_parameter.value == new_run_id:
             return # Nothing actually changed
         self.run_id_parameter.value = new_run_id
-        for operation_tree in self.operation_trees:
-            operation_tree.run_id = new_run_id
-            operation_tree.base_directory_path = self.base_directory_path
 
     @property
     def run_id_valid(self) -> bool:
@@ -1172,6 +1168,10 @@ class ParameterGroupList(QObject):
         new_valid: bool,
     ) -> None:
         self.run_id = new_run_id
+        self.run_id_valid_changed.emit(self.run_id_valid)
+        for operation_tree in self.operation_trees:
+            operation_tree.run_id = new_run_id
+            operation_tree.base_directory_path = self.base_directory_path
 
     @Slot(bool)
     def _operation_tree_valid_changed(self, new_valid: bool) -> None:
