@@ -220,8 +220,9 @@ class RunWidget(QWidget):
     @Slot()
     def _handle_run_end(self, run_successful: bool) -> None:
         if run_successful:
-            history_record = self._run_record.to_history_record()  
+            history_record = self._run_record.to_history_record() 
             history_record.save_to_history()     
+            self.run_saved.emit(history_record)
             self._switch_to_run_results_widget()
             self.run_view_widget.results_button.setEnabled(True)
             self.run_view_widget.results_button.setProperty("highlight", "true")
