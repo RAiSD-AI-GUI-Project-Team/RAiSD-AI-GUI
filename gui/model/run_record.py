@@ -60,7 +60,7 @@ class RunRecord(QObject):
             dependencies: list[Dependency] | None = None,
     ) -> None:
         """
-        Initialize a `RunREcord` object.
+        Initialize a `RunRecord` object.
 
         :param parameter_groups: the groups of parameters
         :type parameter_groups: list[ParameterGroup] | None
@@ -980,13 +980,12 @@ class RunRecord(QObject):
         for parameter_group in self.parameter_groups:
             for parameter in parameter_group:
                 parameters_dict[parameter.name] = HistoryRecord.parameter_to_value(parameter)
-        
-        operations = [tree.root.run_id for tree in self.operation_trees]
 
         return HistoryRecord(
             self.run_id,
             self.to_cli(),
-            operations,
+            {"index": self.selected_operation_tree_index,
+             "trees": [tree.to_dict() for tree in self.operation_trees]},
             parameters_dict,
             datetime.now()
         )
@@ -998,7 +997,14 @@ class RunRecord(QObject):
         of records when a user clicks on them.
         """
         self.run_id = history_record.name
-        self._commands = history_record.commands
+        for i, tree in enumerate(self.operation_trees):
+            operations_list = history_record.operations.get("operations")
+            if operations_list != None:
+                tree.populate_from_dict(operations_list[i])
+        index = history_record.operations.get("index")
+        if index != None:
+            self.operation_trees[index].enabled=True
+        
         dictionary = history_record.parameters
         for parameter_group in self.parameter_groups:
             for parameter in parameter_group:

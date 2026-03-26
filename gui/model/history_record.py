@@ -18,7 +18,7 @@ class HistoryRecord():
             self,
             name: str,
             commands: list[str],
-            operations: list[str],
+            operations: dict,
             parameters: dict,
             time_completed: datetime
     ):
@@ -89,14 +89,28 @@ class HistoryRecord():
                 )
         
         operations = dictionary.get("operations")
-        if not isinstance(operations, list):
+        if not isinstance(operations, dict):
             raise ValueError(
                 f"Invalid operations type: {operations}"
+                + "Expected dictionary."
+            )
+        
+        tree_index = operations.get("index")
+        if not isinstance(tree_index, int):
+            raise ValueError(
+                f"Invalid tree index: {tree_index}"
+                + "Expected integer."
+            )
+
+        operations_list = operations.get("trees")
+        if not isinstance(operations_list, list):
+            raise ValueError(
+                f"Invalid operations type: {operations_list}"
                 + "Expected list."
             )
         
-        for operation in operations:
-            if not isinstance(operation, str):
+        for operation in operations_list:
+            if not isinstance(operation, dict):
                 raise ValueError(
                     f"Invalid operation type: {operation}"
                     + "Expected string."
@@ -119,12 +133,10 @@ class HistoryRecord():
 
         return cls(name, commands, operations, parameters, time_completed)
 
-    
     def save_to_history(self) -> None:
         """
         Saves current run result to the history file of the workspace.
         """
-        time = datetime.now()
         if not app_settings.workspace_path.exists("history.json"):
             # If no history file exists
             with open(app_settings.workspace_path.absoluteFilePath("history.json"), "w") as f:
@@ -195,7 +207,7 @@ class HistoryRecord():
         return self._commands
 
     @property
-    def operations(self) -> list[str]:
+    def operations(self) -> dict:
         """
         The operatons that were run during an execution. Stored as a dictionary
         from operation name to a boolean that signifies whether the operation
