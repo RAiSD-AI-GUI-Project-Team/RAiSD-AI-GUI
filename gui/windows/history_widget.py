@@ -29,7 +29,7 @@ class HistoryWidget(QWidget):
         super().__init__()
         self._history_list: HistoryListWidget = HistoryListWidget()
         self._run_result = RunResult()
-        self._selected : HistoryRecord = None
+        self._selected : HistoryRecord | None = None
         self._setup_ui()
 
     def _setup_ui(self):

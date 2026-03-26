@@ -9,8 +9,8 @@ from gui.model.parameter import Parameter, OptionalParameter, MultiParameter
 class RunResult():
     def __init__(
             self, 
-            commands: list[str] | None = None,
-            parameter_group_list: ParameterGroupList = None,
+            commands: list[str] = [],
+            parameter_group_list: ParameterGroupList | None = None,
             time_completed: datetime | None = None
         ):
         self._commands = commands
@@ -26,15 +26,21 @@ class RunResult():
             for parameter in parameter_group:
                 parameters_dict[parameter.name] = self.parameter_to_value(parameter)
         
+        operations = [tree.root.run_id for tree in self._parameter_group_list.operation_trees]
+
+        #TODO I do not like this, it is a temporary fix that will be resolved 
+        # if we remove the runresult
+        assert self._time_completed != None
+
         return HistoryRecord(
             self._parameter_group_list.run_id,
             self.commands,
-            self._parameter_group_list.operations,
+            operations,
             parameters_dict,
             self._time_completed
         )
 
-    def to_dict(self) -> str:
+    def to_dict(self) -> dict:
         """
         Makes a dictionary with the information of the current RunResult. This
         is used to store in the history file.
@@ -44,10 +50,12 @@ class RunResult():
             for parameter in parameter_group:
                 parameters_dict[parameter.name] = self.parameter_to_value(parameter)
 
+        operations = [tree.root.run_id for tree in self._parameter_group_list.operation_trees]
+
         dict = {
             "name": self._parameter_group_list.run_id,
             "commands": self._commands,
-            "operations": self._parameter_group_list.operations,
+            "operations": operations,
             "parameters": parameters_dict,
             "time_completed": self._time_completed
         }
@@ -95,7 +103,7 @@ class RunResult():
                 json.dump(history, f, indent=4, default=str)
     
     @property
-    def commands(self) -> list[str] | None:
+    def commands(self) -> list[str]:
         return self._commands
     
     @property
@@ -143,19 +151,21 @@ class RunResult():
         """
         if type(parameter) is MultiParameter:
             for param in parameter.parameters:
-                if value[param.name]:
+                if isinstance(value, dict) and value[param.name]:
                     self.populate_parameter(param, value[param.name])
         elif type(parameter) is OptionalParameter:
-            if not value['enabled']:
+            if isinstance(value, dict) and not value['enabled']:
                 raise ValueError(
                     "Optional parameter must have 'enabled' value."
                 )
-            parameter.value = value["enabled"]
-            if value[parameter.parameter]:
-                self.populate_parameter(
-                    parameter.parameter, 
-                    value[parameter.parameter.name]
-                )
+            
+            if isinstance(value, dict) and isinstance(value["enabled"], bool):
+                parameter.value = value["enabled"]
+                if value[parameter.parameter]:
+                    self.populate_parameter(
+                        parameter.parameter, 
+                        value[parameter.parameter.name]
+                    )
         else:
             if not isinstance(value, str):
                 raise ValueError(

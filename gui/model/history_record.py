@@ -14,7 +14,7 @@ class HistoryRecord():
             self,
             name: str,
             commands: list[str],
-            operations: dict[str, bool],
+            operations: list[str],
             parameters: dict,
             time_completed: datetime
     ):
@@ -35,10 +35,16 @@ class HistoryRecord():
             with open(app_settings.workspace_path.absoluteFilePath("history.json"), "r") as f:
                 data = json.load(f)
                 if not isinstance(data, dict):
-                    raise json.JSONDecodeError
+                    raise ValueError(
+                        f"Incorrect format in history.json: {data}"
+                        + "Expected dict."
+                    )
                 for key in data.keys():
                     if not isinstance(data[key], dict):
-                        raise json.JSONDecodeError
+                        raise ValueError(
+                            f"Incorrect format in history.json for {key}: {data[key]}"
+                            + "Expected string."
+                        )
                     history_records.append(cls.from_dict(data[key]))
                 return history_records
         except FileNotFoundError:
@@ -79,11 +85,18 @@ class HistoryRecord():
                 )
         
         operations = dictionary.get("operations")
-        if not isinstance(operations, dict):
+        if not isinstance(operations, list):
             raise ValueError(
                 f"Invalid operations type: {operations}"
                 + "Expected list."
             )
+        
+        for operation in operations:
+            if not isinstance(operation, str):
+                raise ValueError(
+                    f"Invalid operation type: {operation}"
+                    + "Expected string."
+                )
 
         parameters = dictionary.get("parameters")
         if not isinstance(parameters, dict):
@@ -112,14 +125,14 @@ class HistoryRecord():
         return self._name
     
     @property
-    def commands(self) -> list[str] | None:
+    def commands(self) -> list[str]:
         """
         The commands of an execution.
         """
         return self._commands
 
     @property
-    def operations(self) -> dict[str, bool]:
+    def operations(self) -> list[str]:
         """
         The operatons that were run during an execution. Stored as a dictionary
         from operation name to a boolean that signifies whether the operation
@@ -136,7 +149,7 @@ class HistoryRecord():
         return self._parameters
     
     @property
-    def time_completed(self) -> datetime | None:
+    def time_completed(self) -> datetime:
         """
         The time at which the run was completed. This is used to show how long 
         ago a run was completed.
