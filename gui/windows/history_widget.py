@@ -84,7 +84,6 @@ class HistoryWidget(QWidget):
     def _on_run_selected(self, history_record: HistoryRecord) -> None:
         """
         Update the detail panel when a record is selected from the list.
-        #TODO: this will be changed, once we get the results from actual operation records
         """
         if self._selected == history_record:
             self.results_panel.hide()
