@@ -298,10 +298,20 @@ class OperationSelectionWidget(RunSubWidget):
         )
         layout.addWidget(run_id_parameter_widget.build_form_row())
 
-        operation_selector = self.__class__.OperationSelector(
+        self.operation_selector = self.__class__.OperationSelector(
             self._parameter_group_list
         )
-        layout.addWidget(operation_selector)
+        layout.addWidget(self.operation_selector, stretch=1000)
+
+        layout.addStretch(1)
+
+        # Show operation selector only if run ID is valid
+        self.operation_selector.setVisible(
+            self._parameter_group_list.run_id_valid,
+        )
+        self._parameter_group_list.run_id_valid_changed.connect(
+            self._run_id_valid_changed,
+        )
 
         return widget
 
@@ -354,12 +364,18 @@ class OperationSelectionWidget(RunSubWidget):
                 button.clicked.connect(lambda _, i=i: self._button_clicked(i))
             tree_scroll.setWidget(self.tree_stacked_widget)
 
+            button_layout.addStretch()
+
             layout.addWidget(button_widget)
             layout.addWidget(tree_scroll)
 
         def _button_clicked(self, i: int) -> None:
             self._parameter_group_list.selected_operation_tree_index = i
             self.tree_stacked_widget.current_index = i
+
+    @Slot()
+    def _run_id_valid_changed(self, new_valid) -> None:
+        self.operation_selector.setVisible(new_valid)
 
     @Slot()
     def _update_next_button_state(self) -> None:
