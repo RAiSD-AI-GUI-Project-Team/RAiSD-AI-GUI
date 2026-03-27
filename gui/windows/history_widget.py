@@ -28,7 +28,7 @@ class HistoryWidget(QWidget):
     def __init__(self):
         super().__init__()
         self._history_list: HistoryListWidget = HistoryListWidget()
-        self._run_record = RunRecord.from_yaml(app_settings.yaml_path)
+        self._run_record = RunRecord.from_yaml(app_settings.config_path)
         self._selected : HistoryRecord | None = None
         self._setup_ui()
 
