@@ -17,12 +17,11 @@ from PySide6.QtGui import (
 )
 
 from gui.model.settings import app_settings
-from gui.model.parameter_group_list import ParameterGroupList
+from gui.model.run_record import RunRecord
 from gui.execution.command_executor import CommandExecutor
 from gui.windows.run_widget import RunWidget
 from gui.windows.history_widget import HistoryWidget
 from gui.windows.settings_widget import SettingsWidget
-from gui.model.run_result import RunResult
  
 class MainWindow(QMainWindow):
     """
@@ -31,18 +30,15 @@ class MainWindow(QMainWindow):
     def __init__(self):
         """
         Initialize the main window.
-
-        :param run_result: the run_result object used by the RunWidget
-        :type run_result: RunResult
         """
         super().__init__()
         app_settings.settings_changed.connect(self._init_main_window)
         self._init_main_window()
 
     def _init_main_window(self) -> None:
-        parameter_group_list = ParameterGroupList.from_yaml(app_settings.config_path)
-        self.run_result = RunResult(parameter_group_list, app_settings.workspace_path)
-        self.command_executor = CommandExecutor(self.run_result)
+        run_record = RunRecord.from_yaml(app_settings.config_path)
+        self._run_record = run_record
+        self.command_executor = CommandExecutor(run_record)
         self._setup_ui()
 
     def _setup_ui(self):
@@ -120,9 +116,10 @@ class MainWindow(QMainWindow):
             button.style().polish(button)
 
     def _setup_main_widget(self, layout: QStackedLayout):
-        self.run_widget = RunWidget(self.run_result, self.command_executor)
+        self.run_widget = RunWidget(self._run_record, self.command_executor)
         self.history_widget = HistoryWidget()
         self.settings_widget = SettingsWidget()
+        self.run_widget.run_saved.connect(self.history_widget.add_completed_run)
 
         layout.addWidget(self.run_widget)
         layout.addWidget(self.history_widget)
@@ -135,6 +132,7 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def _history_button_clicked(self) -> None:
+        self.history_widget.update_history_time()
         self.main_widget_layout.setCurrentWidget(self.history_widget)
         self._set_active_view(1)
 

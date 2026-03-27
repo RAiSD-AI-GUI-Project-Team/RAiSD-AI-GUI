@@ -1,6 +1,8 @@
 from re import compile
 from typing import Any, Iterator
 from yaml import load, Loader
+from datetime import datetime
+import json
 
 from PySide6.QtCore import (
     QObject,
@@ -8,6 +10,7 @@ from PySide6.QtCore import (
     Slot,
 )
 
+from gui.model.settings import app_settings
 from gui.model.file_structure import (
     FileStructure,
     SingleFile,
@@ -16,6 +19,7 @@ from gui.model.file_structure import (
 from gui.model.operation import Operation
 from gui.model.operation_tree import OperationTree
 from gui.model.parameter_group import ParameterGroup
+from gui.model.history_record import HistoryRecord
 from gui.model.parameter import (
     Parameter,
     OptionalParameter,
@@ -36,7 +40,7 @@ from gui.model.dependency import (
 )
 
 
-class ParameterGroupList(QObject):
+class RunRecord(QObject):
     """
     A list of parameters for a terminal command.
 
@@ -55,7 +59,7 @@ class ParameterGroupList(QObject):
             dependencies: list[Dependency] | None = None,
     ) -> None:
         """
-        Initialize a `ParameterGroupList` object.
+        Initialize a `RunRecord` object.
 
         :param parameter_groups: the groups of parameters
         :type parameter_groups: list[ParameterGroup] | None
@@ -75,8 +79,12 @@ class ParameterGroupList(QObject):
         # Set using setter
         self.selected_operation_tree_index = 0
 
+        app_settings.workspace_path_changed.connect(
+            self._workspace_path_changed,
+        )
+
     @classmethod
-    def from_yaml(cls, file_path: str) -> "ParameterGroupList":
+    def from_yaml(cls, file_path: str) -> "RunRecord":
         """
         Create a list of parameters from a YAML file.
 
@@ -127,7 +135,57 @@ class ParameterGroupList(QObject):
                     raise ValueError(
                         f"Invalid file structure. Unknown file type {file_type}"
                     )
-                
+
+        def parse_path_fragment(obj: str | dict) -> Operation.PathFragment:
+            if isinstance(obj, str):
+                return Operation.ConstPathFragment(obj)
+            if not isinstance(obj, dict):
+                raise ValueError(
+                    f"Invalid value for path fragment: {obj}. Expected string "
+                    + "or object."
+                )
+
+            if "type" not in obj:
+                raise ValueError("Missing type for path fragment object.")
+            path_fragment_type = obj["type"]
+            match path_fragment_type:
+                case "const":
+                    if "value" not in obj:
+                        raise ValueError(
+                            "Missing value for const path fragment object."
+                        )
+                    value = obj["value"]
+                    if not isinstance(value, str):
+                        raise ValueError(
+                            "Invalid value for const path fragment object: "
+                            + f"{value}. Expected a string."
+                        )
+                    return Operation.ConstPathFragment(value=value)
+                case "run id":
+                    return Operation.RunIdPathFragment()
+                case "slash":
+                    return Operation.SlashPathFragment()
+                case "parameter":
+                    if "id" not in obj:
+                        raise ValueError(
+                            "Missing ID for parameter value path fragment "
+                            + "object."
+                        )
+                    parameter_id = obj["id"]
+                    if not isinstance(parameter_id, str):
+                        raise ValueError(
+                            "Invalid ID for parameter value path fragment "
+                            + f"object: {parameter_id}. Expected a string."
+                        )
+                    return Operation.ParameterValuePathFragment(
+                        parameter_id=parameter_id
+                    )
+                case _:
+                    raise ValueError(
+                        "Unknown type for path fragment object: "
+                        + f"{path_fragment_type}."
+                    )
+
         def parse_operation(
                 obj: dict,
                 id: str
@@ -191,14 +249,61 @@ class ParameterGroupList(QObject):
                 )
             produces = parse_file_structure(produces_obj)
 
-            prefix = obj.get("prefix", "") or ""
-            if not isinstance(prefix, str):
+            if "path" not in obj:
                 raise ValueError(
-                    f"Invalid prefix for output path {prefix}."
-                    + " Expected string or null."
+                    f"No output path provided for operation {name}."
+                )
+            path_fragments_list = obj["path"]
+            if not isinstance(path_fragments_list, list):
+                raise ValueError(
+                    f"Invalid output path for operation {name}: "
+                    + f"{path_fragments_list}. Expected a list."
+                )
+            path_fragments: list[Operation.PathFragment] = []
+            for path_fragment_obj in path_fragments_list:
+                path_fragments.append(
+                    parse_path_fragment(path_fragment_obj),
+                )
+
+            if "overwrite_parameter" not in obj:
+                raise ValueError(
+                    f"Missing overwrite parameter for operation {name}."
+                )
+            overwrite_parameter_obj = obj["overwrite_parameter"]
+            overwrite_parameter_builder = (
+                lambda: parse_parameter(
+                    obj=overwrite_parameter_obj,
+                    operations={id},
+                )
+            )
+
+            parameters_obj = obj.get("parameters", {}) or {}
+            if not isinstance(parameters_obj, dict):
+                raise ValueError(
+                    f"Invalid parameters object for operation {name}: "
+                    + f"{parameters_obj}. Expected an object or null."
+                )
+            parameter_builders = {}
+            for parameter_id in parameters_obj:
+                parameter_obj = parameters_obj[parameter_id]
+                parameter_builders[parameter_id] = (
+                    lambda obj=parameter_obj: parse_parameter(
+                        obj=obj,
+                        operations={id},
+                    )
                 )
             
-            return Operation(id, name, description, cli, requires, produces, prefix)
+            return Operation(
+                id=id,
+                name=name,
+                description=description,
+                cli=cli,
+                requires=requires,
+                produces=produces,
+                output_path=path_fragments,
+                overwrite_parameter_builder=overwrite_parameter_builder,
+                parameter_builders=parameter_builders,
+            )
 
         def parse_parameter(
                 obj: dict,
@@ -966,7 +1071,75 @@ class ParameterGroupList(QObject):
             )
 
         return result
+    
+    def to_history_record(self) -> HistoryRecord:
+        """
+        Makes a history record with the information of the current RunResult.
+        """
+        parameters_dict = {}
+        for parameter_group in self.parameter_groups:
+            for parameter in parameter_group:
+                parameters_dict[parameter.name] = HistoryRecord.parameter_to_value(parameter)
 
+        return HistoryRecord(
+            self.run_id,
+            self.to_cli(),
+            {"index": self.selected_operation_tree_index,
+             "trees": [tree.to_dict() for tree in self.operation_trees]},
+            parameters_dict,
+            datetime.now()
+        )
+    
+    def populate(self, history_record: HistoryRecord) -> None:
+        """
+        Populate the current run result with the contents of a history record.
+        This is used to fill the ResultsWidget in history with the contents
+        of records when a user clicks on them.
+        """
+        self.run_id = history_record.name
+        for i, tree in enumerate(self.operation_trees):
+            operations_list = history_record.operations.get("operations")
+            if operations_list != None:
+                tree.populate_from_dict(operations_list[i])
+        index = history_record.operations.get("index")
+        if index != None:
+            self.selected_operation_tree_index = index
+        
+        dictionary = history_record.parameters
+        for parameter_group in self.parameter_groups:
+            for parameter in parameter_group:
+                if parameter.name in dictionary:
+                    self.populate_parameter(parameter, dictionary[parameter.name])
+                    #TODO: validity checking?
+        self._time_completed = history_record.time_completed
+    
+    def populate_parameter(self, parameter: Parameter, value: dict | str) -> None:
+        """
+        Populate a parameter with the values from a dict or string. Uses
+        recursion for optional parameters and multi parameters.
+        """
+        # This could be moved to the parameters?
+        if isinstance(parameter, MultiParameter):
+            for param in parameter.parameters:
+                if isinstance(value, dict) and value[param.name] is not None:
+                    self.populate_parameter(param, value[param.name])
+        elif isinstance(parameter, OptionalParameter):
+            if isinstance(value, dict) and 'enabled' not in value:
+                raise ValueError(
+                    f"Incorrect format for {parameter.name}: {value}"
+                    + "Optional parameter must have 'enabled' value."
+                )
+            
+            if isinstance(value, dict) and isinstance(value["enabled"], bool):
+                parameter.value = value["enabled"]
+                if parameter.parameter in value:
+                    self.populate_parameter(
+                        parameter.parameter, 
+                        value[parameter.parameter.name]
+                    )
+        else:
+            parameter.value = value
+    
     @property
     def run_id_parameter(self) -> StringParameter:
         return self._run_id_parameter
@@ -977,16 +1150,17 @@ class ParameterGroupList(QObject):
 
     @run_id.setter
     def run_id(self, new_run_id: str) -> None:
-        self.run_id_valid_changed.emit(self.run_id_valid)
         if self.run_id_parameter.value == new_run_id:
             return # Nothing actually changed
         self.run_id_parameter.value = new_run_id
-        for operation_tree in self.operation_trees:
-            operation_tree.run_id = new_run_id
 
     @property
     def run_id_valid(self) -> bool:
         return self.run_id_parameter.valid
+
+    @property
+    def base_directory_path(self) -> str:
+        return app_settings.workspace_path.absoluteFilePath(self.run_id)
 
     @property
     def operation_trees(self) -> list[OperationTree]:
@@ -1020,7 +1194,7 @@ class ParameterGroupList(QObject):
 
     @property
     def parameters(self) -> list[Parameter]:
-        result = [self.run_id_parameter]
+        result = []
         for parameter_group in self:
             result.extend(parameter_group)
         return result
@@ -1050,7 +1224,10 @@ class ParameterGroupList(QObject):
         :rtype: list[str]
         """
 
-        return self.selected_operation_tree.to_cli(self.parameters)
+        return self.selected_operation_tree.to_cli(
+            self.run_id_parameter,
+            self.parameters,
+        )
 
     def __iter__(self) -> Iterator[ParameterGroup]:
         return iter(self.parameter_groups)
@@ -1065,7 +1242,16 @@ class ParameterGroupList(QObject):
         new_valid: bool,
     ) -> None:
         self.run_id = new_run_id
+        self.run_id_valid_changed.emit(self.run_id_valid)
+        for operation_tree in self.operation_trees:
+            operation_tree.run_id = new_run_id
+            operation_tree.base_directory_path = self.base_directory_path
 
     @Slot(bool)
     def _operation_tree_valid_changed(self, new_valid: bool) -> None:
         self.operations_valid_changed.emit(self.operations_valid)
+
+    @Slot()
+    def _workspace_path_changed(self) -> None:
+        for tree in self.operation_trees:
+            tree.base_directory_path = self.base_directory_path

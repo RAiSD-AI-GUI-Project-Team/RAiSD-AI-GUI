@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
     QStyle
 )
 
+from gui.model.settings import app_settings
 from gui.model.file_structure import(
     SingleFile,
     Directory,
@@ -40,6 +41,7 @@ from gui.widgets.label import (
 from gui.widgets.resizable_stacked_widget import (
     ResizableStackedWidget,
 )
+from gui.widgets.parameter_widget import ParameterWidget
 
 
 class FileProducerNodeWidget(QWidget):
@@ -103,7 +105,7 @@ class FileConsumerNodeWidget(QWidget):
         self._file_consumer_node = file_consumer_node
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(5,0,0,0)
 
         heading = QLabel(self._file_consumer_node.label)
         layout.addWidget(heading)
@@ -212,6 +214,7 @@ class FilePickerNodeWidget(FileProducerNodeWidget):
         self._file_picker = file_picker
 
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(5,0,0,0)
 
         self._is_directory = isinstance(self._file_picker.produces, Directory)
         # TODO: make this code cleaner and more reusable.
@@ -277,14 +280,23 @@ class FilePickerNodeWidget(FileProducerNodeWidget):
         return "Choose a file on your computer."
 
     def _browse_button_clicked(self):
-        self.dialog = QFileDialog()
         if self._is_directory:
-            self.dialog.setFileMode(QFileDialog.FileMode.Directory)
-        self.dialog.show()
-        self.dialog.fileSelected.connect(self._file_selected)
-
-    def _file_selected(self, path):
-        self._file_picker.file = path
+            new_path = QFileDialog.getExistingDirectory(
+                None,
+                "Select Directory",
+                app_settings.workspace_path.absolutePath(),
+                QFileDialog.Option.ShowDirsOnly
+            )
+        else:
+            new_path, _ = QFileDialog.getOpenFileName(
+                None,
+                "Select File",
+                app_settings.workspace_path.absolutePath(),
+            )
+        if not new_path:  # Check for empty string (canceled)
+            return  
+        else:
+            self._file_picker.file = new_path
 
     def _file_picker_file_changed(self, new_file: str):
         self.button.setText(new_file)
@@ -322,12 +334,23 @@ class OperationNodeWidget(FileProducerNodeWidget):
         description.setWordWrap(True)
         layout.addWidget(description)
 
+        parameter_rows_widget = QWidget()
+        parameter_rows_layout = QVBoxLayout(parameter_rows_widget)
+        for parameter in self._operation_node.parameters.values():
+            parameter_widget = ParameterWidget.from_parameter(
+                parameter=parameter,
+                editable=True,
+            )
+            parameter_row = parameter_widget.build_form_row()
+            parameter_rows_layout.addWidget(parameter_row)
+        layout.addWidget(parameter_rows_widget)
+
         self._output_info_label = InfoLabel(
             self.output_label_text + self._operation_node.file
         )
         layout.addWidget(self._output_info_label)
 
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(5,0,0,0)
 
         input_files_widget = QWidget()
         input_files_layout = QHBoxLayout(input_files_widget)
@@ -337,6 +360,7 @@ class OperationNodeWidget(FileProducerNodeWidget):
             input_files_layout.addWidget(
                 file_consumer_widget,
                 alignment=Qt.AlignmentFlag.AlignTop,
+                stretch=1,
             )
         layout.addWidget(input_files_widget)
 
@@ -344,7 +368,10 @@ class OperationNodeWidget(FileProducerNodeWidget):
 
     @property
     def button_text(self) -> str:
-        return "Run an operation to generate the input file or directory."
+        return (
+            f"Run {self._operation_node.name} to generate the input file or "
+            + "directory."
+        )
 
     @Slot(str)
     def _file_changed(self, new_file: str) -> None:

@@ -4,7 +4,7 @@ import re
 from gui.model.operation_tree import OperationTree
 from gui.model.operation import Operation
 from gui.model.file_structure import SingleFile
-from gui.model.parameter_group_list import ParameterGroupList
+from gui.model.run_record import RunRecord
 from gui.model.parameter_group import ParameterGroup
 from gui.model.parameter import (
     OptionalParameter,
@@ -57,11 +57,24 @@ class TestParameterGroupList:
                 cli="-mdl",
                 requires=[("Input file", "-I", SingleFile([".ms", ".txt"]))],
                 produces=SingleFile([".txt"]),
-                output_path_prefix="./MDL-GEN",
+                overwrite_parameter_builder=(
+                    lambda: BoolParameter(
+                        name="Overwrite output?",
+                        description="",
+                        flag="-overwrite",
+                        operations={"mdl"},
+                        default_value=False,
+                    )
+                ),
+                parameter_builders={},
+                output_path=[
+                    Operation.ConstPathFragment("Model."),
+                    Operation.RunIdPathFragment(),
+                ],
             )
         }
         self.operation_trees, _ = OperationTree.build_trees(self.operations)
-        self.parameter_group_list = ParameterGroupList(
+        self.parameter_group_list = RunRecord(
             run_id_parameter=self.run_id_parameter,
             operation_trees=self.operation_trees,
             parameter_groups=self.parameter_groups,
@@ -96,7 +109,6 @@ class TestParameterGroupList:
         # assert
         assert len(instructions) == 1
         assert instructions == list.selected_operation_tree.to_cli(list.parameters)
-        
 
 
 class TestParameterGroupListFromYaml:
@@ -119,6 +131,10 @@ class TestParameterGroupListFromYaml:
                         name: First operation
                         description: The first operation in the sequence.
                         cli: -op 1
+                        overwrite_parameter:
+                          name: Overwrite output of operation 1?
+                          type: bool
+                          default: false
                         input:
                           - name: Input video
                             cli: --mp4
@@ -132,11 +148,17 @@ class TestParameterGroupListFromYaml:
                             - type: single
                               formats:
                                 - .jpg
-                        prefix: Operation1.
+                        path:
+                          - Operation1.
+                          - type: run id
                       second-op:
                         name: Second operation
                         description: The operation that comes after.
                         cli: -op 2
+                        overwrite_parameter:
+                          name: Overwrite output of operation 2?
+                          type: bool
+                          default: false
                         input:
                           - name: Frames
                             cli: -f
@@ -150,7 +172,9 @@ class TestParameterGroupListFromYaml:
                           type: single
                           formats:
                             - .txt
-                        prefix: Operation2.
+                        path:
+                          - Operation2.
+                          - type: run id
                 parameter_groups:
                   - name: Boolean parameters
                     operations:
@@ -574,7 +598,7 @@ class TestParameterGroupListFromYaml:
         )
 
         # act
-        parameter_list = ParameterGroupList.from_yaml('path')
+        parameter_list = RunRecord.from_yaml('path')
 
         # assert
         assert len(parameter_list.operation_trees) == 2

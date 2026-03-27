@@ -11,7 +11,7 @@ from PySide6.QtCore import (
         QDir,
 )
 
-from gui.model.run_result import RunResult
+from gui.model.run_record import RunRecord
 from gui.model.settings import app_settings
 
 class CommandExecutor(QObject):
@@ -33,12 +33,12 @@ class CommandExecutor(QObject):
     process_failed = Signal(int, QProcess.ProcessError)     # process_index, process_error
     process_stopped = Signal(int)                   # process_index
 
-    def __init__(self, run_result: RunResult, command_builder: Callable[[str], str] | None = None):
+    def __init__(self, run_record: RunRecord, command_builder: Callable[[str], str] | None = None):
         """
         Initialize a `CommandExecutor` object.
         """
         super().__init__()
-        self.run_result = run_result
+        self.run_record = run_record
         self.command_builder = command_builder or self._default_command_builder
 
         self._process = QProcess()
@@ -78,9 +78,10 @@ class CommandExecutor(QObject):
         
         self.execution_started.emit(len(commands))
         
-        run_id = self.run_result.parameter_group_list.run_id
-        if not app_settings.workspace_path.mkdir(run_id):
-            raise RuntimeError(f"Creating run folder: '{run_id}' failed.")
+        run_id = self.run_record.run_id
+        if not app_settings.workspace_path.exists(run_id):
+            if not app_settings.workspace_path.mkdir(run_id):
+                raise RuntimeError(f"Creating run folder: '{run_id}' failed.")
 
         self.run_folder = QDir(app_settings.workspace_path)
         if not self.run_folder.cd(run_id):
@@ -179,7 +180,7 @@ class CommandExecutor(QObject):
         """
         Reads the stdout of the process and emits the data.
         """
-        data = bytes(self._process.readAllStandardOutput().data()).decode()
+        data = bytes(self._process.readAllStandardOutput().data()).decode(errors="ignore")
         self.output.emit(data.strip())
         print(f"stdout:{data.strip()}")
         # TODO: filter output for substeps (self.sub_step_finished)
@@ -189,7 +190,7 @@ class CommandExecutor(QObject):
         """
         Reads the stderr of the process and compiles the error message.
         """
-        data = bytes(self._process.readAllStandardError().data()).decode()
+        data = bytes(self._process.readAllStandardError().data()).decode(errors="ignore")
         self.err_output.emit(data.strip())
         print(f"stderr:{data.strip()}")
 
