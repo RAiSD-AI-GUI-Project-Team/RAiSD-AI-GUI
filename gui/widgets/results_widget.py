@@ -75,7 +75,7 @@ class ResultsWidget(QWidget):
         Updates the ResultWidget with results in the RunRecord.
         """
         # Update summary widgets
-        self.status_label.setText("This run was completed successfully. For more information, see the info files below.")
+        self.status_label.setText("This run was completed. For more information, see the files below.")
 
         info_files = [] # TODO implement infofile gen logic
         output_folder_path = QDir(app_settings.workspace_path.filePath(self._run_record.run_id))
