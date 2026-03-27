@@ -18,6 +18,7 @@ from gui.windows.main import MainWindow
 def main():
     app = QApplication(sys.argv)
 
+    # Set styling
     with open("gui/style/variables.scss", "r") as f:
         variables = f.read()
 
@@ -28,11 +29,10 @@ def main():
     final_stylesheet = sass.compile(string=final_stylesheet)
 
     app.setStyleSheet(final_stylesheet)
+    
+    # Set main window
+    window = MainWindow()
 
-
-    run_record = RunRecord.from_yaml(app_settings.yaml_path)
-
-    window = MainWindow(run_record)
     window.resize(1200,800)
     window.show()
     app.exec()

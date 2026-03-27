@@ -32,19 +32,23 @@ class Settings(QObject):
     executable_file_path_changed = Signal(QFileInfo)
     environment_manager_changed = Signal(EnvironmentManager)
     environment_name_changed = Signal(str)
+    config_path_changed = Signal(str)
+    settings_changed = Signal()
 
     def __init__(self):
         """
         Initialize the `Settings` class.
         """
         super().__init__()
+
         workspace_directory = "workspace"
         QDir().mkdir(workspace_directory)
+
         self._workspace_path = QDir(workspace_directory)
         self._executable_file_path = QFileInfo("RAiSD-AI")
         self._environment_manager = EnvironmentManager.MICROMAMBA
         self._environment_name = "raisd-ai"
-        self._yaml_path = "gui/config.yaml"
+        self._config_path = "gui/config.yaml"
 
     @property
     def workspace_path(self) -> QDir:
@@ -67,6 +71,7 @@ class Settings(QObject):
         if self._workspace_path != value:
             self._workspace_path = value
             self.workspace_path_changed.emit(value)
+            self.settings_changed.emit()
 
     @property
     def executable_file_path(self) -> QFileInfo:
@@ -89,6 +94,7 @@ class Settings(QObject):
         if self._executable_file_path != value:
             self._executable_file_path = value
             self.executable_file_path_changed.emit(value)
+            self.settings_changed.emit()
 
     @property
     def environment_manager(self) -> EnvironmentManager:
@@ -111,6 +117,7 @@ class Settings(QObject):
         if self._environment_manager != value:
             self._environment_manager = value
             self.environment_manager_changed.emit(value)
+            self.settings_changed.emit()
 
     @property
     def environment_name(self) -> str:
@@ -133,14 +140,30 @@ class Settings(QObject):
         if self._environment_name != value:
             self._environment_name = value
             self.environment_name_changed.emit(value)
+            self.settings_changed.emit()
 
     @property
-    def yaml_path(self) -> str:
-        return self._yaml_path
-    
-    @yaml_path.setter
-    def yaml_path(self, path: str) -> None:
-        self._yaml_path = path
+    def config_path(self) -> str:
+        """
+        Get the current config path.
+
+        :return: The current config path.
+        :rtype: str
+        """
+        return self._config_path
+
+    @config_path.setter
+    def config_path(self, value: str) -> None:
+        """
+        Set the config path.
+
+        :param value: The new config path.
+        :type value: str
+        """
+        if self._config_path != value:
+            self._config_path = value
+            self.config_path_changed.emit(value)
+            self.settings_changed.emit()
 
     def set_workspace_folder(self) -> None:
         """

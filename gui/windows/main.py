@@ -27,14 +27,16 @@ class MainWindow(QMainWindow):
     """
     The main window of the RAiSD-AI GUI application.
     """
-    def __init__(self, run_record: RunRecord):
+    def __init__(self):
         """
         Initialize the main window.
-
-        :param run_record: the run_record object used by the RunWidget
-        :type run_record: RunResult
         """
         super().__init__()
+        app_settings.settings_changed.connect(self._init_main_window)
+        self._init_main_window()
+
+    def _init_main_window(self) -> None:
+        run_record = RunRecord.from_yaml(app_settings.config_path)
         self._run_record = run_record
         self.command_executor = CommandExecutor(run_record)
         self._setup_ui()
