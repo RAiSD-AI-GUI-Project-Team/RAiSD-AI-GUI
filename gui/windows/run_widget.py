@@ -179,6 +179,8 @@ class RunWidget(QWidget):
         # Results widget
         self.run_results_widget = RunResultsWidget(run_record=self._run_record)
         self.run_ended.connect(self.run_results_widget.run_end)
+        self.run_results_widget.new_run_button.clicked.connect(self._new_run_button_clicked)
+        self.run_results_widget.edit_run_button.clicked.connect(self._switch_to_operation_selection_widget)
         layout.addWidget(self.run_results_widget)
 
     # ---------- step button bar switch methods ----------
@@ -232,6 +234,12 @@ class RunWidget(QWidget):
             self.run_view_widget.results_button.style().polish(self.run_view_widget.results_button)
         else:
             self._switch_to_run_view_widget()
+
+    @Slot()
+    def _new_run_button_clicked(self) -> None:
+        self._run_record.reset()
+        self.operation_selection_widget.reset()
+        self._switch_to_operation_selection_widget()
 
 class NavigationButtonsWidget(QWidget):
     def __init__(self, left_button: QPushButton | None = None, middle_button: QPushButton | None = None, right_button: QPushButton | None = None):
@@ -323,6 +331,9 @@ class OperationSelectionWidget(RunSubWidget):
         )
 
         return widget
+    
+    def reset(self) -> None:
+        self.operation_selector.reset()
 
     def _setup_navigation_buttons(self) -> NavigationButtonsWidget:
         self.next_button = QPushButton("Next")
@@ -359,20 +370,23 @@ class OperationSelectionWidget(RunSubWidget):
 
             self.tree_stacked_widget = ResizableStackedWidget()
             self.tree_stacked_widget.setObjectName("tree_stacked_widget")
+            
+            self.tree_selectors : list[tuple[QRadioButton, OperationTreeWidget]]= []
             for i, tree in enumerate(
                     self._run_record.operation_trees
             ):
-                button = QRadioButton(tree.root.name)
-                button.setChecked(
+                self.button = QRadioButton(tree.root.name)
+                self.button.setChecked(
                     i
                     == self._run_record.selected_operation_tree_index
                 )
-                button_layout.addWidget(button)
+                button_layout.addWidget(self.button)
 
                 widget = OperationTreeWidget(tree)
                 self.tree_stacked_widget.addWidget(widget)
 
-                button.clicked.connect(lambda _, i=i: self._button_clicked(i))
+                self.button.clicked.connect(lambda _, i=i: self._button_clicked(i))
+                self.tree_selectors.append((self.button, widget))
             tree_scroll.setWidget(self.tree_stacked_widget)
 
             button_layout.addStretch()
@@ -383,6 +397,12 @@ class OperationSelectionWidget(RunSubWidget):
         def _button_clicked(self, i: int) -> None:
             self._run_record.selected_operation_tree_index = i
             self.tree_stacked_widget.current_index = i
+
+        def reset(self) -> None:
+            self.tree_stacked_widget.current_index = 0
+            for i, (button, widget) in enumerate(self.tree_selectors):
+                button.setChecked(i == self._run_record.selected_operation_tree_index) 
+                widget.reset()
 
     @Slot()
     def _run_id_valid_changed(self, new_valid) -> None:
@@ -905,12 +925,16 @@ class RunResultsWidget(RunSubWidget):
         layout.addWidget(results_scroll, 1)
         return widget
 
+    def _setup_navigation_buttons(self) -> NavigationButtonsWidget:
+        self.new_run_button = QPushButton("New Run")
+        self.new_run_button.setEnabled(True)
+
+        self.edit_run_button = QPushButton("Edit Run")
+        self.edit_run_button.setEnabled(True)
+
+        return NavigationButtonsWidget(left_button=self.new_run_button, right_button=self.edit_run_button)
+
     @Slot(bool)
     def run_end(self, run_successful: bool) -> None:
         if (run_successful):
             self.results_widget.show_results()
-
-    def _setup_navigation_buttons(self) -> QWidget:
-        return QWidget()
-        # TODO: Implement
-        # raise NotImplementedError
