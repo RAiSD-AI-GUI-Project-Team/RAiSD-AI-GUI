@@ -1,6 +1,8 @@
 from re import compile
 from typing import Any, Iterator
 from yaml import load, Loader
+from datetime import datetime
+import json
 
 from PySide6.QtCore import (
     QObject,
@@ -17,6 +19,7 @@ from gui.model.file_structure import (
 from gui.model.operation import Operation
 from gui.model.operation_tree import OperationTree
 from gui.model.parameter_group import ParameterGroup
+from gui.model.history_record import HistoryRecord
 from gui.model.parameter import (
     Parameter,
     OptionalParameter,
@@ -37,7 +40,7 @@ from gui.model.dependency import (
 )
 
 
-class ParameterGroupList(QObject):
+class RunRecord(QObject):
     """
     A list of parameters for a terminal command.
 
@@ -56,7 +59,7 @@ class ParameterGroupList(QObject):
             dependencies: list[Dependency] | None = None,
     ) -> None:
         """
-        Initialize a `ParameterGroupList` object.
+        Initialize a `RunRecord` object.
 
         :param parameter_groups: the groups of parameters
         :type parameter_groups: list[ParameterGroup] | None
@@ -81,7 +84,7 @@ class ParameterGroupList(QObject):
         )
 
     @classmethod
-    def from_yaml(cls, file_path: str) -> "ParameterGroupList":
+    def from_yaml(cls, file_path: str) -> "RunRecord":
         """
         Create a list of parameters from a YAML file.
 
@@ -1068,7 +1071,75 @@ class ParameterGroupList(QObject):
             )
 
         return result
+    
+    def to_history_record(self) -> HistoryRecord:
+        """
+        Makes a history record with the information of the current RunResult.
+        """
+        parameters_dict = {}
+        for parameter_group in self.parameter_groups:
+            for parameter in parameter_group:
+                parameters_dict[parameter.name] = HistoryRecord.parameter_to_value(parameter)
 
+        return HistoryRecord(
+            self.run_id,
+            self.to_cli(),
+            {"index": self.selected_operation_tree_index,
+             "trees": [tree.to_dict() for tree in self.operation_trees]},
+            parameters_dict,
+            datetime.now()
+        )
+    
+    def populate(self, history_record: HistoryRecord) -> None:
+        """
+        Populate the current run result with the contents of a history record.
+        This is used to fill the ResultsWidget in history with the contents
+        of records when a user clicks on them.
+        """
+        self.run_id = history_record.name
+        for i, tree in enumerate(self.operation_trees):
+            operations_list = history_record.operations.get("operations")
+            if operations_list != None:
+                tree.populate_from_dict(operations_list[i])
+        index = history_record.operations.get("index")
+        if index != None:
+            self.selected_operation_tree_index = index
+        
+        dictionary = history_record.parameters
+        for parameter_group in self.parameter_groups:
+            for parameter in parameter_group:
+                if parameter.name in dictionary:
+                    self.populate_parameter(parameter, dictionary[parameter.name])
+                    #TODO: validity checking?
+        self._time_completed = history_record.time_completed
+    
+    def populate_parameter(self, parameter: Parameter, value: dict | str) -> None:
+        """
+        Populate a parameter with the values from a dict or string. Uses
+        recursion for optional parameters and multi parameters.
+        """
+        # This could be moved to the parameters?
+        if isinstance(parameter, MultiParameter):
+            for param in parameter.parameters:
+                if isinstance(value, dict) and value[param.name] is not None:
+                    self.populate_parameter(param, value[param.name])
+        elif isinstance(parameter, OptionalParameter):
+            if isinstance(value, dict) and 'enabled' not in value:
+                raise ValueError(
+                    f"Incorrect format for {parameter.name}: {value}"
+                    + "Optional parameter must have 'enabled' value."
+                )
+            
+            if isinstance(value, dict) and isinstance(value["enabled"], bool):
+                parameter.value = value["enabled"]
+                if parameter.parameter in value:
+                    self.populate_parameter(
+                        parameter.parameter, 
+                        value[parameter.parameter.name]
+                    )
+        else:
+            parameter.value = value
+    
     @property
     def run_id_parameter(self) -> StringParameter:
         return self._run_id_parameter
