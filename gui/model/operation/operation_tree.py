@@ -25,7 +25,7 @@ from gui.model.operation.file_structure import (
     SingleFile,
     Directory,
 )
-from gui.model.operation import Operation
+from .operation import Operation
 from gui.model.parameter import (
     Parameter,
     StringParameter,
