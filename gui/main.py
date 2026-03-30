@@ -19,9 +19,9 @@ from PySide6.QtGui import (
 from gui.model.settings import app_settings
 from gui.model.run_record import RunRecord
 from gui.execution.command_executor import CommandExecutor
-from gui.windows.run_widget import RunWidget
-from gui.windows.history_widget import HistoryWidget
-from gui.windows.settings_widget import SettingsWidget
+from gui.pages.run_widget import RunWidget
+from gui.pages.history_widget import HistoryWidget
+from gui.pages.settings_widget import SettingsWidget
  
 class MainWindow(QMainWindow):
     """

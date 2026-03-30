@@ -37,7 +37,7 @@ from gui.execution.command_executor import CommandExecutor
 from gui.widgets.parameter import ParameterWidget, ParameterForm
 from gui.widgets.operation import OperationTreeWidget
 from gui.widgets.resizable_stacked_widget import ResizableStackedWidget
-from gui.windows.dialog import ConfirmDialog, ErrorDialog
+from gui.widgets.dialog import ConfirmDialog, ErrorDialog
 from gui.widgets.results import ResultsWidget
 from gui.widgets.run import ProcessIndicator, IndicatorState
 
