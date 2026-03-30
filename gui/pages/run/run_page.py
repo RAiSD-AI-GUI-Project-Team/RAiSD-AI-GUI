@@ -46,7 +46,7 @@ class RunPage(Page):
 
     def _setup_ui(self):
         """
-        Set up the general run widget.
+        Set up the general run page.
 
         Includes the step button bar and the stacked step widget.
         """
@@ -66,76 +66,76 @@ class RunPage(Page):
         self._setup_stacked_step_widget(self.stacked_step_widget_layout)
 
         self.button_tab_pairs: dict[QPushButton, RunPageTab] = {
-            self.operation_selection_button: self.operation_selection_widget,
-            self.parameter_input_button: self.parameter_input_widget,
-            self.parameter_confirmation_button: self.parameter_confirmation_widget,
-            self.execution_view_button: self.run_view_widget,
-            self.results_button: self.run_results_widget,
+            self.operation_selection_button: self.operation_tab,
+            self.parameter_input_button: self.parameter_tab,
+            self.parameter_confirmation_button: self.confirmation_tab,
+            self.execution_view_button: self.view_tab,
+            self.results_button: self.results_tab,
         }
 
-        self._set_active_tab(self.operation_selection_widget)
+        self._set_active_tab(self.operation_tab)
 
     def _setup_step_button_bar(self, layout: QHBoxLayout):
         """
         Setup the step button bar.
         """
         self.operation_selection_button = QPushButton("Operation Selection")
-        self.operation_selection_button.clicked.connect(self._switch_to_operation_selection_widget)
+        self.operation_selection_button.clicked.connect(self._switch_to_operation_tab)
         layout.addWidget(self.operation_selection_button)
 
         self.parameter_input_button = QPushButton("Parameter Input")
-        self.parameter_input_button.clicked.connect(self._switch_to_parameter_input_widget)
+        self.parameter_input_button.clicked.connect(self._switch_to_parameter_tab)
         layout.addWidget(self.parameter_input_button)
 
         self.parameter_confirmation_button = QPushButton("Parameter Confirmation")
-        self.parameter_confirmation_button.clicked.connect(self._switch_to_parameter_confirmation_widget)
+        self.parameter_confirmation_button.clicked.connect(self._switch_to_confirmation_tab)
         layout.addWidget(self.parameter_confirmation_button)
 
         self.execution_view_button = QPushButton("Run")
-        self.execution_view_button.clicked.connect(self._switch_to_run_view_widget)
+        self.execution_view_button.clicked.connect(self._switch_to_view_tab)
         layout.addWidget(self.execution_view_button)
 
         self.results_button = QPushButton("Results")
-        self.results_button.clicked.connect(self._switch_to_run_results_widget)
+        self.results_button.clicked.connect(self._switch_to_results_tab)
         layout.addWidget(self.results_button)
 
     def _setup_stacked_step_widget(self, layout: QStackedLayout):
         """
         Set up the stacked step widget.
         """
-        # Operation selection widget
-        self.operation_selection_widget = OperationTab(run_record=self._run_record)
-        self.operation_selection_widget.navigate_next.connect(self._switch_to_parameter_input_widget)
-        layout.addWidget(self.operation_selection_widget)
+        # Operation selection tab
+        self.operation_tab = OperationTab(run_record=self._run_record)
+        self.operation_tab.navigate_next.connect(self._switch_to_parameter_tab)
+        layout.addWidget(self.operation_tab)
 
-        # Parameter input widget
-        self.parameter_input_widget = ParameterTab(run_record=self._run_record)
-        self.parameter_input_widget.navigate_back.connect(self._switch_to_operation_selection_widget)
-        self.parameter_input_widget.navigate_next.connect(self._switch_to_parameter_confirmation_widget)
-        layout.addWidget(self.parameter_input_widget)
+        # Parameter input tab
+        self.parameter_tab = ParameterTab(run_record=self._run_record)
+        self.parameter_tab.navigate_back.connect(self._switch_to_operation_tab)
+        self.parameter_tab.navigate_next.connect(self._switch_to_confirmation_tab)
+        layout.addWidget(self.parameter_tab)
 
-        # Parameter confirmation widget
-        self.parameter_confirmation_widget = ConfirmationTab(run_record=self._run_record)
-        self.parameter_confirmation_widget.navigate_back.connect(self._switch_to_parameter_input_widget)
-        self.parameter_confirmation_widget.start_run.connect(self.start_run)
-        self.run_started.connect(self.parameter_confirmation_widget.run_started)
-        self.run_ended.connect(self.parameter_confirmation_widget.run_ended)
-        layout.addWidget(self.parameter_confirmation_widget)
+        # Parameter confirmation tab
+        self.confirmation_tab = ConfirmationTab(run_record=self._run_record)
+        self.confirmation_tab.navigate_back.connect(self._switch_to_parameter_tab)
+        self.confirmation_tab.start_run.connect(self.start_run)
+        self.run_started.connect(self.confirmation_tab.run_started)
+        self.run_ended.connect(self.confirmation_tab.run_ended)
+        layout.addWidget(self.confirmation_tab)
 
-        # Run view widget
-        self.run_view_widget = ViewTab(run_record=self._run_record, command_executor=self._command_executor)
-        self.run_view_widget.navigate_next.connect(self._switch_to_run_results_widget)
-        self.run_view_widget.run_started.connect(self.run_started)
-        self.run_view_widget.run_ended.connect(self.run_ended)
-        self.start_run.connect(self.run_view_widget.start_run)
-        layout.addWidget(self.run_view_widget)
+        # Run view tab
+        self.view_tab = ViewTab(run_record=self._run_record, command_executor=self._command_executor)
+        self.view_tab.navigate_next.connect(self._switch_to_results_tab)
+        self.view_tab.run_started.connect(self.run_started)
+        self.view_tab.run_ended.connect(self.run_ended)
+        self.start_run.connect(self.view_tab.start_run)
+        layout.addWidget(self.view_tab)
 
-        # Results widget
-        self.run_results_widget = ResultsTab(run_record=self._run_record)
-        self.run_results_widget.new_run_button.clicked.connect(self._new_run)
-        self.run_results_widget.edit_run_button.clicked.connect(self._switch_to_operation_selection_widget)
-        self.run_ended.connect(self.run_results_widget.run_ended)
-        layout.addWidget(self.run_results_widget)
+        # Results tab
+        self.results_tab = ResultsTab(run_record=self._run_record)
+        self.results_tab.new_run_button.clicked.connect(self._new_run)
+        self.results_tab.edit_run_button.clicked.connect(self._switch_to_operation_tab)
+        self.run_ended.connect(self.results_tab.run_ended)
+        layout.addWidget(self.results_tab)
 
     def _set_active_tab(self, active_tab: RunPageTab) -> None:
         """
@@ -159,29 +159,29 @@ class RunPage(Page):
 
     # ---------- step button bar switch methods ----------
     @Slot()
-    def _switch_to_operation_selection_widget(self) -> None:
-        self._set_active_tab(self.operation_selection_widget)
+    def _switch_to_operation_tab(self) -> None:
+        self._set_active_tab(self.operation_tab)
 
     @Slot()
-    def _switch_to_parameter_input_widget(self) -> None:
-        self._set_active_tab(self.parameter_input_widget)
+    def _switch_to_parameter_tab(self) -> None:
+        self._set_active_tab(self.parameter_tab)
 
     @Slot()
-    def _switch_to_parameter_confirmation_widget(self) -> None:
-        self._set_active_tab(self.parameter_confirmation_widget)
+    def _switch_to_confirmation_tab(self) -> None:
+        self._set_active_tab(self.confirmation_tab)
 
     @Slot()
-    def _switch_to_run_view_widget(self) -> None:
-        self._set_active_tab(self.run_view_widget)
+    def _switch_to_view_tab(self) -> None:
+        self._set_active_tab(self.view_tab)
 
     @Slot()
-    def _switch_to_run_results_widget(self) -> None:
-        self._set_active_tab(self.run_results_widget)
+    def _switch_to_results_tab(self) -> None:
+        self._set_active_tab(self.results_tab)
 
     # ---------- Handle events ----------
     @Slot()
     def _handle_run_start(self) -> None:
-        self._switch_to_run_view_widget()
+        self._switch_to_view_tab()
 
     @Slot()
     def _handle_run_end(self, run_successful: bool) -> None:
@@ -189,11 +189,11 @@ class RunPage(Page):
             history_record = self._run_record.to_history_record() 
             history_record.save_to_history()     
             self.run_saved.emit(history_record)
-            self._switch_to_run_results_widget()
+            self._switch_to_results_tab()
 
     @Slot()
     def _new_run(self) -> None:
         self._run_record.reset()
-        self.operation_selection_widget.reset()
-        self._switch_to_operation_selection_widget()
+        self.operation_tab.reset()
+        self._switch_to_operation_tab()
 
