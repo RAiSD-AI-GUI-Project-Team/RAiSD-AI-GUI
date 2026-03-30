@@ -56,6 +56,7 @@ class RunPageTab(QWidget):
      
     Which includes a widget for the main content of the tab and 
     a NavigationButtonsHolder for the navigation buttons. 
+    
     Subclasses should implement the `_setup_widget` and
     `_setup_navigation_buttons` methods.
     """
@@ -74,7 +75,29 @@ class RunPageTab(QWidget):
         pass
 
     def _setup_widget(self) -> QWidget:
-        raise NotImplementedError
+        """
+        Set up the main content widget for the tab.
+        
+        This method should be implemented by each subclass.
 
-    def _setup_navigation_buttons(self) -> QWidget:
-        raise NotImplementedError
+        :return: the main content widget for the tab
+        :rtype: QWidget
+        """
+        raise NotImplementedError()
+
+    def _setup_navigation_buttons(self) -> NavigationButtonsHolder:
+        """
+        Set up the navigation buttons for the tab.
+
+        This method should be implemented by each subclass.
+
+        :return: a NavigationButtonsHolder 
+        :rtype: NavigationButtonsHolder
+        """
+        raise NotImplementedError()
+
+    def update_ui(self) -> None:
+        """
+        Update the UI elements of the tab when it is shown.
+        """
+        raise NotImplementedError()
