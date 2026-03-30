@@ -28,7 +28,6 @@ class RunPage(Page):
     """
     The page to display all steps of running the RAiSD-AI-GUI application.
     """
-
     start_run = Signal()
     run_started = Signal(int)  # number of processes
     run_ended = Signal(bool)  # if run was successful
@@ -66,7 +65,7 @@ class RunPage(Page):
         layout.addWidget(stacked_step_widget, 1)
         self._setup_stacked_step_widget(self.stacked_step_widget_layout)
 
-        self.button_tab_pairs = {
+        self.button_tab_pairs: dict[QPushButton, RunPageTab] = {
             self.operation_selection_button: self.operation_selection_widget,
             self.parameter_input_button: self.parameter_input_widget,
             self.parameter_confirmation_button: self.parameter_confirmation_widget,
@@ -74,11 +73,7 @@ class RunPage(Page):
             self.results_button: self.run_results_widget,
         }
 
-    def update_ui(self) -> None:
-        """
-        Update the UI elements of the page when it is shown.
-        """
-        pass
+        self._set_active_tab(self.operation_selection_widget)
 
     def _setup_step_button_bar(self, layout: QHBoxLayout):
         """
@@ -86,27 +81,22 @@ class RunPage(Page):
         """
         self.operation_selection_button = QPushButton("Operation Selection")
         self.operation_selection_button.clicked.connect(self._switch_to_operation_selection_widget)
-        self.operation_selection_button.setProperty("step_role", "active")
         layout.addWidget(self.operation_selection_button)
 
         self.parameter_input_button = QPushButton("Parameter Input")
         self.parameter_input_button.clicked.connect(self._switch_to_parameter_input_widget)
-        self.parameter_input_button.setEnabled(False)
         layout.addWidget(self.parameter_input_button)
 
         self.parameter_confirmation_button = QPushButton("Parameter Confirmation")
         self.parameter_confirmation_button.clicked.connect(self._switch_to_parameter_confirmation_widget)
-        self.parameter_confirmation_button.setEnabled(False)
         layout.addWidget(self.parameter_confirmation_button)
 
         self.execution_view_button = QPushButton("Run")
         self.execution_view_button.clicked.connect(self._switch_to_run_view_widget)
-        self.execution_view_button.setEnabled(False)
         layout.addWidget(self.execution_view_button)
 
         self.results_button = QPushButton("Results")
         self.results_button.clicked.connect(self._switch_to_run_results_widget)
-        self.results_button.setEnabled(False)
         layout.addWidget(self.results_button)
 
     def _setup_stacked_step_widget(self, layout: QStackedLayout):
@@ -115,39 +105,36 @@ class RunPage(Page):
         """
         # Operation selection widget
         self.operation_selection_widget = OperationTab(run_record=self._run_record)
-        self.operation_selection_widget.next_button.clicked.connect(self._switch_to_parameter_input_widget)
+        self.operation_selection_widget.navigate_next.connect(self._switch_to_parameter_input_widget)
         layout.addWidget(self.operation_selection_widget)
 
         # Parameter input widget
         self.parameter_input_widget = ParameterTab(run_record=self._run_record)
-        self.parameter_input_widget.back_button.clicked.connect(self._switch_to_operation_selection_widget)
+        self.parameter_input_widget.navigate_back.connect(self._switch_to_operation_selection_widget)
         self.parameter_input_widget.navigate_next.connect(self._switch_to_parameter_confirmation_widget)
         layout.addWidget(self.parameter_input_widget)
 
         # Parameter confirmation widget
         self.parameter_confirmation_widget = ConfirmationTab(run_record=self._run_record)
-        self.parameter_confirmation_widget.edit_button.clicked.connect(self._switch_to_parameter_input_widget)
-        # run_button clicked is handled via the start_run signal
+        self.parameter_confirmation_widget.navigate_back.connect(self._switch_to_parameter_input_widget)
         self.parameter_confirmation_widget.start_run.connect(self.start_run)
-        self.run_started.connect(self.parameter_confirmation_widget.run_start)
-        self.run_ended.connect(self.parameter_confirmation_widget.run_end)
+        self.run_started.connect(self.parameter_confirmation_widget.run_started)
+        self.run_ended.connect(self.parameter_confirmation_widget.run_ended)
         layout.addWidget(self.parameter_confirmation_widget)
 
         # Run view widget
         self.run_view_widget = ViewTab(run_record=self._run_record, command_executor=self._command_executor)
-        self.run_view_widget.results_button.clicked.connect(self._switch_to_run_results_widget)
-        self.run_view_widget.run_ended.connect(self.run_ended)
+        self.run_view_widget.navigate_next.connect(self._switch_to_run_results_widget)
         self.run_view_widget.run_started.connect(self.run_started)
+        self.run_view_widget.run_ended.connect(self.run_ended)
         self.start_run.connect(self.run_view_widget.start_run)
-        self.run_started.connect(self.run_view_widget.run_start)
-        self.run_ended.connect(self.run_view_widget.run_end)
         layout.addWidget(self.run_view_widget)
 
         # Results widget
         self.run_results_widget = ResultsTab(run_record=self._run_record)
-        self.run_ended.connect(self.run_results_widget.run_end)
-        self.run_results_widget.new_run_button.clicked.connect(self._new_run_button_clicked)
+        self.run_results_widget.new_run_button.clicked.connect(self._new_run)
         self.run_results_widget.edit_run_button.clicked.connect(self._switch_to_operation_selection_widget)
+        self.run_ended.connect(self.run_results_widget.run_ended)
         layout.addWidget(self.run_results_widget)
 
     def _set_active_tab(self, active_tab: RunPageTab) -> None:
@@ -158,6 +145,7 @@ class RunPage(Page):
         for i, (button, tab) in enumerate(self.button_tab_pairs.items()):
             if tab == active_tab:
                 role = "active"
+                tab.refresh()
                 self.stacked_step_widget_layout.setCurrentWidget(tab)
             elif i < list(self.button_tab_pairs.values()).index(active_tab):
                 role = "past_step"
@@ -172,17 +160,14 @@ class RunPage(Page):
     # ---------- step button bar switch methods ----------
     @Slot()
     def _switch_to_operation_selection_widget(self) -> None:
-        self.parameter_input_widget.reset_touched()
         self._set_active_tab(self.operation_selection_widget)
 
     @Slot()
     def _switch_to_parameter_input_widget(self) -> None:
-        self.parameter_input_widget.update_next_button_state()
         self._set_active_tab(self.parameter_input_widget)
 
     @Slot()
     def _switch_to_parameter_confirmation_widget(self) -> None:
-        self.parameter_confirmation_widget.update_commands()
         self._set_active_tab(self.parameter_confirmation_widget)
 
     @Slot()
@@ -193,14 +178,10 @@ class RunPage(Page):
     def _switch_to_run_results_widget(self) -> None:
         self._set_active_tab(self.run_results_widget)
 
-    # ---------- Handle signals ----------
+    # ---------- Handle events ----------
     @Slot()
     def _handle_run_start(self) -> None:
         self._switch_to_run_view_widget()
-        self.run_view_widget.results_button.setEnabled(False)
-        self.run_view_widget.results_button.setProperty("highlight", "false")
-        self.run_view_widget.results_button.style().unpolish(self.run_view_widget.results_button)
-        self.run_view_widget.results_button.style().polish(self.run_view_widget.results_button)
 
     @Slot()
     def _handle_run_end(self, run_successful: bool) -> None:
@@ -209,15 +190,9 @@ class RunPage(Page):
             history_record.save_to_history()     
             self.run_saved.emit(history_record)
             self._switch_to_run_results_widget()
-            self.run_view_widget.results_button.setEnabled(True)
-            self.run_view_widget.results_button.setProperty("highlight", "true")
-            self.run_view_widget.results_button.style().unpolish(self.run_view_widget.results_button)
-            self.run_view_widget.results_button.style().polish(self.run_view_widget.results_button)
-        else:
-            self._switch_to_run_view_widget()
 
     @Slot()
-    def _new_run_button_clicked(self) -> None:
+    def _new_run(self) -> None:
         self._run_record.reset()
         self.operation_selection_widget.reset()
         self._switch_to_operation_selection_widget()

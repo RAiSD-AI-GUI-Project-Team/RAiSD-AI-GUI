@@ -96,8 +96,8 @@ class RunPageTab(QWidget):
         """
         raise NotImplementedError()
 
-    def update_ui(self) -> None:
+    def refresh(self) -> None:
         """
-        Update the UI elements of the tab when it is shown.
+        Refresh the UI elements of the tab when it is shown.
         """
         raise NotImplementedError()

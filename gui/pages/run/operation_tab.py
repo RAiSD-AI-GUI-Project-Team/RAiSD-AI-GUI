@@ -1,5 +1,6 @@
 from PySide6.QtCore import (
     Qt,
+    Signal,
     Slot,
 )
 from PySide6.QtWidgets import (
@@ -24,9 +25,9 @@ class OperationTab(RunPageTab):
     A tab that allows the user to choose a run id and
     to select operations to be run.
     """
+    navigate_next = Signal()
 
-    def __init__(self, run_record: RunRecord):
-        
+    def __init__(self, run_record: RunRecord): 
         self._run_record = run_record
         super().__init__()
 
@@ -62,13 +63,11 @@ class OperationTab(RunPageTab):
         )
 
         return widget
-    
-    def reset(self) -> None:
-        self.operation_selector.reset()
 
     def _setup_navigation_buttons(self) -> NavigationButtonsHolder:
         self.next_button = QPushButton("Next")
         self.next_button.setObjectName("next_button")
+        self.next_button.clicked.connect(self.navigate_next.emit)
         self._update_next_button_state()
         self._run_record.run_id_valid_changed.connect(
             self._update_next_button_state,
@@ -76,8 +75,14 @@ class OperationTab(RunPageTab):
         self._run_record.operations_valid_changed.connect(
             self._update_next_button_state,
         )
+
         return NavigationButtonsHolder(right_button=self.next_button)
 
+    def refresh(self) -> None:
+        pass
+
+    def reset(self) -> None:
+        self.operation_selector.reset()
     
     class OperationSelector(QWidget):
         def __init__(self, run_record: RunRecord):

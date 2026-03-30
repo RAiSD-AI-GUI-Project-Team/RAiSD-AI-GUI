@@ -23,6 +23,7 @@ from gui.components.run import ProcessIndicator, IndicatorState
 
 
 class ViewTab(RunPageTab):
+    navigate_next = Signal()
     run_started = Signal(int)  # Number of processes
     run_ended = Signal(bool)  # Run successful
 
@@ -33,6 +34,9 @@ class ViewTab(RunPageTab):
         self.confirm_stop_execution_dialog = None
         self.execution_still_running_dialog = None
         super().__init__()
+
+        self.run_started.connect(self._run_started)
+        self.run_ended.connect(self._run_ended)
 
     def _setup_widget(self) -> QWidget:
         widget = QWidget()
@@ -86,8 +90,12 @@ class ViewTab(RunPageTab):
         self.results_button = QPushButton("Results")
         self.results_button.setEnabled(False)
         self.results_button.setProperty("highlight", "false")
+        self.results_button.clicked.connect(self.navigate_next.emit)
 
         return NavigationButtonsHolder(left_button=self.stop_run_button, middle_button=self.toggle_console_button, right_button=self.results_button)
+
+    def refresh(self) -> None:
+        pass
 
     def _stop_run_button_clicked(self) -> None:
         self._stop_execution()
@@ -115,18 +123,30 @@ class ViewTab(RunPageTab):
         self._start_execution()
 
     @Slot(int)
-    def run_start(self, number_of_processes: int) -> None:
+    def _run_started(self, number_of_processes: int) -> None:
+        self.results_button.setEnabled(False)
+        self.results_button.setProperty("highlight", "false")
+        self.results_button.style().unpolish(self.results_button)
+        self.results_button.style().polish(self.results_button)
+
         self.setup_execution_indicators(number_of_processes)
         self.stop_run_button.setEnabled(True)
+
         self.stop_run_button.setProperty("highlight", "true")
         self.stop_run_button.style().unpolish(self.stop_run_button)
         self.stop_run_button.style().polish(self.stop_run_button)
 
     @Slot(bool)
-    def run_end(self, run_successful: bool) -> None:
+    def _run_ended(self, run_successful: bool) -> None:
         """
         Update the execution buttons and close an open confirm dialog.
         """
+        if run_successful:
+            self.results_button.setText("Results")
+            self.results_button.setEnabled(True)
+            self.results_button.setProperty("highlight", "true")
+            self.results_button.style().unpolish(self.results_button)
+            self.results_button.style().polish(self.results_button)
         self.stop_run_button.setEnabled(False)
         self.stop_run_button.setProperty("highlight", "false")
         self.stop_run_button.style().unpolish(self.stop_run_button)

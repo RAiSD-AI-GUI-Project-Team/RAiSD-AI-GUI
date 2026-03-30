@@ -21,6 +21,7 @@ class ParameterTab(RunPageTab):
     A tab to input parameters for the run, and to 
     navigate to the next step if the parameters are valid.
     """
+    navigate_back = Signal()
     navigate_next = Signal()
 
     def __init__(self, run_record: RunRecord):
@@ -54,6 +55,7 @@ class ParameterTab(RunPageTab):
 
     def _setup_navigation_buttons(self) -> NavigationButtonsHolder:
         self.back_button = QPushButton("Back")
+        self.back_button.clicked.connect(self.navigate_back.emit)
         self.next_button = QPushButton("Next")
         self.next_button.setObjectName("next_button")
         self.next_button.clicked.connect(self._next_button_clicked)
@@ -68,6 +70,10 @@ class ParameterTab(RunPageTab):
                 self._connect_parameter_to_update_next_button_state(parameter)
                 
         return NavigationButtonsHolder(left_button=self.back_button, right_button=self.next_button)
+
+    def refresh(self) -> None:
+        self.reset_touched()
+        self.update_next_button_state()
 
     def _connect_parameter_to_update_next_button_state(self, parameter: Parameter) -> None:
         """

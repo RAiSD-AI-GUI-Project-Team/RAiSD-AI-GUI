@@ -29,6 +29,7 @@ class ConfirmationTab(RunPageTab):
     A tab to confirm the parameters and operations 
     selected by the user, and to start the run.
     """
+    navigate_back = Signal()
     start_run = Signal()
 
     def __init__(self, run_record: RunRecord):
@@ -88,9 +89,14 @@ class ConfirmationTab(RunPageTab):
 
     def _setup_navigation_buttons(self) -> NavigationButtonsHolder:
         self.edit_button = QPushButton("Edit")
+        self.edit_button.clicked.connect(self.navigate_back.emit)
         self.run_button = QPushButton("Run")
         self.run_button.clicked.connect(self._run_button_clicked)
+
         return NavigationButtonsHolder(left_button=self.edit_button, right_button=self.run_button)
+
+    def refresh(self) -> None:
+        self.update_commands()
 
     def update_commands(self) -> None:
         """
@@ -131,12 +137,12 @@ class ConfirmationTab(RunPageTab):
         pass
 
     @Slot()
-    def run_start(self) -> None:
+    def run_started(self) -> None:
         self.run_button.setEnabled(False)
         self.run_button.setText("Running")
 
-    @Slot(bool)
-    def run_end(self, run_successful: bool) -> None:
+    @Slot()
+    def run_ended(self) -> None:
         self.run_button.setEnabled(True)
-        self.run_button.setText("Submit")
+        self.run_button.setText("Run")
 
