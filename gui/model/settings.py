@@ -35,20 +35,41 @@ class Settings(QObject):
     config_path_changed = Signal(str)
     settings_changed = Signal()
 
-    def __init__(self):
+    def __init__(
+            self,
+            workspace_path: QDir,
+            executable_file_path: QFileInfo,
+            environment_manager: EnvironmentManager,
+            environment_name: str,
+            config_path: str
+            ):
         """
         Initialize the `Settings` class.
         """
         super().__init__()
+        
+        self._workspace_path = workspace_path
+        self._executable_file_path = executable_file_path
+        self._environment_manager = environment_manager
+        self._environment_name = environment_name
+        self._config_path = config_path
 
+    @classmethod
+    def from_yaml(cls, file_path: str) -> "Settings":
         workspace_directory = "workspace"
         QDir().mkdir(workspace_directory)
-
-        self._workspace_path = QDir(workspace_directory)
-        self._executable_file_path = QFileInfo("RAiSD-AI")
-        self._environment_manager = EnvironmentManager.MICROMAMBA
-        self._environment_name = "raisd-ai"
-        self._config_path = "gui/config.yaml"
+        workspace_path = QDir(workspace_directory)
+        executable_file_path = QFileInfo("RAiSD-AI")
+        environment_manager = EnvironmentManager.MICROMAMBA
+        environment_name = "raisd-ai"
+        config_path = "gui/config.yaml"
+        return cls(
+            workspace_path, 
+            executable_file_path,
+            environment_manager,
+            environment_name,
+            config_path,
+            )
 
     @property
     def workspace_path(self) -> QDir:
@@ -189,4 +210,4 @@ class Settings(QObject):
             print(f"Error setting workspace: {e}")
 
 # create a global singleton instance
-app_settings = Settings()
+app_settings = Settings.from_yaml("settings.yaml")
