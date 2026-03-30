@@ -14,9 +14,9 @@ from PySide6.QtWidgets import (
 
 from .run_page_tab import RunPageTab, NavigationButtonsHolder
 from gui.model.run_record import RunRecord
-from gui.widgets.operation import OperationTreeWidget
-from gui.widgets.resizable_stacked_widget import ResizableStackedWidget
-from gui.widgets.parameter import ParameterWidget
+from gui.components.operation import OperationTreeWidget
+from gui.components.resizable_stacked_widget import ResizableStackedWidget
+from gui.components.parameter import ParameterWidget
 
 
 class OperationTab(RunPageTab):

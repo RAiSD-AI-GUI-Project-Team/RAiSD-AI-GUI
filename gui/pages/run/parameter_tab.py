@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 from .run_page_tab import RunPageTab, NavigationButtonsHolder
 from gui.model.parameter import MultiParameter, OptionalParameter, Parameter
 from gui.model.run_record import RunRecord
-from gui.widgets.parameter import ParameterForm
+from gui.components.parameter import ParameterForm
 
 
 class ParameterTab(RunPageTab):

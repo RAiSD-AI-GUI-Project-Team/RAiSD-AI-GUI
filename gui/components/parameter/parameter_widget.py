@@ -40,7 +40,7 @@ from gui.model.parameter import (
     StringPairListParameter,
     FileParameter,
 )
-from gui.widgets.collapsible import Collapsible
+from gui.components.collapsible import Collapsible
 
 
 class AbstractQWidgetMeta(type(ABC), type(QWidget)):

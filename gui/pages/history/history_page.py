@@ -13,8 +13,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Slot, Qt
 
 from ..page import Page
-from gui.widgets.history import HistoryListWidget
-from gui.widgets.results import ResultsWidget
+from gui.components.history import HistoryListWidget
+from gui.components.results import ResultsWidget
 from gui.model.settings import app_settings
 from gui.model.run_record import RunRecord
 from gui.model.history_record import HistoryRecord

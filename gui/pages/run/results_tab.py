@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
 
 from .run_page_tab import RunPageTab, NavigationButtonsHolder
 from gui.model.run_record import RunRecord
-from gui.widgets.results import ResultsWidget
+from gui.components.results import ResultsWidget
 
 
 class ResultsTab(RunPageTab):

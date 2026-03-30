@@ -18,8 +18,8 @@ from PySide6.QtWidgets import (
 from .run_page_tab import RunPageTab, NavigationButtonsHolder
 from gui.model.run_record import RunRecord
 from gui.execution.command_executor import CommandExecutor
-from gui.widgets.dialog import ConfirmDialog, ErrorDialog
-from gui.widgets.run import ProcessIndicator, IndicatorState
+from gui.components.dialog import ConfirmDialog, ErrorDialog
+from gui.components.run import ProcessIndicator, IndicatorState
 
 
 class ViewTab(RunPageTab):

@@ -20,8 +20,8 @@ from PySide6.QtGui import (
 from .run_page_tab import RunPageTab, NavigationButtonsHolder
 from gui.model.settings import app_settings
 from gui.model.run_record import RunRecord
-from gui.widgets.parameter import  ParameterForm
-from gui.widgets.dialog import  ErrorDialog
+from gui.components.parameter import  ParameterForm
+from gui.components.dialog import  ErrorDialog
 
 
 class ConfirmationTab(RunPageTab):
