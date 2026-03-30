@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
 
 from ..page import Page
 from ..run import (
+    RunPageTab,
     OperationTab,
     ParameterTab,
     ConfirmationTab,
@@ -65,6 +66,14 @@ class RunPage(Page):
         layout.addWidget(stacked_step_widget, 1)
         self._setup_stacked_step_widget(self.stacked_step_widget_layout)
 
+        self.button_tab_pairs = {
+            self.operation_selection_button: self.operation_selection_widget,
+            self.parameter_input_button: self.parameter_input_widget,
+            self.parameter_confirmation_button: self.parameter_confirmation_widget,
+            self.execution_view_button: self.run_view_widget,
+            self.results_button: self.run_results_widget,
+        }
+
     def update_ui(self) -> None:
         """
         Update the UI elements of the page when it is shown.
@@ -98,36 +107,7 @@ class RunPage(Page):
         self.results_button = QPushButton("Results")
         self.results_button.clicked.connect(self._switch_to_run_results_widget)
         self.results_button.setEnabled(False)
-        self.results_button.setProperty("highlight", "false")
-        self.results_button.style().unpolish(self.results_button)
-        self.results_button.style().polish(self.results_button)
         layout.addWidget(self.results_button)
-
-        self._step_buttons = [
-            self.operation_selection_button,
-            self.parameter_input_button,
-            self.parameter_confirmation_button,
-            self.execution_view_button,
-            self.results_button,
-        ]
-
-    def _set_active_step(self, active_index: int) -> None:
-        """
-        Update the step_role dynamic property on each step button
-        and force Qt to re-evaluate stylesheets.
-        """
-        for i, button in enumerate(self._step_buttons):
-            if i < active_index:
-                role = "past_step"
-                button.setEnabled(True)
-            elif i == active_index:
-                role = "active"
-            else:
-                role = "default"
-                button.setEnabled(False)
-            button.setProperty("step_role", role)
-            button.style().unpolish(button) #Required to apply styling dynamically
-            button.style().polish(button)
 
     def _setup_stacked_step_widget(self, layout: QStackedLayout):
         """
@@ -170,34 +150,48 @@ class RunPage(Page):
         self.run_results_widget.edit_run_button.clicked.connect(self._switch_to_operation_selection_widget)
         layout.addWidget(self.run_results_widget)
 
+    def _set_active_tab(self, active_tab: RunPageTab) -> None:
+        """
+        Update the active tab. 
+        Both the button styles and the displayed tab are updated.
+        """
+        for i, (button, tab) in enumerate(self.button_tab_pairs.items()):
+            if tab == active_tab:
+                role = "active"
+                self.stacked_step_widget_layout.setCurrentWidget(tab)
+            elif i < list(self.button_tab_pairs.values()).index(active_tab):
+                role = "past_step"
+                button.setEnabled(True)
+            else:
+                role = "default"
+                button.setEnabled(False)
+            button.setProperty("step_role", role)
+            button.style().unpolish(button) # Required to apply styling dynamically
+            button.style().polish(button)
+
     # ---------- step button bar switch methods ----------
     @Slot()
     def _switch_to_operation_selection_widget(self) -> None:
         self.parameter_input_widget.reset_touched()
-        self.stacked_step_widget_layout.setCurrentWidget(self.operation_selection_widget)
-        self._set_active_step(0)
+        self._set_active_tab(self.operation_selection_widget)
 
     @Slot()
     def _switch_to_parameter_input_widget(self) -> None:
-        self.stacked_step_widget_layout.setCurrentWidget(self.parameter_input_widget)
-        self._set_active_step(1)
         self.parameter_input_widget.update_next_button_state()
+        self._set_active_tab(self.parameter_input_widget)
 
     @Slot()
     def _switch_to_parameter_confirmation_widget(self) -> None:
         self.parameter_confirmation_widget.update_commands()
-        self.stacked_step_widget_layout.setCurrentWidget(self.parameter_confirmation_widget)
-        self._set_active_step(2)
+        self._set_active_tab(self.parameter_confirmation_widget)
 
     @Slot()
     def _switch_to_run_view_widget(self) -> None:
-        self.stacked_step_widget_layout.setCurrentWidget(self.run_view_widget)
-        self._set_active_step(3)
+        self._set_active_tab(self.run_view_widget)
 
     @Slot()
     def _switch_to_run_results_widget(self) -> None:
-        self.stacked_step_widget_layout.setCurrentWidget(self.run_results_widget)
-        self._set_active_step(4)
+        self._set_active_tab(self.run_results_widget)
 
     # ---------- Handle signals ----------
     @Slot()
