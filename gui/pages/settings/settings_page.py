@@ -87,11 +87,11 @@ class SettingsPage(Page):
 
     def _set_workspace_label(self) -> None:
         """Set the workspace label with the workspace folder path."""
-        self.workspace_label.setText(f"Current Workspace: '{app_settings.workspace_path}'")
+        self.workspace_label.setText(f"Current Workspace: '{app_settings.workspace_path.absolutePath()}'")
 
     def _set_executable_label(self) -> None:
         """Set the executable label with the executable file path."""
-        self.executable_label.setText(f"Current Executable: '{app_settings.executable_file_path}'")
+        self.executable_label.setText(f"Current Executable: '{app_settings.executable_file_path.absoluteFilePath()}'")
 
     def _set_environment_manager_label(self) -> None:
         """Set the environment manager label with the environment manager value."""
