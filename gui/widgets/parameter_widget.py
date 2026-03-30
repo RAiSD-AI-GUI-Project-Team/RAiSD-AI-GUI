@@ -106,9 +106,12 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         """
         if not self._touched:
             return
-        if valid and self._editable:
+        if not self._editable:
+            return
+
+        if valid:
             widget.setProperty("valid", "true")
-        elif self._editable:
+        else:
             widget.setProperty("valid", "false")
         widget.style().unpolish(widget)
         widget.style().polish(widget)
