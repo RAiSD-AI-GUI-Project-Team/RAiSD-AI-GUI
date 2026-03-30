@@ -11,16 +11,17 @@ from PySide6.QtWidgets import (
     QPushButton, QStyleOption, QStyle,
 )
 
+from .page import Page
 from gui.model.settings import EnvironmentManager, app_settings
 
 
-class SettingsWidget(QWidget):
+class SettingsPage(Page):
     """
-    The settings widget of the RAiSD-AI GUI application.
+    The settings page of the RAiSD-AI GUI application.
     """
     def __init__(self):
         """
-        Initialize the `SettingsWidget`.
+        Initialize the `SettingsPage`.
         """
         super().__init__()
         self._setup_ui()
@@ -81,6 +82,12 @@ class SettingsWidget(QWidget):
         layout.addSpacing(20)
         layout.addWidget(container_widget)
         layout.addStretch()
+
+    def update_ui(self) -> None:
+        """
+        Update the UI elements of the page when it is shown.
+        """
+        pass
 
     def _update_workspace_label(self, path: QDir) -> None:
         """Update the workspace label with the new workspace folder path."""

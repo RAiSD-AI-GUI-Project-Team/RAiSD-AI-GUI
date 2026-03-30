@@ -29,6 +29,7 @@ from PySide6.QtGui import (
 
 import json
 
+from .page import Page
 from gui.model.parameter import MultiParameter, OptionalParameter, Parameter
 from gui.model.settings import app_settings
 from gui.model.run_record import RunRecord
@@ -41,9 +42,9 @@ from gui.widgets.dialog import ConfirmDialog, ErrorDialog
 from gui.widgets.results import ResultsWidget
 from gui.widgets.run import ProcessIndicator, IndicatorState
 
-class RunWidget(QWidget):
+class RunPage(Page):
     """
-    A widget for all steps of running RAiSD-AI.
+    The page to display all steps of running the RAiSD-AI-GUI application.
     """
 
     start_run = Signal()
@@ -53,7 +54,7 @@ class RunWidget(QWidget):
 
     def __init__(self, run_record: RunRecord, command_executor: CommandExecutor):
         """
-        Initialize a `RunWidget` object.
+        Initialize a `RunPage` object.
         """
         super().__init__()
         self._run_record = run_record
@@ -82,6 +83,12 @@ class RunWidget(QWidget):
         self.stacked_step_widget_layout = QStackedLayout(stacked_step_widget)
         layout.addWidget(stacked_step_widget, 1)
         self._setup_stacked_step_widget(self.stacked_step_widget_layout)
+
+    def update_ui(self) -> None:
+        """
+        Update the UI elements of the page when it is shown.
+        """
+        pass
 
     def _setup_step_button_bar(self, layout: QHBoxLayout):
         """

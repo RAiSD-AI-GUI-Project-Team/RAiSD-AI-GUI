@@ -19,10 +19,12 @@ from PySide6.QtGui import (
 from gui.model.settings import app_settings
 from gui.model.run_record import RunRecord
 from gui.execution.command_executor import CommandExecutor
-from gui.pages.run_widget import RunWidget
-from gui.pages.history_widget import HistoryWidget
-from gui.pages.settings_widget import SettingsWidget
- 
+from gui.pages import (
+    RunPage,
+    HistoryPage,
+    SettingsPage
+)
+
 class MainWindow(QMainWindow):
     """
     The main window of the RAiSD-AI GUI application.
@@ -116,29 +118,29 @@ class MainWindow(QMainWindow):
             button.style().polish(button)
 
     def _setup_main_widget(self, layout: QStackedLayout):
-        self.run_widget = RunWidget(self._run_record, self.command_executor)
-        self.history_widget = HistoryWidget()
-        self.settings_widget = SettingsWidget()
-        self.run_widget.run_saved.connect(self.history_widget.add_completed_run)
+        self.run_page = RunPage(self._run_record, self.command_executor)
+        self.history_page = HistoryPage()
+        self.settings_page = SettingsPage()
+        self.run_page.run_saved.connect(self.history_page.add_completed_run)
 
-        layout.addWidget(self.run_widget)
-        layout.addWidget(self.history_widget)
-        layout.addWidget(self.settings_widget)
+        layout.addWidget(self.run_page)
+        layout.addWidget(self.history_page)
+        layout.addWidget(self.settings_page)
 
     @Slot()
     def _run_button_clicked(self) -> None:
-        self.main_widget_layout.setCurrentWidget(self.run_widget)
+        self.main_widget_layout.setCurrentWidget(self.run_page)
         self._set_active_view(0)
 
     @Slot()
     def _history_button_clicked(self) -> None:
-        self.history_widget.update_history_time()
-        self.main_widget_layout.setCurrentWidget(self.history_widget)
+        self.history_page.update_history_time()
+        self.main_widget_layout.setCurrentWidget(self.history_page)
         self._set_active_view(1)
 
     @Slot()
     def _settings_button_clicked(self) -> None:
-        self.main_widget_layout.setCurrentWidget(self.settings_widget)
+        self.main_widget_layout.setCurrentWidget(self.settings_page)
         self._set_active_view(2)
 
     def _set_workspace_path_title(self, new_workspace: QDir, max_len: int = 30) -> None:
