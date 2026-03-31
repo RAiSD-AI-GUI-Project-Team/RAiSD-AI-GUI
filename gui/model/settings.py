@@ -1,4 +1,6 @@
 from enum import Enum
+from yaml import load, Loader, dump
+from typing import Literal
 
 from PySide6.QtCore import (
     QObject, 
@@ -35,6 +37,8 @@ class Settings(QObject):
     config_path_changed = Signal(str)
     settings_changed = Signal()
 
+    environment_managers = Literal["micromamba", "conda"]
+
     def __init__(
             self,
             workspace_path: QDir,
@@ -56,19 +60,102 @@ class Settings(QObject):
 
     @classmethod
     def from_yaml(cls, file_path: str) -> "Settings":
-        workspace_directory = "workspace"
-        QDir().mkdir(workspace_directory)
-        workspace_path = QDir(workspace_directory)
-        executable_file_path = QFileInfo("RAiSD-AI")
-        environment_manager = EnvironmentManager.MICROMAMBA
-        environment_name = "raisd-ai"
-        config_path = "gui/config.yaml"
+        try: 
+            with open(file_path) as f:
+                settings_text = f.read() or ""
+            settings_obj = load(settings_text, Loader=Loader) or {}
+        except FileNotFoundError:
+            settings_obj = {}
+
+        # Workspace
+        if "workspace" in settings_obj:
+            workspace_path = settings_obj["workspace"]
+            if not isinstance(workspace_path, str):
+                raise ValueError(
+                    f"Incorrect type for workspace: {workspace_path} "
+                    + "Expected string."
+                )
+            workspace = QDir(workspace_path)
+            if not workspace.exists():
+                raise ValueError(
+                    f"Incorrect folder path for workspace: {workspace_path} "
+                    + "This workspace does not exist."
+                )
+        else:
+            QDir().mkdir("workspace")
+            workspace = QDir("workspace")
+            settings_obj["workspace"] = workspace.absolutePath()
+
+        # Executable
+        if "executable" in settings_obj:
+            executable_file_path = settings_obj["executable"]
+            if not isinstance(executable_file_path, str):
+                raise ValueError(
+                    f"Incorrect type for executable path: {executable_file_path} "
+                    + "Expected string."
+                )
+            file = QFileInfo(executable_file_path)
+            if not file.exists():
+                raise ValueError(
+                    f"Incorrect filepath for executable: {executable_file_path} "
+                    + "This file does not exist."
+                )
+        else:
+            file = QFileInfo("RAiSD-AI")
+            settings_obj["executable"] = file.absoluteFilePath()
+
+        # Environment manager
+        if "environment_manager" in settings_obj:
+            environment_manager = settings_obj["environment_manager"]
+            if not isinstance(environment_manager, str):
+                raise ValueError(
+                    f"Incorrect type for environment manager: {environment_manager} "
+                    + "Expected string."
+                )
+            
+            if environment_manager not in cls.environment_managers.__args__:
+                raise ValueError(
+                    f"Incorrect environment manager: {environment_manager}."
+                    + f"Must be one of: {", ".join([str(x) for x in cls.environment_managers])}"
+                )
+        else:
+            environment_manager = "micromamba"
+
+        # Environment name
+        if "environment_name" in settings_obj:
+            environment_name = settings_obj["environment_name"]
+            if not isinstance(environment_name, str):
+                raise ValueError(
+                    f"Incorrect environment name: {environment_name}"
+                    + "Expected string."
+                )
+        else:
+            environment_name = ""
+
+        if "config_file" in settings_obj:
+            config = settings_obj["config_file"]
+            if not isinstance(config, str):
+                raise ValueError(
+                    f"Incorrect type for executable path: {config} "
+                    + "Expected string."
+                )
+            config_file = QFileInfo(config)
+            if not config_file.exists():
+                raise ValueError(
+                    f"Incorrect filepath for executable: {config} "
+                    + "This file does not exist."
+                )
+        else:
+            config_file = QFileInfo("gui/config.yaml")
+            settings_obj["executable"] = config_file.absoluteFilePath()
+
+
         return cls(
-            workspace_path, 
-            executable_file_path,
+            workspace, 
+            file,
             environment_manager,
             environment_name,
-            config_path,
+            config_file,
             )
 
     @property
@@ -210,4 +297,4 @@ class Settings(QObject):
             print(f"Error setting workspace: {e}")
 
 # create a global singleton instance
-app_settings = Settings.from_yaml("settings.yaml")
+app_settings = Settings.from_yaml("gui/settings.yaml")
