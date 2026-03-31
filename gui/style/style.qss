@@ -230,6 +230,18 @@ QWidget#label_body{
     font-weight: 300;
 }
 
+QLabel#parameter_hint {
+    font-size: $font-size - 3px;
+}
+
+QLabel#parameter_hint[valid="true"] {
+    color: green;
+}
+
+QLabel#parameter_hint[valid="false"] {
+    color: red;
+}
+
 QCheckBox::indicator {
     width: 20px;
     height: 20px;

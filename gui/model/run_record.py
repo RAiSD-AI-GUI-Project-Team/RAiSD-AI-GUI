@@ -20,6 +20,13 @@ from gui.model.operation import Operation
 from gui.model.operation_tree import OperationTree
 from gui.model.parameter_group import ParameterGroup
 from gui.model.history_record import HistoryRecord
+from gui.model.constraint import (
+    Constraint,
+    IntervalConstraint,
+    EvenConstraint,
+    MaxLengthConstraint,
+    RegexConstraint,
+)
 from gui.model.parameter import (
     Parameter,
     OptionalParameter,
@@ -96,6 +103,7 @@ class RunRecord(QObject):
         """
 
         id_to_parameter: dict[str, Parameter[Any]] = {}
+        parameter_to_constraint_objs: dict[Parameter[Any], list[dict]] = {}
         parameter_to_condition_objs: dict[Parameter[Any], list[dict]] = {}
 
         def parse_file_structure(
@@ -388,29 +396,12 @@ class RunRecord(QObject):
                             + f"{default_value}. Expected int."
                         )
 
-                    lower_bound = obj.get("min", None)
-                    if (lower_bound is not None
-                        and not isinstance(lower_bound, int)):
-                        raise ValueError(
-                            f"Invalid minimum for int parameter {name}: "
-                            + f"{lower_bound}. Expected int or null."
-                        )
-                    upper_bound = obj.get("max", None)
-                    if (upper_bound is not None
-                        and not isinstance(upper_bound, int)):
-                        raise ValueError(
-                            f"Invalid maximum for int parameter {name}: "
-                            + f"{upper_bound}. Expected int or null."
-                        )
-
                     parameter = IntParameter(
                         name,
                         description,
                         flag,
                         parameter_operations,
                         default_value,
-                        lower_bound=lower_bound,
-                        upper_bound=upper_bound
                     )
                 case "float":
                     if "default" not in obj:
@@ -426,31 +417,12 @@ class RunRecord(QObject):
                             + f": {default_value}. Expected float."
                         )
 
-                    lower_bound = obj.get("min", None)
-                    if (lower_bound is not None
-                        and not isinstance(lower_bound, int)
-                        and not isinstance(lower_bound, float)):
-                        raise ValueError(
-                            f"Invalid minimum for float parameter {name}: "
-                            + f"{lower_bound}. Expected float or null."
-                        )
-                    upper_bound = obj.get("max", None)
-                    if (upper_bound is not None
-                        and not isinstance(upper_bound, int)
-                        and not isinstance(upper_bound, float)):
-                        raise ValueError(
-                            f"Invalid maximum for float parameter {name}: "
-                            + f"{upper_bound}. Expected float or null."
-                        )
-
                     parameter = FloatParameter(
                         name,
                         description,
                         flag,
                         parameter_operations,
                         default_value,
-                        lower_bound=lower_bound,
-                        upper_bound=upper_bound
                     )
                 case "bool":
                     if "default" not in obj:
@@ -530,25 +502,12 @@ class RunRecord(QObject):
                             + f"{max_length}. Expected int or null."
                         )
 
-                    pattern = obj.get("pattern", None)
-                    if pattern is None:
-                        compiled_pattern = None
-                    elif isinstance(pattern, str):
-                        compiled_pattern = compile(pattern)
-                    else:
-                        raise ValueError(
-                            f"Invalid pattern for string parameter {name}: "
-                            + f"{pattern}. Expected string or null."
-                        )
-
                     parameter = StringParameter(
                         name,
                         description,
                         flag,
                         parameter_operations,
                         default_value,
-                        max_length,
-                        compiled_pattern,
                     )
                 case "string pair list" | "string pairs":
                     default_value_list = obj.get("default", []) or []
@@ -780,6 +739,14 @@ class RunRecord(QObject):
                         + f"{parameter_type}."
                     )
 
+            constraint_objs = obj.get("constraints", []) or []
+            if not isinstance(constraint_objs, list):
+                raise ValueError(
+                    f"Invalid constraint list for parameter {name}: "
+                    + f"{constraint_objs}. Expected a list."
+                )
+            parameter_to_constraint_objs[parameter] = constraint_objs
+
             condition_objs = obj.get("conditions", [])
             if not isinstance(condition_objs, list):
                 raise ValueError(
@@ -789,6 +756,98 @@ class RunRecord(QObject):
             parameter_to_condition_objs[parameter] = condition_objs
 
             return parameter
+
+        def parse_constraint(obj: dict) -> Constraint:
+            if "type" not in obj:
+                raise ValueError("Missing type for constraint.")
+            constraint_type = obj["type"]
+
+            match constraint_type:
+                case "interval":
+                    lower_bound = obj.get("min")
+                    if (lower_bound is not None
+                        and not isinstance(lower_bound, (int, float))):
+                        raise ValueError(
+                            "Invalid min for interval constraint: "
+                            + f"{lower_bound}. Expected int or float."
+                        )
+
+                    lower_bound_inclusive = obj.get("min_inclusive", True)
+                    if not isinstance(lower_bound_inclusive, bool):
+                        raise ValueError(
+                            "Invalid value for min_inclusive in interval "
+                            + f"constraint: {lower_bound_inclusive}. Expected "
+                            + "a bool."
+                        )
+
+                    upper_bound = obj.get("max")
+                    if (upper_bound is not None
+                        and not isinstance(upper_bound, (int, float))):
+                        raise ValueError(
+                            "Invalid max for interval constraint: "
+                            + f"{upper_bound}. Expected int or float."
+                        )
+
+                    upper_bound_inclusive = obj.get("max_inclusive", True)
+                    if not isinstance(upper_bound_inclusive, bool):
+                        raise ValueError(
+                            "Invalid value for max_inclusive in interval "
+                            + f"constraint: {upper_bound_inclusive}. Expected "
+                            + "a bool."
+                        )
+
+                    return IntervalConstraint(
+                        lower_bound=lower_bound,
+                        lower_bound_inclusive=lower_bound_inclusive,
+                        upper_bound=upper_bound,
+                        upper_bound_inclusive=upper_bound_inclusive,
+                    )
+                case "even":
+                    return EvenConstraint()
+                case "max length":
+                    if "length" not in obj:
+                        raise ValueError(
+                            "Missing length for max length constraint."
+                        )
+                    max_length = obj["length"]
+                    if not isinstance(max_length, int):
+                        raise ValueError(
+                            "Invalid length for max length constraint: "
+                            + f"{max_length}. Expected an int."
+                        )
+
+                    return MaxLengthConstraint(
+                        max_length=max_length,
+                    )
+                case "regex":
+                    if "pattern" not in obj:
+                        raise ValueError(
+                            "Missing pattern for regex constraint."
+                        )
+                    pattern = obj["pattern"]
+                    if not isinstance(pattern, str):
+                        raise ValueError(
+                            f"Invalid pattern for regex constraint: {pattern}."
+                            + " Expected a string."
+                        )
+
+                    if "hint" not in obj:
+                        raise ValueError("Missing hint for regex constraint.")
+                    hint = obj["hint"]
+                    if not isinstance(hint, str):
+                        raise ValueError(
+                            f"Invalid hint for regex constraint: {hint}. "
+                            + "Expected a string."
+                        )
+
+                    return RegexConstraint(
+                        pattern=compile(pattern),
+                        hint=hint,
+                    )
+                case _:
+                    raise ValueError(
+                        f"Invalid constraint type {constraint_type}."
+                    )
 
         def parse_parameter_group(obj: dict) -> ParameterGroup:
             name = obj.get("name", "") or ""
@@ -1037,6 +1096,7 @@ class RunRecord(QObject):
                 f"Invalid run ID parameter: {run_id_parameter}. "
                 + "Expected string parameter."
             )
+        id_to_parameter["run-id"] = run_id_parameter
 
         parameter_groups = []
         for parameter_group_obj in config_obj["parameter_groups"]:
@@ -1046,12 +1106,22 @@ class RunRecord(QObject):
 
         result = cls(run_id_parameter, operation_trees, parameter_groups)
 
-        parameter_conditions: dict[Parameter[Any], list[Dependency.Condition]] = {}
+        for param in id_to_parameter.values():
+            for constraint_obj in parameter_to_constraint_objs[param]:
+                if not isinstance(constraint_obj, dict):
+                    raise ValueError(
+                        f"Invalid constraint for parameter {param}: "
+                        + f"{constraint_obj}. Expected an object."
+                    )
+
+                param.add_constraint(
+                    parse_constraint(constraint_obj),
+                )
 
         for param in id_to_parameter.values():
-            parameter_conditions[param] = []
+            conditions: list[Dependency.Condition] = []
             for condition_obj in parameter_to_condition_objs[param]:
-                parameter_conditions[param].append(
+                conditions.append(
                     parse_condition(condition_obj)
                 )
 
@@ -1060,12 +1130,12 @@ class RunRecord(QObject):
                 single_operation_conditions.append(
                     operation_conditions[operation_id]
                 )
-            parameter_conditions[param].append(
+            conditions.append(
                 OrCondition(single_operation_conditions)
             )
 
             Dependency(
-                AndCondition(parameter_conditions[param]),
+                AndCondition(conditions),
                 Parameter.EnabledEffect(param),
                 result,
             )
