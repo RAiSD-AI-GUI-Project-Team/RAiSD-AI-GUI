@@ -6,6 +6,7 @@ from gui.model.parameter import ParameterGroup
 from .parameter_widget import ParameterWidget
 from gui.components.collapsible import Collapsible
 
+
 class ParameterFormSection(QWidget):
     """
     A section of the parameter form.
