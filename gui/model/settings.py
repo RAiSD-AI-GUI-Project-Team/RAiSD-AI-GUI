@@ -58,6 +58,11 @@ class Settings(QObject):
         self._environment_manager = environment_manager
         self._environment_name = environment_name
         self._config_path = config_path
+    
+    def initialize(self) -> None:
+        self.from_yaml(self.settings_file_path)
+        self.complete_setup()
+
     def from_yaml(self, file_path: str) -> None:
         try: 
             with open(file_path) as f:
@@ -140,6 +145,16 @@ class Settings(QObject):
                     + "This file does not exist."
                 )
             self._config_path = config_file
+
+    def complete_setup(self) -> None:
+        dialog = self.SetupDialog(
+            workspace=self._workspace_path is None,
+            executable_file=self._executable_file_path is None,
+            environment_manager=self._environment_manager is None,
+            environment_name=self._environment_name is None,
+            config_file=self._config_path is None
+            )
+        dialog.exec()
 
     @property
     def workspace_path(self) -> QDir:

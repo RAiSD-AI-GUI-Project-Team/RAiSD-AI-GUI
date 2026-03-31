@@ -32,6 +32,7 @@ class MainWindow(QMainWindow):
         Initialize the main window.
         """
         super().__init__()
+        app_settings.initialize()
         app_settings.settings_changed.connect(self._init_main_window)
         self._init_main_window()
 
