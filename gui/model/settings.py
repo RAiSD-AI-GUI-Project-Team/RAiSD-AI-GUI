@@ -241,7 +241,16 @@ class Settings(QObject):
         :type value: QDir
         """
         if self._workspace_path != value:
+            try:
+                with open(self.settings_file_path) as f:
+                    settings_text = f.read() or ""
+                    settings_obj = load(settings_text, Loader=Loader) or {}            
+            except:
+                settings_obj = {}
             self._workspace_path = value
+            settings_obj["workspace"] = value.absolutePath()
+            with open(self.settings_file_path, "w") as f:
+                dump(settings_obj, f)
             self.workspace_path_changed.emit(value)
             self.settings_changed.emit()
 
@@ -265,8 +274,17 @@ class Settings(QObject):
         :param value: The new executable file path.
         :type value: QFileInfo
         """
-        if self.executable_file_path != value:
-            self.executable_file_path = value
+        if self._executable_file_path != value:
+            try:
+                with open(self.settings_file_path) as f:
+                    settings_text = f.read() or ""
+                    settings_obj = load(settings_text, Loader=Loader) or {}            
+            except:
+                settings_obj = {}
+            self._executable_file_path = value
+            settings_obj["executable"] = value.absolutePath()
+            with open(self.settings_file_path, "w") as f:
+                dump(settings_obj, f)
             self.executable_file_path_changed.emit(value)
             self.settings_changed.emit()
 
@@ -291,7 +309,16 @@ class Settings(QObject):
         :type value: EnvironmentManager
         """
         if self._environment_manager != value:
+            try:
+                with open(self.settings_file_path) as f:
+                    settings_text = f.read() or ""
+                    settings_obj = load(settings_text, Loader=Loader) or {}            
+            except:
+                settings_obj = {}
             self._environment_manager = value
+            settings_obj["environment_manager"] = value
+            with open(self.settings_file_path, "w") as f:
+                dump(settings_obj, f)
             self.environment_manager_changed.emit(value)
             self.settings_changed.emit()
 
@@ -316,7 +343,16 @@ class Settings(QObject):
         :type value: str
         """
         if self._environment_name != value:
+            try:
+                with open(self.settings_file_path) as f:
+                    settings_text = f.read() or ""
+                    settings_obj = load(settings_text, Loader=Loader) or {}            
+            except:
+                settings_obj = {}
             self._environment_name = value
+            settings_obj["environment_name"] = value
+            with open(self.settings_file_path, "w") as f:
+                dump(settings_obj, f)
             self.environment_name_changed.emit(value)
             self.settings_changed.emit()
 
@@ -341,7 +377,16 @@ class Settings(QObject):
         :type value: str
         """
         if self._config_path != value:
+            try:
+                with open(self.settings_file_path) as f:
+                    settings_text = f.read() or ""
+                    settings_obj = load(settings_text, Loader=Loader) or {}            
+            except:
+                settings_obj = {}
             self._config_path = value
+            settings_obj["config_file"] = value.absolutePath()
+            with open(self.settings_file_path, "w") as f:
+                dump(settings_obj, f)
             self.config_path_changed.emit(value)
             self.settings_changed.emit()
 
