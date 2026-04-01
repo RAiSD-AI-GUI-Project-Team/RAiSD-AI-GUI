@@ -91,7 +91,9 @@ class Settings(QObject):
     
     def initialize(self) -> None:
         self.from_yaml(self.settings_file_path)
-        self.complete_setup()
+        if not self._workspace_path:
+            dialog = self.SetupDialog()
+            dialog.exec()
 
     def from_yaml(self, file_path: str) -> None:
         try: 
@@ -99,7 +101,7 @@ class Settings(QObject):
                 settings_text = f.read() or ""
             settings_obj = load(settings_text, Loader=Loader) or {}
         except FileNotFoundError:
-            return
+            settings_obj = {}
 
         # Workspace
         if "workspace" in settings_obj:
@@ -133,6 +135,8 @@ class Settings(QObject):
                     + "This file does not exist."
                 )
             self._executable_file_path = executable_file
+        if not self._executable_file_path:
+            self._executable_file_path = QFileInfo("RAiSD-AI")
 
         # Environment manager
         if "environment_manager" in settings_obj:
@@ -149,6 +153,8 @@ class Settings(QObject):
                     + f"Must be one of: {", ".join([str(x) for x in self.environment_managers])}"
                 )
             self._environment_manager = environment_manager
+        if not self._environment_manager:
+            self._environment_manager = "micromamba"
 
         # Environment name
         if "environment_name" in settings_obj:
@@ -159,6 +165,8 @@ class Settings(QObject):
                     + "Expected string."
                 )
             self._environment_name = environment_name
+        if not self._environment_name:
+            self._environment_name = "raisd-ai"
 
         # Config file
         if "config_file" in settings_obj:
@@ -175,17 +183,10 @@ class Settings(QObject):
                     + "This file does not exist."
                 )
             self._config_path = config_file
+        if not self._config_path:
+            self._config_path = QFileInfo("gui/config.yaml")
 
-    def complete_setup(self) -> None:
-        dialog = self.SetupDialog(
-            workspace=self._workspace_path is None,
-            executable_file=self._executable_file_path is None,
-            environment_manager=self._environment_manager is None,
-            environment_name=self._environment_name is None,
-            config_file=self._config_path is None
-            )
-        dialog.exec()
-
+        
     @property
     def workspace_path(self) -> QDir:
         """
