@@ -63,9 +63,13 @@ class Settings(QObject):
 
             self.buttonbox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
             self.buttonbox.setCenterButtons(True)
+            self.buttonbox.accepted.connect(self._close_clicked)
             layout.addWidget(self.buttonbox)
 
-            
+        @Slot()
+        def _close_clicked(self) -> None:
+            if app_settings._workspace_path:
+                self.close()
     
         @Slot(QPushButton)
         def _open_file_dialog_folder(self, button : QPushButton) -> None:
