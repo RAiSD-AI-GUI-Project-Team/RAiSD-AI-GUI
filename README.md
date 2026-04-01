@@ -77,12 +77,17 @@ Information on how to compile and run legacy RAiSD code (e.g., v3.1) can be foun
 
 ### GUI Installation
 
-The following commands can be used to install all necessary tools (including micromamba for package management), create the environments, and build RAiSD-AI.
+RAiSD-AI includes an optional graphical user interface (GUI).
 
-```bash
-./setup-step-1.sh
-./setup-step-2.sh
-```
+Use the provided `setup-gui.sh` script to install the  dependencies of the gui. To see all options use the help menu (`./setup-gui.sh -h`):
+
+To also install the dependencies of RAiSD-AI and compile RAiSD-AI use the `-a` flag.
+
+To set the package manager used use the `-p` flag, `conda` is the default. For example:
+
+	./setup-gui.sh -p micromamba
+
+> Note: the setup script compiles RAiSD-AI-ZLIB in order to allow for all functionality of the RAiSD-AI tool in the GUI. To force compiling just RAiSD-AI use the `-r` flag. This is not recommended since it can break some GUI functionality!
 
 Quick Test Run
 --------
