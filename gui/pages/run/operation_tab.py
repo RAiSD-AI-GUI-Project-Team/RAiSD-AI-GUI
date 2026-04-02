@@ -1,5 +1,3 @@
-from unittest import case
-
 from PySide6.QtCore import (
     Qt,
     Signal,
@@ -100,26 +98,7 @@ class OperationTab(RunPageTab):
             button_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
             button_layout.setContentsMargins(0,0,0,0)
 
-            raisd_modes_widget = QWidget()
-            raisd_modes_layout = QVBoxLayout(raisd_modes_widget)
-            mode_label = QLabel("Standard RAiSD Modes")
-            mode_label.setObjectName("mode_label")
-            raisd_modes_layout.addWidget(mode_label)
-            raisd_modes_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-
-            raisd_ai_modes_widget = QWidget()
-            raisd_ai_modes_layout = QVBoxLayout(raisd_ai_modes_widget)
-            mode_label = QLabel("RAiSD-AI Modes")
-            mode_label.setObjectName("mode_label")
-            raisd_ai_modes_layout.addWidget(mode_label)
-            raisd_ai_modes_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-
-            other_modes_widget = QWidget()
-            other_modes_layout = QVBoxLayout(other_modes_widget)
-            mode_label = QLabel("Other Modes")
-            mode_label.setObjectName("mode_label")
-            other_modes_layout.addWidget(mode_label)
-            other_modes_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+            operation_categories = {"Standard RAiSD":[], "RAiSD-AI":[], "Other":[]}
 
             tree_scroll = QScrollArea()
             tree_scroll.setObjectName("tree_scroll")
@@ -143,25 +122,31 @@ class OperationTab(RunPageTab):
                     i
                     == self._run_record.selected_operation_tree_index
                 )
-                # TODO: IMPORTANT: FIX ALLOWING MULTIPLE SELECTION
+
                 match tree.root.mode_name:
                     case "Standard RAiSD":
-                        raisd_modes_layout.addWidget(self.button)
+                        operation_categories["Standard RAiSD"].append(self.button)
                     case "RAiSD-AI":
-                        raisd_ai_modes_layout.addWidget(self.button)
+                        operation_categories["RAiSD-AI"].append(self.button)
                     case _:
-                        other_modes_layout.addWidget(self.button)
+                        operation_categories["Other"].append(self.button)
 
                 widget = OperationTreeWidget(tree)
                 self.tree_stacked_widget.addWidget(widget)
 
                 self.button.clicked.connect(lambda _, i=i: self._button_clicked(i))
                 self.tree_selectors.append((self.button, widget))
-            tree_scroll.setWidget(self.tree_stacked_widget)
 
-            button_layout.addWidget(raisd_modes_widget)
-            button_layout.addWidget(raisd_ai_modes_widget)
-            button_layout.addWidget(other_modes_widget)
+            print(operation_categories)
+            for category in operation_categories:
+                mode_label = QLabel(category+" Modes")
+                mode_label.setObjectName("mode_label")
+                button_layout.addWidget(mode_label)
+
+                for button in operation_categories[category]:
+                    button_layout.addWidget(button)
+
+            tree_scroll.setWidget(self.tree_stacked_widget)
 
             layout.addWidget(button_widget)
             layout.addWidget(tree_scroll)
