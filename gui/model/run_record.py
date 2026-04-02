@@ -188,7 +188,8 @@ class RunRecord(QObject):
 
         def parse_operation(
                 obj: dict,
-                id: str
+                id: str,
+                mode_name: str
         ) -> Operation:
             name = obj.get("name", "") or ""
             if not isinstance(name, str):
@@ -296,6 +297,7 @@ class RunRecord(QObject):
             return Operation(
                 id=id,
                 name=name,
+                mode_name=mode_name,
                 description=description,
                 cli=cli,
                 requires=requires,
@@ -1014,7 +1016,7 @@ class RunRecord(QObject):
                         f"Invalid operation: {operation_obj}"
                         + "Expected an object."
                     )
-                operations[operation_id] = parse_operation(operation_obj, operation_id)
+                operations[operation_id] = parse_operation(operation_obj, operation_id, mode_obj["name"])
 
         if "run_id_parameter" not in config_obj:
             raise ValueError(

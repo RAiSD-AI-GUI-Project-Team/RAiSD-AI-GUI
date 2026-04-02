@@ -36,6 +36,7 @@ class Operation():
         parameter_id: str
 
     id: str
+    mode_name: str
     name: str
     description: str
     cli: str

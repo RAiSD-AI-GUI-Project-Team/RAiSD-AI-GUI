@@ -1,3 +1,5 @@
+from unittest import case
+
 from PySide6.QtCore import (
     Qt,
     Signal,
@@ -91,9 +93,33 @@ class OperationTab(RunPageTab):
             self._run_record = run_record
 
             layout = QHBoxLayout(self)
+            layout.setContentsMargins(0,0,0,0)
 
             button_widget = QWidget()
             button_layout = QVBoxLayout(button_widget)
+            button_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+            button_layout.setContentsMargins(0,0,0,0)
+
+            raisd_modes_widget = QWidget()
+            raisd_modes_layout = QVBoxLayout(raisd_modes_widget)
+            mode_label = QLabel("Standard RAiSD Modes")
+            mode_label.setObjectName("mode_label")
+            raisd_modes_layout.addWidget(mode_label)
+            raisd_modes_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+            raisd_ai_modes_widget = QWidget()
+            raisd_ai_modes_layout = QVBoxLayout(raisd_ai_modes_widget)
+            mode_label = QLabel("RAiSD-AI Modes")
+            mode_label.setObjectName("mode_label")
+            raisd_ai_modes_layout.addWidget(mode_label)
+            raisd_ai_modes_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+            other_modes_widget = QWidget()
+            other_modes_layout = QVBoxLayout(other_modes_widget)
+            mode_label = QLabel("Other Modes")
+            mode_label.setObjectName("mode_label")
+            other_modes_layout.addWidget(mode_label)
+            other_modes_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
             tree_scroll = QScrollArea()
             tree_scroll.setObjectName("tree_scroll")
@@ -117,7 +143,14 @@ class OperationTab(RunPageTab):
                     i
                     == self._run_record.selected_operation_tree_index
                 )
-                button_layout.addWidget(self.button)
+                # TODO: IMPORTANT: FIX ALLOWING MULTIPLE SELECTION
+                match tree.root.mode_name:
+                    case "Standard RAiSD":
+                        raisd_modes_layout.addWidget(self.button)
+                    case "RAiSD-AI":
+                        raisd_ai_modes_layout.addWidget(self.button)
+                    case _:
+                        other_modes_layout.addWidget(self.button)
 
                 widget = OperationTreeWidget(tree)
                 self.tree_stacked_widget.addWidget(widget)
@@ -126,7 +159,9 @@ class OperationTab(RunPageTab):
                 self.tree_selectors.append((self.button, widget))
             tree_scroll.setWidget(self.tree_stacked_widget)
 
-            button_layout.addStretch()
+            button_layout.addWidget(raisd_modes_widget)
+            button_layout.addWidget(raisd_ai_modes_widget)
+            button_layout.addWidget(other_modes_widget)
 
             layout.addWidget(button_widget)
             layout.addWidget(tree_scroll)

@@ -739,6 +739,7 @@ class OperationNode(FileProducerNode):
         super().__init__()
         self._id = operation.id
         self._name = operation.name
+        self._mode_name = operation.mode_name
         self._description = operation.description
         self._cli = operation.cli
         self._produces = operation.produces
@@ -786,6 +787,14 @@ class OperationNode(FileProducerNode):
         The name of the operation.
         """
         return self._name
+
+    @property
+    def mode_name(self) -> str:
+        """
+        The mode name of the operation.
+        """
+        return self._mode_name
+
 
     @property
     def description(self) -> str:
