@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
         """
         super().__init__()
         app_settings.initialize()
-        app_settings.settings_changed.connect(self._init_main_window)
+        app_settings.config_path_changed.connect(self._init_main_window)
         self._init_main_window()
 
     def _init_main_window(self) -> None:
