@@ -1,6 +1,4 @@
 from PySide6.QtCore import (
-    QFileInfo,
-    QDir,
     Signal
 )
 from PySide6.QtGui import QPainter
@@ -12,7 +10,7 @@ from PySide6.QtWidgets import (
     QPushButton, QStyleOption, QStyle,
 )
 
-from gui.model.settings import EnvironmentManager, app_settings
+from gui.model.settings import app_settings
 
 
 class SettingsWidget(QWidget):
