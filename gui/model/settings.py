@@ -60,6 +60,9 @@ class Settings(QObject):
 
         @Slot()
         def _close_clicked(self) -> None:
+            """
+            Close the dialog if a valid workspace path has been selected. 
+            """
             if app_settings._workspace_path:
                 self.close()
     
@@ -115,12 +118,18 @@ class Settings(QObject):
         self._config_path = config_path
     
     def initialize(self) -> None:
+        """
+        Initialize a settings object by filling it.
+        """
         self.from_yaml(self.settings_file_path)
         if not self._workspace_path:
             dialog = self.SetupDialog()
             dialog.exec()
 
     def from_yaml(self, file_path: str) -> None:
+        """
+        Fill a settings object with values parsed from a yaml file.
+        """
         try: 
             with open(file_path) as f:
                 settings_text = f.read() or ""
@@ -283,10 +292,10 @@ class Settings(QObject):
     @property
     def environment_manager(self) -> int:
         """
-        Get the current environment manager.
+        Get index of the current environment manager.
 
         :return: The current environment manager.
-        :rtype: EnvironmentManager
+        :rtype: int
         """
         if self._environment_manager is None:
             raise RuntimeError("Environment manager used before it is set.")
@@ -295,10 +304,10 @@ class Settings(QObject):
     @environment_manager.setter
     def environment_manager(self, value: int) -> None:
         """
-        Set the environment manager.
+        Set index of the environment manager.
 
         :param value: The new environment manager.
-        :type value: EnvironmentManager
+        :type value: int
         """
         if self._environment_manager != value:
             try:
@@ -317,10 +326,10 @@ class Settings(QObject):
     @property
     def environment_manager_name(self) -> str:
         """
-        Get the current environment manager.
+        Get the name of the current environment manager.
 
         :return: The current environment manager.
-        :rtype: EnvironmentManager
+        :rtype: str
         """
         if self._environment_manager is None:
             raise RuntimeError("Environment manager used before it is set.")
@@ -366,7 +375,7 @@ class Settings(QObject):
         Get the current config path.
 
         :return: The current config path.
-        :rtype: str
+        :rtype: QFileInfo
         """
         if not self._config_path:
             raise RuntimeError("Config path used before it is set.")
@@ -378,7 +387,7 @@ class Settings(QObject):
         Set the config path.
 
         :param value: The new config path.
-        :type value: str
+        :type value: QFileInfo
         """
         if self._config_path != value:
             try:
@@ -419,13 +428,8 @@ class Settings(QObject):
 
     def set_executable_path(self) -> None:
         """
-        Open a file dialog to select a new workspace folder and update the workspace path.
-
-        If the user selects a new workspace folder, 
-        the workspace path is updated and the `workspace_path_changed` signal is emitted.
-
-        If the user cancels the dialog, the workspace path remains unchanged.
-        If the the selected path is invalid, the workspace path remains unchanged.
+        Open a file dialog to select a new executable file.
+        # TODO: check that the file is a (RAiSD) executable?
         """
         new_executable_path, _ = QFileDialog.getOpenFileName(
                 None,
@@ -440,6 +444,9 @@ class Settings(QObject):
             print(f"Error setting workspace: {e}")
 
     def set_environment_manager(self) -> None:
+        """
+        Open a dialog to select a new environment manager.
+        """
         self.dialog = QDialog()
         self.dialog.setWindowTitle("Choose environment manager")
         self.dialog.setModal(True)
@@ -462,11 +469,21 @@ class Settings(QObject):
     
     @Slot(int)
     def _on_environment_manager_select(self, index: int) -> None:
+        """
+        Set the environment manager to the new value and close the dialog.
+        # TODO: check that the environment manager is installed?
+
+        :param index: the index of the new environment manager
+        :type index: int
+        """
         if index != self._environment_manager:
             self.environment_manager = index
         self.dialog.close()
 
     def set_environment_name(self) -> None:
+        """
+        Open a dialog to choose a new environment name.
+        """
         self.dialog = QDialog()
         self.dialog.setWindowTitle("Choose environment name")
         self.dialog.setModal(True)
@@ -488,19 +505,21 @@ class Settings(QObject):
 
     @Slot(str)
     def _on_environment_name_select(self, name: str) -> None:
+        """
+        Set the environment name to the new value and close the dialog.
+        # TODO: check that the environment exists?
+
+        :param name: the name of the environment
+        :type name: str
+        """
         if name != self.environment_name:
             self.environment_name = name
         self.dialog.close()
 
     def set_config_path(self) -> None:
         """
-        Open a file dialog to select a new workspace folder and update the workspace path.
-
-        If the user selects a new workspace folder, 
-        the workspace path is updated and the `workspace_path_changed` signal is emitted.
-
-        If the user cancels the dialog, the workspace path remains unchanged.
-        If the the selected path is invalid, the workspace path remains unchanged.
+        Open a file dialog to select a new config file.
+        # TODO: check the contents of the file?
         """
         new_config_path, _ = QFileDialog.getOpenFileName(
                 None,
