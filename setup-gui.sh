@@ -44,14 +44,15 @@ check_and_install_raisd_ai() {
 install_raisd_ai() {
     if [ $PACKAGE_MANAGER == "conda" ]; then
         source $(conda info --base)/bin/activate "raisd-ai"
-        /compile-$RAiSD_AI_VERSION.sh
+        ./compile-$RAiSD_AI_VERSION.sh
     else
-        source $(micromamba info --base)/bin/activate "raisd-ai"
-        /compile-$RAiSD_AI_VERSION.sh
+        eval "$(micromamba shell hook --shell bash)"
+        micromamba activate raisd-ai
+        ./compile-$RAiSD_AI_VERSION.sh
     fi
 }
 
-while getopts "hap:r" opt; do
+while getopts "hamr" opt; do
     case $opt in
         h)
         echo "Usage: $0 [-h] [-a] [-m] [-r]"
@@ -81,11 +82,11 @@ while getopts "hap:r" opt; do
 
 if $INSTALL_ALL; then
     echo "Installing $RAiSD_AI_VERSION and its environment..."
-    # create_environment "environment-raisd-ai.yml"
+    create_environment "environment-raisd-ai.yml"
     check_and_install_raisd_ai
 fi
 
 echo "Setting up RAiSD-AI-GUI environment..."
-# create_environment "environment-raisd-ai-gui.yml"
+create_environment "environment-raisd-ai-gui.yml"
 
 
