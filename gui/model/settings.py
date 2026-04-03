@@ -15,7 +15,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QLabel,
     QPushButton,
-    QDialogButtonBox
+    QDialogButtonBox,
+    QComboBox
 )
 
 
@@ -289,7 +290,7 @@ class Settings(QObject):
             self.settings_changed.emit()
 
     @property
-    def environment_manager(self) -> str:
+    def environment_manager(self) -> int:
         """
         Get the current environment manager.
 
@@ -298,7 +299,7 @@ class Settings(QObject):
         """
         if self._environment_manager is None:
             raise RuntimeError("Environment manager used before it is set.")
-        return self.environment_managers[self._environment_manager]
+        return self._environment_manager
 
     @environment_manager.setter
     def environment_manager(self, value: int) -> None:
@@ -316,11 +317,23 @@ class Settings(QObject):
             except:
                 settings_obj = {}
             self._environment_manager = value
-            settings_obj["environment_manager"] = value
+            settings_obj["environment_manager"] = self.environment_manager_name
             with open(self.settings_file_path, "w") as f:
                 dump(settings_obj, f)
             self.environment_manager_changed.emit(value)
             self.settings_changed.emit()
+
+    @property
+    def environment_manager_name(self) -> str:
+        """
+        Get the current environment manager.
+
+        :return: The current environment manager.
+        :rtype: EnvironmentManager
+        """
+        if self._environment_manager is None:
+            raise RuntimeError("Environment manager used before it is set.")
+        return self.environment_managers[self._environment_manager]
 
     @property
     def environment_name(self) -> str:
@@ -436,7 +449,31 @@ class Settings(QObject):
             print(f"Error setting workspace: {e}")
 
     def set_environment_manager(self) -> None:
-        pass
+        self.dialog = QDialog()
+        self.dialog.setWindowTitle("Choose environment manager")
+        self.dialog.setModal(True)
+        self.dialog.resize(300, 200)
+
+        layout = QVBoxLayout(self.dialog)
+
+        combo_box = QComboBox()
+        combo_box.addItems(self.environment_managers)
+        combo_box.setCurrentIndex(self.environment_manager)
+        layout.addWidget(combo_box)
+
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+        self.buttonbox.setCenterButtons(True)
+        self.buttonbox.accepted.connect(
+            lambda : self._on_environment_manager_select(combo_box.currentIndex()))
+        layout.addWidget(self.buttonbox)
+
+        self.dialog.exec()
+    
+    @Slot(int)
+    def _on_environment_manager_select(self, index: int) -> None:
+        if index != self._environment_manager:
+            self.environment_manager = index
+        self.dialog.close()
 
     def set_environment_name(self) -> None:
         pass

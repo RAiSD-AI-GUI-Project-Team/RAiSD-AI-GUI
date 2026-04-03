@@ -52,9 +52,9 @@ class SettingsWidget(QWidget):
         container_layout.addWidget(executable_widget)
 
         # Environment manager
-        environment_manager_widget = SettingsButtonWidget("Environment manager", app_settings.environment_manager)
+        environment_manager_widget = SettingsButtonWidget("Environment manager", app_settings.environment_manager_name)
         app_settings.environment_manager_changed.connect(
-            lambda _ : environment_manager_widget._update_label(app_settings.environment_manager))
+            lambda _ : environment_manager_widget._update_label(app_settings.environment_manager_name))
         environment_manager_widget.button_clicked.connect(app_settings.set_environment_manager)
         container_layout.addWidget(environment_manager_widget)
 
