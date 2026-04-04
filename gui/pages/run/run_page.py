@@ -51,19 +51,20 @@ class RunPage(Page):
         Includes the step button bar and the stacked step widget.
         """
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(20)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
 
         # Step button bar
         step_button_bar = QWidget()
         step_button_bar.setObjectName("step_button_bar")
         step_button_bar_layout = QHBoxLayout(step_button_bar)
-        step_button_bar_layout.setContentsMargins(0, 0, 0, 0)
+        step_button_bar_layout.setContentsMargins(20, 20, 20, 20)
         layout.addWidget(step_button_bar)
         self._setup_step_button_bar(step_button_bar_layout)
 
         # Step stacked widget
         stacked_step_widget = QWidget()
+        stacked_step_widget.setContentsMargins(20, 20, 20, 20)
         self.stacked_step_widget_layout = QStackedLayout(stacked_step_widget)
         self.stacked_step_widget_layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(stacked_step_widget, 1)

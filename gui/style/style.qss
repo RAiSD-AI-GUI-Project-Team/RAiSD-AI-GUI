@@ -142,6 +142,10 @@ QScrollArea#tree_scroll{
 
 /* STEP BUTTON BAR */
 
+QWidget#step_button_bar {
+    background-color: white;
+}
+
 QWidget#step_button_bar QPushButton {
     padding: 10px 20px;
     background-color: white;
