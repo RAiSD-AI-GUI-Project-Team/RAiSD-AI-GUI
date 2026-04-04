@@ -6,8 +6,6 @@ from PySide6.QtCore import (
 )
 from PySide6.QtWidgets import (
     QWidget,
-    QHBoxLayout,
-    QVBoxLayout,
     QPushButton,
     QLabel,
     QTextEdit,
@@ -18,8 +16,13 @@ from PySide6.QtWidgets import (
 from .run_page_tab import RunPageTab, NavigationButtonsHolder
 from gui.model.run_record import RunRecord
 from gui.execution.command_executor import CommandExecutor
+from gui.widgets import (
+    HBoxLayout,
+    VBoxLayout,
+)
 from gui.components.dialog import ConfirmDialog, ErrorDialog
 from gui.components.run import ProcessIndicator, IndicatorState
+from gui.style import constants
 
 
 class ViewTab(RunPageTab):
@@ -41,9 +44,10 @@ class ViewTab(RunPageTab):
     def _setup_widget(self) -> QWidget:
         widget = QWidget()
         widget.setObjectName("run_view_widget")
-        layout = QVBoxLayout(widget)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(20)
+        layout = VBoxLayout(
+            widget,
+            spacing=constants.MARGIN_DEFAULT,
+        )
 
         title_label = QLabel("Run View")
         title_label.setProperty("title", "true")
@@ -51,7 +55,7 @@ class ViewTab(RunPageTab):
 
         step_widget = QWidget()
         step_widget.setObjectName("step_widget")
-        self.step_layout = QHBoxLayout(step_widget)
+        self.step_layout = HBoxLayout(step_widget)
         self.run_indicators = []
         layout.addWidget(step_widget,1)
 

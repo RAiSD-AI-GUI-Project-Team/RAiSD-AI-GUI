@@ -5,8 +5,6 @@ from PySide6.QtCore import (
 )
 from PySide6.QtWidgets import (
     QWidget,
-    QHBoxLayout,
-    QVBoxLayout,
     QScrollArea,
     QPushButton,
     QLabel,
@@ -20,8 +18,13 @@ from PySide6.QtGui import (
 from .run_page_tab import RunPageTab, NavigationButtonsHolder
 from gui.model.settings import app_settings
 from gui.model.run_record import RunRecord
-from gui.components.parameter import  ParameterForm
-from gui.components.dialog import  ErrorDialog
+from gui.widgets import (
+    HBoxLayout,
+    VBoxLayout,
+)
+from gui.components.parameter import ParameterForm
+from gui.components.dialog import ErrorDialog
+from gui.style import constants
 
 
 class ConfirmationTab(RunPageTab):
@@ -44,9 +47,10 @@ class ConfirmationTab(RunPageTab):
         """
         widget = QWidget()
         widget.setObjectName("parameter_confirmation_widget")
-        layout = QVBoxLayout(widget)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(20)
+        layout = VBoxLayout(
+            widget,
+            spacing=constants.MARGIN_DEFAULT,
+        )
 
         # Header
         title_label = QLabel("Parameter Confirmation")
@@ -55,12 +59,10 @@ class ConfirmationTab(RunPageTab):
 
         # Commands
         commands_widget = QWidget()
-        commands_layout = QVBoxLayout(commands_widget)
-        commands_layout.setContentsMargins(0, 0, 0, 0)
+        commands_layout = VBoxLayout(commands_widget)
 
         commands_header = QWidget()
-        commands_header_layout = QHBoxLayout(commands_header)
-        commands_header_layout.setContentsMargins(0, 0, 0, 0)
+        commands_header_layout = HBoxLayout(commands_header)
 
         commands_label = QLabel("Commands generated from the input:")
         commands_header_layout.addWidget(commands_label, 1)

@@ -1,27 +1,23 @@
+from PySide6.QtCore import (
+    Slot,
+    QUrl
+)
 from PySide6.QtWidgets import (
     QWidget,
-    QHBoxLayout,
-    QVBoxLayout,
     QLabel,
     QFileSystemModel,
     QTreeView,
     QHeaderView,
-    QPushButton,
     QStyleOption,
     QStyle
 )
-
-from PySide6.QtCore import (
-    QDir,
-    Slot,
-    QUrl
-)
-
 from PySide6.QtGui import QDesktopServices, QPainter
-
 
 from gui.model.settings import app_settings
 from gui.model.run_record import RunRecord
+from gui.widgets import (
+    VBoxLayout,
+)
 from gui.components.parameter import ParameterForm
 from gui.components.collapsible import Collapsible
 
@@ -40,13 +36,11 @@ class ResultsWidget(QWidget):
         super().__init__()
         self._run_record = run_record
         self.setObjectName('results_widget')
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout = VBoxLayout(self)
 
         # Folder widget
         files_widget = QWidget()
-        files_layout = QVBoxLayout(files_widget)
-        files_layout.setContentsMargins(0, 0, 0, 0)
+        files_layout = VBoxLayout(files_widget)
         files_label = QLabel("Files in the generated directory")
         files_layout.addWidget(files_label)
         self.folder_structure = QFileSystemModel()

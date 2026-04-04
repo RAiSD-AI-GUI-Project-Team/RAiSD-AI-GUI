@@ -14,8 +14,6 @@ from PySide6.QtCore import (
 from PySide6.QtWidgets import (
     QWidget,
     QLabel,
-    QVBoxLayout,
-    QHBoxLayout,
     QCheckBox,
     QLineEdit,
     QPushButton,
@@ -40,7 +38,11 @@ from gui.model.parameter import (
     StringPairListParameter,
     FileParameter,
 )
-from gui.components.collapsible import Collapsible
+from gui.widgets import (
+    HBoxLayout,
+    VBoxLayout,
+)
+from gui.style import constants
 
 
 class AbstractQWidgetMeta(type(ABC), type(QWidget)):
@@ -201,12 +203,13 @@ class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
         self.parameter.enabled_changed.connect(
             lambda new_enabled: row.setVisible(new_enabled)
         )
-        layout = QHBoxLayout(row)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout = HBoxLayout(
+            row,
+            spacing=constants.MARGIN_SMALL,
+        )
 
         label_widget = QWidget()
-        label_layout = QVBoxLayout(label_widget)
-        label_layout.setContentsMargins(0, 0, 0, 0)
+        label_layout = VBoxLayout(label_widget)
 
         label_header = QLabel(self.parameter.name)
         label_header.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -250,7 +253,7 @@ class OptionalParameterWidget(ParameterWidget):
         super().__init__(parameter, editable)
         self._child_widget: ParameterWidget | None = None
 
-        layout = QVBoxLayout(self)
+        layout = VBoxLayout(self)
         self._checkbox = QCheckBox()
         self._checkbox.setCheckState(
             Qt.CheckState.Checked
@@ -265,16 +268,19 @@ class OptionalParameterWidget(ParameterWidget):
 
     def build_form_row(self) -> QWidget:
         row = QWidget()
-        layout = QVBoxLayout(row)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(12)
+        layout = VBoxLayout(
+            row,
+            spacing=constants.MARGIN_TINY,
+        )
 
         own_row = super().build_form_row()
         layout.addWidget(own_row)
 
         child_row_widget = QWidget()
-        child_row_layout = QVBoxLayout(child_row_widget)
-        child_row_layout.setContentsMargins(15, 0, 0, 0)
+        child_row_layout = VBoxLayout(
+            child_row_widget,
+            left=constants.MARGIN_SMALL,
+        )
         # `self.parameter`` should always be of type OptionalParameter,
         # even though the type checker doesn't agree.
         self._child_widget = ParameterWidget.from_parameter(
@@ -331,17 +337,20 @@ class MultiParameterWidget(ParameterWidget):
 
     def build_form_row(self) -> QWidget:
         row = QWidget()
-        layout = QVBoxLayout(row)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(12)
+        layout = VBoxLayout(
+            row,
+            spacing=constants.MARGIN_TINY,
+        )
 
         own_row = super().build_form_row()
         layout.addWidget(own_row)
 
         child_row_widget = QWidget()
-        child_row_layout = QVBoxLayout(child_row_widget)
-        child_row_layout.setContentsMargins(15, 0, 0, 0)
-        child_row_layout.setSpacing(12)
+        child_row_layout = VBoxLayout(
+            child_row_widget,
+            left=constants.MARGIN_SMALL,
+            spacing=constants.MARGIN_TINY,
+        )
         # This should always work, since the constructor is given a
         # MultiParameter object.
         for child_parameter in self.parameter.parameters: # type: ignore
@@ -381,7 +390,7 @@ class BoolParameterWidget(ParameterWidget):
         """
         super().__init__(parameter, editable)
 
-        layout = QVBoxLayout(self)
+        layout = VBoxLayout(self)
         self._checkbox = QCheckBox()
         self._checkbox.setCheckState(
             Qt.CheckState.Checked
@@ -425,7 +434,7 @@ class IntParameterWidget(ParameterWidget):
         """
         super().__init__(parameter, editable)
 
-        layout = QVBoxLayout(self)
+        layout = VBoxLayout(self)
 
         self._line_edit = QLineEdit()
         self._line_edit.setText(str(parameter.value))
@@ -492,7 +501,7 @@ class FloatParameterWidget(ParameterWidget):
         """
         super().__init__(parameter, editable)
 
-        layout = QVBoxLayout(self)
+        layout = VBoxLayout(self)
 
         self._line_edit = QLineEdit()
         self._line_edit.setText(str(parameter.value))
@@ -559,7 +568,7 @@ class EnumParameterWidget(ParameterWidget):
         """
         super().__init__(parameter, editable)
 
-        layout = QVBoxLayout(self)
+        layout = VBoxLayout(self)
 
         self._combo_box = QComboBox()
         self._combo_box.addItems(parameter.options)
@@ -602,7 +611,7 @@ class StringParameterWidget(ParameterWidget):
         """
         super().__init__(parameter, editable)
 
-        layout = QVBoxLayout(self)
+        layout = VBoxLayout(self)
 
         self._line_edit = QLineEdit()
         self._line_edit.setText(parameter.value)
@@ -646,7 +655,7 @@ class StringPairListParameterWidget(ParameterWidget):
             super().__init__()
             self._editable = editable
 
-            layout = QHBoxLayout(self)
+            layout = HBoxLayout(self)
 
             self._left_line_edit = QLineEdit()
             self._left_line_edit.setText(values[0])
@@ -713,11 +722,11 @@ class StringPairListParameterWidget(ParameterWidget):
             editable=editable,
         )
 
-        layout = QVBoxLayout(self)
+        layout = VBoxLayout(self)
 
         self.rows: list[StringPairListParameterWidget.Row] = []
         row_widget = QWidget()
-        self.row_layout = QVBoxLayout(row_widget)
+        self.row_layout = VBoxLayout(row_widget)
         self._parameter: StringPairListParameter
         delete_button_visible = (
             len(self._parameter.value) > self._parameter.min_count
@@ -842,13 +851,12 @@ class FileParameterWidget(ParameterWidget):
         """
         super().__init__(parameter, editable)
 
-        layout = QVBoxLayout(self)
+        layout = VBoxLayout(self)
         parameter.value_changed.connect(self._parameter_value_changed)
 
         # If the widget is locked: create a list with the selected files
         if not self._editable:
             self.list_widget = QListWidget()
-            self.list_widget.collapsible = False
             self.list_widget.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
             self.list_widget.setSortingEnabled(True)
             if self.parameter.value:

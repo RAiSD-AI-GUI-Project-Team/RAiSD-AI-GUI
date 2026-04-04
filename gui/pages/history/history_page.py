@@ -1,7 +1,5 @@
 from PySide6.QtWidgets import (
     QWidget,
-    QHBoxLayout,
-    QVBoxLayout,
     QLabel,
     QSplitter,
     QStackedWidget,
@@ -10,11 +8,16 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Slot, Qt
 
 from ..page import Page
-from gui.components.history import HistoryListWidget
-from gui.components.results import ResultsWidget
 from gui.model.settings import app_settings
 from gui.model.run_record import RunRecord
 from gui.model.history_record import HistoryRecord
+from gui.widgets import (
+    HBoxLayout,
+    VBoxLayout,
+)
+from gui.components.history import HistoryListWidget
+from gui.components.results import ResultsWidget
+from gui.style import constants
 
 class HistoryPage(Page):
     """
@@ -36,8 +39,13 @@ class HistoryPage(Page):
 
     def _setup_ui(self):
         # Main layout with a splitter
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(20, 20, 20, 20)
+        layout = HBoxLayout(
+            self,
+            left=constants.MARGIN_DEFAULT,
+            top=constants.MARGIN_DEFAULT,
+            right=constants.MARGIN_DEFAULT,
+            bottom=constants.MARGIN_DEFAULT,
+        )
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.setContentsMargins(0, 0, 0, 0)
@@ -55,8 +63,7 @@ class HistoryPage(Page):
         self._right_panel = QStackedWidget()
         splitter.addWidget(self._right_panel)
         self.results_panel = QWidget()
-        results_layout = QVBoxLayout(self.results_panel)
-        results_layout.setContentsMargins(0, 0, 0, 0)
+        results_layout = VBoxLayout(self.results_panel)
 
         results_title_label = QLabel("Results")
         results_title_label.setProperty("title", "true")

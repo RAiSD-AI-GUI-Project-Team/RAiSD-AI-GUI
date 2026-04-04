@@ -5,7 +5,6 @@ from PySide6.QtCore import (
 )
 from PySide6.QtWidgets import (
     QWidget,
-    QVBoxLayout,
     QScrollArea,
     QPushButton,
     QLabel,
@@ -13,7 +12,11 @@ from PySide6.QtWidgets import (
 
 from .run_page_tab import RunPageTab, NavigationButtonsHolder
 from gui.model.run_record import RunRecord
+from gui.widgets import (
+    VBoxLayout,
+)
 from gui.components.results import ResultsWidget
+from gui.style import constants
 
 
 class ResultsTab(RunPageTab):
@@ -31,9 +34,10 @@ class ResultsTab(RunPageTab):
     def _setup_widget(self) -> QWidget:
         widget = QWidget()
         widget.setObjectName("run_results_widget")
-        layout = QVBoxLayout(widget)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(20)
+        layout = VBoxLayout(
+            widget,
+            spacing=constants.MARGIN_DEFAULT,
+        )
 
         title_label = QLabel("Run Results")
         title_label.setProperty("title", "true")

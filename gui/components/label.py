@@ -7,12 +7,16 @@ from PySide6.QtGui import (
     QPainter
 )
 from PySide6.QtWidgets import(
-    QHBoxLayout,
     QLabel,
     QStyle,
     QWidget,
     QStyleOption,
 )
+
+from gui.widgets import (
+    HBoxLayout,
+)
+from gui.style import constants
 
 
 class IconLabel(QWidget):
@@ -39,7 +43,14 @@ class IconLabel(QWidget):
         """
         super().__init__()
 
-        layout = QHBoxLayout(self)
+        layout = HBoxLayout(
+            self,
+            left=constants.MARGIN_SMALL,
+            top=constants.MARGIN_TINY,
+            right=constants.MARGIN_TINY,
+            bottom=constants.MARGIN_TINY,
+            spacing=constants.MARGIN_SMALL,
+        )
 
         icon_label = QLabel()
         pixmap = self.style().standardPixmap(pixmapi)

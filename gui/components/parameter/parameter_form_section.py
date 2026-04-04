@@ -1,10 +1,12 @@
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QStyle, QStyleOption
+from PySide6.QtWidgets import QWidget, QLabel, QStyle, QStyleOption
 from PySide6.QtGui import QPainter
 from PySide6.QtCore import Signal, Slot
 
-from gui.model.parameter import ParameterGroup
 from .parameter_widget import ParameterWidget
+from gui.model.parameter import ParameterGroup
+from gui.widgets import VBoxLayout
 from gui.components.collapsible import Collapsible
+from gui.style import constants
 
 
 class ParameterFormSection(QWidget):
@@ -33,27 +35,37 @@ class ParameterFormSection(QWidget):
         super().__init__()
         self.setObjectName("parameter_form_section")
 
+        layout = VBoxLayout(
+            self,
+        )
+
         self._parameter_group = parameter_group
         self._parameter_group.enabled_changed.connect(self._parameter_group_enabled_changed)
         self._editable = editable
         self._parameter_widgets: list[ParameterWidget] = []
 
-        # Make widgets
+        # Make parameter widgets
         heading = QLabel(self._parameter_group.name)
-
-        form_body = QWidget()
-        form_layout = QVBoxLayout(form_body)
-        form_layout.setContentsMargins(8, 8, 8, 8)
-        form_layout.setSpacing(16)
-
-        for parameter in parameter_group:
-            widget = ParameterWidget.from_parameter(parameter, self._editable)
-            self._parameter_widgets.append(widget)
-            form_layout.addWidget(widget.build_form_row())
-
-        layout = QVBoxLayout(self)
         heading.setObjectName("heading")
-        widget = Collapsible(heading, form_body)
+
+        row_widget = QWidget()
+        row_layout = VBoxLayout(
+            row_widget,
+            left=constants.MARGIN_SMALL,
+            top=constants.MARGIN_SMALL,
+            right=constants.MARGIN_SMALL,
+            bottom=constants.MARGIN_SMALL,
+            spacing=constants.MARGIN_SMALL,
+        )
+        for parameter in parameter_group:
+            widget = ParameterWidget.from_parameter(
+                parameter,
+                editable=self._editable,
+            )
+            self._parameter_widgets.append(widget)
+            row_layout.addWidget(widget.build_form_row())
+
+        widget = Collapsible(heading, row_widget)
         layout.addWidget(widget)
 
         self.setVisible(self._parameter_group.enabled)

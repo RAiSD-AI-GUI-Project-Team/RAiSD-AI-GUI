@@ -2,7 +2,6 @@ from PySide6.QtCore import Signal
 from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (
     QWidget,
-    QVBoxLayout,
     QScrollArea,
     QLabel,
     QStyleOption,
@@ -11,6 +10,8 @@ from PySide6.QtWidgets import (
 
 from .history_record_widget import HistoryRecordWidget
 from gui.model.history_record import HistoryRecord
+from gui.widgets import VBoxLayout
+from gui.style import constants
 
 
 class HistoryListWidget(QWidget):
@@ -28,8 +29,8 @@ class HistoryListWidget(QWidget):
         self._history_widgets: list[HistoryRecordWidget] = []
         self.setObjectName('history_list_widget')
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout = VBoxLayout(self)
+        layout.setSpacing(constants.MARGIN_SMALL)
 
         title = QLabel("History")
         title.setProperty("title", "true")
@@ -45,9 +46,8 @@ class HistoryListWidget(QWidget):
 
         self._list_container = QWidget()
         self._list_container.setObjectName("history_list_container")
-        self._list_layout = QVBoxLayout(self._list_container)
-        self._list_layout.setContentsMargins(0, 0, 0, 0)
-        self._list_layout.setSpacing(4)
+        self._list_layout = VBoxLayout(self._list_container)
+        self._list_layout.setSpacing(constants.MARGIN_TINY)
         self._list_layout.addStretch()
         scroll_area.setWidget(self._list_container)
 

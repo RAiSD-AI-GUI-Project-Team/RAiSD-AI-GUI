@@ -1,8 +1,6 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget,
-    QHBoxLayout,
-    QVBoxLayout,
     QPushButton,
     QStyle,
     QStyleOption,
@@ -10,6 +8,12 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import (
     QPainter,
 )
+
+from gui.widgets import (
+    HBoxLayout,
+    VBoxLayout,
+)
+from gui.style import constants
 
 
 class NavigationButtonsHolder(QWidget):
@@ -30,8 +34,7 @@ class NavigationButtonsHolder(QWidget):
 
         self.setObjectName("navigation_buttons_holder")
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout = HBoxLayout(self)
         for button, alignment in ((self.left_button, Qt.AlignmentFlag.AlignLeft), 
                                   (self.middle_button, Qt.AlignmentFlag.AlignHCenter), 
                                   (self.right_button, Qt.AlignmentFlag.AlignRight)):
@@ -69,9 +72,10 @@ class RunPageTab(QWidget):
         self._setup_layout(widget, navigation)
 
     def _setup_layout(self, widget: QWidget, navigation: QWidget) -> None:
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(20)
+        layout = VBoxLayout(
+            self,
+            spacing=constants.MARGIN_DEFAULT,
+        )
         layout.addWidget(widget, 1)
         layout.addWidget(navigation)
         pass

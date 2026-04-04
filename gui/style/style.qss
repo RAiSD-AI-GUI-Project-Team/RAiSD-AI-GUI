@@ -81,8 +81,8 @@ QLabel[title="true"]{
 QScrollArea#parameter_form_scroll,
 QScrollArea#results_scroll,
 QWidget#results_widget,
-QWidget#operation_node_widget,
-QWidget#operation_tree_widget,
+QWidget#operation_node,
+QWidget#operation_tree,
 QWidget#tree_stacked_widget{
     background: transparent;
 }
@@ -207,8 +207,6 @@ QWidget#parameter_form {
 QWidget#parameter_form_section {
     background-color: white;
     border-radius: 12px;
-    padding: 32px, 16px;
-    margin-bottom: 10px;
 }
 
 QWidget#heading{
@@ -341,7 +339,7 @@ QWidget#error_output{
     font-size: $font-size - 4px;
 }
 /* OP SELECTION */
-QWidget#file_consumer_widget{
+QWidget#file_consumer_node {
     border-left: 1px solid $border-gray;
     padding: 0px;
 }

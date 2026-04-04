@@ -1,7 +1,47 @@
+"""
+A module containing base UI classes.
+
+The classes extend default PySide widgets and layouts to make them
+stylable and remove margins and spacing.
+"""
+
 from PySide6.QtWidgets import (
+    QHBoxLayout,
     QVBoxLayout,
     QWidget,
 )
+
+
+class HBoxLayout(QHBoxLayout):
+    def __init__(
+            self,
+            parent: QWidget,
+            *,
+            left: int = 0,
+            top: int = 0,
+            right: int = 0,
+            bottom: int = 0,
+            spacing: int = 0,
+    ) -> None:
+        super().__init__(parent)
+        self.setContentsMargins(left, top, right, bottom)
+        self.setSpacing(spacing)
+
+
+class VBoxLayout(QVBoxLayout):
+    def __init__(
+            self,
+            parent: QWidget,
+            *,
+            left: int = 0,
+            top: int = 0,
+            right: int = 0,
+            bottom: int = 0,
+            spacing: int = 0,
+    ) -> None:
+        super().__init__(parent)
+        self.setContentsMargins(left, top, right, bottom)
+        self.setSpacing(spacing)
 
 
 class ResizableStackedWidget(QWidget):
@@ -17,7 +57,7 @@ class ResizableStackedWidget(QWidget):
         """
         super().__init__()
 
-        QVBoxLayout(self)
+        VBoxLayout(self)
         self._widgets : list[QWidget] = []
         self._current_index = 0
 
@@ -35,7 +75,6 @@ class ResizableStackedWidget(QWidget):
 
     def addWidget(self, widget: QWidget) -> None:
         layout = self.layout()
-        layout.setContentsMargins(0,0,0,0)
         if not layout:
             return
         layout.addWidget(widget)

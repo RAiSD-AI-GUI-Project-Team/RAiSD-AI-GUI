@@ -4,8 +4,6 @@ from PySide6.QtCore import (
 )
 from PySide6.QtWidgets import (
     QWidget,
-    QHBoxLayout,
-    QVBoxLayout,
     QStackedLayout,
     QPushButton,
 )
@@ -22,6 +20,11 @@ from ..run import (
 from gui.model.run_record import RunRecord
 from gui.model.history_record import HistoryRecord
 from gui.execution.command_executor import CommandExecutor
+from gui.widgets import (
+    HBoxLayout,
+    VBoxLayout,
+)
+from gui.style import constants
 
 
 class RunPage(Page):
@@ -50,21 +53,30 @@ class RunPage(Page):
 
         Includes the step button bar and the stacked step widget.
         """
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout = VBoxLayout(self)
 
         # Step button bar
         step_button_bar = QWidget()
         step_button_bar.setObjectName("step_button_bar")
-        step_button_bar_layout = QHBoxLayout(step_button_bar)
-        step_button_bar_layout.setContentsMargins(20, 20, 20, 20)
+        step_button_bar_layout = HBoxLayout(
+            step_button_bar,
+            left=constants.MARGIN_SMALL,
+            top=constants.MARGIN_SMALL,
+            right=constants.MARGIN_SMALL,
+            bottom=constants.MARGIN_SMALL,
+            spacing=constants.MARGIN_TINY,
+        )
         layout.addWidget(step_button_bar)
         self._setup_step_button_bar(step_button_bar_layout)
 
         # Step stacked widget
         stacked_step_widget = QWidget()
-        stacked_step_widget.setContentsMargins(20, 20, 20, 20)
+        stacked_step_widget.setContentsMargins(
+            constants.MARGIN_DEFAULT,
+            constants.MARGIN_DEFAULT,
+            constants.MARGIN_DEFAULT,
+            constants.MARGIN_DEFAULT,
+        )
         self.stacked_step_widget_layout = QStackedLayout(stacked_step_widget)
         self.stacked_step_widget_layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(stacked_step_widget, 1)
@@ -80,7 +92,7 @@ class RunPage(Page):
 
         self._set_active_tab(self.operation_tab)
 
-    def _setup_step_button_bar(self, layout: QHBoxLayout):
+    def _setup_step_button_bar(self, layout: HBoxLayout):
         """
         Setup the step button bar.
         """
