@@ -42,10 +42,12 @@ class ViewTab(RunPageTab):
         widget = QWidget()
         widget.setObjectName("run_view_widget")
         layout = QVBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(20)
 
-        run_view_label = QLabel("Run View")
-        run_view_label.setObjectName("run_view_label")
-        layout.addWidget(run_view_label, alignment=Qt.AlignmentFlag.AlignTop)
+        title_label = QLabel("Run View")
+        title_label.setProperty("title", "true")
+        layout.addWidget(title_label, alignment=Qt.AlignmentFlag.AlignTop)
 
         step_widget = QWidget()
         step_widget.setObjectName("step_widget")

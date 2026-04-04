@@ -1,10 +1,9 @@
-from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
-    QPushButton, QStyleOption, QStyle,
+    QPushButton,
 )
 
 from ..page import Page
@@ -23,11 +22,12 @@ class SettingsPage(Page):
         self._setup_ui()
 
     def _setup_ui(self):
-        self.setObjectName("settings_widget")
         layout = QVBoxLayout(self)
-        settings_label = QLabel("Settings")
-        settings_label.setObjectName("settings_label")
-        layout.addWidget(settings_label)
+        layout.setContentsMargins(20, 20, 20, 20)
+
+        title_label = QLabel("Settings")
+        title_label.setProperty("title", "true")
+        layout.addWidget(title_label)
 
         container_widget = QWidget()
         container_widget.setObjectName("container_widget")
@@ -94,13 +94,3 @@ class SettingsPage(Page):
     def _set_environment_name_label(self) -> None:
         """Set the environment name label with the environment name."""
         self.environment_name_label.setText(f"Current Environment Name: '{app_settings.environment_name}'")
-
-    def paintEvent(self, event) -> None:
-        """
-        Override paintEvent so that QSS styling (background, border,
-        etc.) is applied to this plain QWidget subclass.
-        """
-        opt = QStyleOption()
-        opt.initFrom(self)
-        painter = QPainter(self)
-        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, painter, self)

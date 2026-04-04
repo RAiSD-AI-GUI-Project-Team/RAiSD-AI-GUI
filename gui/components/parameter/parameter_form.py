@@ -28,9 +28,7 @@ class ParameterForm(QWidget):
         self._run_record = run_record
         self._parameter_form_sections = []
         layout = QVBoxLayout(self)
-
-        heading = QLabel("RAiSD-AI parameters")
-        layout.addWidget(heading)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         for parameter_group in self._run_record.parameter_groups:
             parameter_form_section = ParameterFormSection(parameter_group, editable=self._editable)

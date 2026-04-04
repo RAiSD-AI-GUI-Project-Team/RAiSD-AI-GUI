@@ -41,10 +41,12 @@ class ResultsWidget(QWidget):
         self._run_record = run_record
         self.setObjectName('results_widget')
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         # Folder widget
         files_widget = QWidget()
         files_layout = QVBoxLayout(files_widget)
+        files_layout.setContentsMargins(0, 0, 0, 0)
         files_label = QLabel("Files in the generated directory")
         files_layout.addWidget(files_label)
         self.folder_structure = QFileSystemModel()

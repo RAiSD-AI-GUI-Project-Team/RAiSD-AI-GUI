@@ -45,18 +45,22 @@ class ConfirmationTab(RunPageTab):
         widget = QWidget()
         widget.setObjectName("parameter_confirmation_widget")
         layout = QVBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(20)
 
         # Header
-        parameter_confirmation_label = QLabel("Parameter Confirmation")
-        parameter_confirmation_label.setObjectName("parameter_confirmation_label")
-        layout.addWidget(parameter_confirmation_label)
+        title_label = QLabel("Parameter Confirmation")
+        title_label.setProperty("title", "true")
+        layout.addWidget(title_label)
 
         # Commands
         commands_widget = QWidget()
         commands_layout = QVBoxLayout(commands_widget)
+        commands_layout.setContentsMargins(0, 0, 0, 0)
 
         commands_header = QWidget()
         commands_header_layout = QHBoxLayout(commands_header)
+        commands_header_layout.setContentsMargins(0, 0, 0, 0)
 
         commands_label = QLabel("Commands generated from the input:")
         commands_header_layout.addWidget(commands_label, 1)

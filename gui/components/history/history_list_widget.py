@@ -29,9 +29,10 @@ class HistoryListWidget(QWidget):
         self.setObjectName('history_list_widget')
 
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         title = QLabel("History")
-        title.setObjectName("history_list_widget_title")
+        title.setProperty("title", "true")
         layout.addWidget(title)
 
         # The list of history widgets

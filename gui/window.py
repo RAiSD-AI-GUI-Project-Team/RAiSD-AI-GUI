@@ -52,6 +52,7 @@ class MainWindow(QMainWindow):
         central_widget = QWidget()
         central_widget.setObjectName("central_widget")
         central_layout = QHBoxLayout(central_widget)
+        central_layout.setContentsMargins(0, 0, 0, 0)
         self.setCentralWidget(central_widget)
 
         # Left sidebar
@@ -64,6 +65,7 @@ class MainWindow(QMainWindow):
         # Main stacked widget
         main_widget = QWidget()
         self.main_widget_layout = QStackedLayout(main_widget)
+        self.main_widget_layout.setContentsMargins(0, 0, 0, 0)
         central_layout.addWidget(main_widget)
         self._setup_main_widget(self.main_widget_layout)
 
@@ -80,7 +82,7 @@ class MainWindow(QMainWindow):
         self._set_active_view(self.run_button)
 
     def _setup_left_sidebar(self, layout: QVBoxLayout):
-        layout.setContentsMargins(0,20,0,0)
+        layout.setContentsMargins(10, 20, 10, 20)
 
         logo_widget = QWidget()
         logo_widget.setFixedSize(40, 40)

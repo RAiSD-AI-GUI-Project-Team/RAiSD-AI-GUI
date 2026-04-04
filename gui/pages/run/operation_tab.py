@@ -35,10 +35,12 @@ class OperationTab(RunPageTab):
         widget = QWidget()
         widget.setObjectName("operation_selection_widget")
         layout = QVBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(20)
 
-        operation_selection_label = QLabel("Operation Selection")
-        operation_selection_label.setObjectName("operation_selection_label")
-        layout.addWidget(operation_selection_label)
+        title_label = QLabel("Operation Selection")
+        title_label.setProperty("title", "true")
+        layout.addWidget(title_label)
 
         run_id_parameter_widget = ParameterWidget.from_parameter(
             self._run_record.run_id_parameter,
@@ -91,9 +93,11 @@ class OperationTab(RunPageTab):
             self._run_record = run_record
 
             layout = QHBoxLayout(self)
+            layout.setContentsMargins(0, 0, 0, 0)
 
             button_widget = QWidget()
             button_layout = QVBoxLayout(button_widget)
+            button_layout.setContentsMargins(0, 0, 0, 0)
 
             tree_scroll = QScrollArea()
             tree_scroll.setObjectName("tree_scroll")

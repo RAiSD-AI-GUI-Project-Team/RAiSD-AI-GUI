@@ -32,10 +32,12 @@ class ResultsTab(RunPageTab):
         widget = QWidget()
         widget.setObjectName("run_results_widget")
         layout = QVBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(20)
 
-        run_results_label = QLabel("Run Results")
-        run_results_label.setObjectName("run_results_label")
-        layout.addWidget(run_results_label)
+        title_label = QLabel("Run Results")
+        title_label.setProperty("title", "true")
+        layout.addWidget(title_label)
 
         self.results_widget = ResultsWidget(self._run_record)
 

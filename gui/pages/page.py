@@ -1,5 +1,8 @@
+from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (
     QWidget,
+    QStyle,
+    QStyleOption,
 )
 
 class Page(QWidget):
@@ -13,6 +16,7 @@ class Page(QWidget):
         Initialize the page.
         """
         super().__init__()
+        self.setObjectName("page")
 
     def _setup_ui(self) -> None:
         """
@@ -21,3 +25,13 @@ class Page(QWidget):
         This method should be implemented by each page subclass.
         """
         raise NotImplementedError()
+
+    def paintEvent(self, event) -> None:
+        """
+        Override paintEvent so that QSS styling (background, border,
+        etc.) is applied to this plain QWidget subclass.
+        """
+        opt = QStyleOption()
+        opt.initFrom(self)
+        painter = QPainter(self)
+        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, painter, self)

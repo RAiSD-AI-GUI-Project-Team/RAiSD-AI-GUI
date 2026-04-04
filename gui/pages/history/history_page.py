@@ -1,4 +1,3 @@
-from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (
     QWidget,
     QHBoxLayout,
@@ -7,8 +6,6 @@ from PySide6.QtWidgets import (
     QSplitter,
     QStackedWidget,
     QScrollArea,
-    QStyleOption,
-    QStyle
 )
 from PySide6.QtCore import Slot, Qt
 
@@ -35,14 +32,16 @@ class HistoryPage(Page):
         self._run_record = RunRecord.from_yaml(app_settings.config_path)
         self._selected : HistoryRecord | None = None
         self._setup_ui()
-        self.setObjectName("history_widget")
         self._history_list.setObjectName("history_list")
 
     def _setup_ui(self):
         # Main layout with a splitter
-        results_layout = QHBoxLayout(self)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+
         splitter = QSplitter(Qt.Orientation.Horizontal)
-        results_layout.addWidget(splitter)
+        splitter.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(splitter)
 
         self._history_list.run_selected.connect(self._on_run_selected)
 
@@ -57,10 +56,11 @@ class HistoryPage(Page):
         splitter.addWidget(self._right_panel)
         self.results_panel = QWidget()
         results_layout = QVBoxLayout(self.results_panel)
+        results_layout.setContentsMargins(0, 0, 0, 0)
 
-        run_results_label = QLabel("Run Results")
-        run_results_label.setObjectName("run_results_label")
-        results_layout.addWidget(run_results_label)
+        results_title_label = QLabel("Results")
+        results_title_label.setProperty("title", "true")
+        results_layout.addWidget(results_title_label)
 
         self.results_widget = ResultsWidget(self._run_record)
         results_scroll = QScrollArea()
@@ -105,9 +105,3 @@ class HistoryPage(Page):
         Update the time labels of the history record widgets
         """
         self._history_list.update_time()
-
-    def paintEvent(self, event) -> None:
-        opt = QStyleOption()
-        opt.initFrom(self)
-        painter = QPainter(self)
-        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, painter, self)

@@ -31,6 +31,7 @@ class NavigationButtonsHolder(QWidget):
         self.setObjectName("navigation_buttons_holder")
 
         layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
         for button, alignment in ((self.left_button, Qt.AlignmentFlag.AlignLeft), 
                                   (self.middle_button, Qt.AlignmentFlag.AlignHCenter), 
                                   (self.right_button, Qt.AlignmentFlag.AlignRight)):
@@ -62,6 +63,7 @@ class RunPageTab(QWidget):
     """
     def __init__(self):
         super().__init__()
+        self.setObjectName("run_tab")
         widget = self._setup_widget()
         navigation = self._setup_navigation_buttons()
         self._setup_layout(widget, navigation)
@@ -69,7 +71,7 @@ class RunPageTab(QWidget):
     def _setup_layout(self, widget: QWidget, navigation: QWidget) -> None:
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout.setSpacing(20)
         layout.addWidget(widget, 1)
         layout.addWidget(navigation)
         pass
@@ -101,3 +103,9 @@ class RunPageTab(QWidget):
         Refresh the UI elements of the tab when it is shown.
         """
         raise NotImplementedError()
+
+    def paintEvent(self, event) -> None:
+        opt = QStyleOption()
+        opt.initFrom(self)
+        painter = QPainter(self)
+        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, painter, self)

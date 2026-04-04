@@ -32,9 +32,12 @@ class ParameterTab(RunPageTab):
         widget = QWidget()
         widget.setObjectName("parameter_input_widget")
         layout = QVBoxLayout(widget)
-        parameter_input_label = QLabel("Parameter Input")
-        parameter_input_label.setObjectName("parameter_input_label")
-        layout.addWidget(parameter_input_label)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(20)
+
+        title_label = QLabel("Parameter Input")
+        title_label.setProperty("title", "true")
+        layout.addWidget(title_label)
 
         self._parameter_form = ParameterForm(self._run_record, editable=True)
         self._parameter_form.setObjectName("parameter_form")
