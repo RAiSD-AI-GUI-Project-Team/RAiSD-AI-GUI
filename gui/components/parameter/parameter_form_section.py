@@ -1,15 +1,17 @@
-from PySide6.QtWidgets import QWidget, QLabel, QStyle, QStyleOption
-from PySide6.QtGui import QPainter
+from PySide6.QtWidgets import QWidget, QLabel
 from PySide6.QtCore import Signal, Slot
 
 from .parameter_widget import ParameterWidget
 from gui.model.parameter import ParameterGroup
-from gui.widgets import VBoxLayout
+from gui.widgets import (
+    StylableWidget,
+    VBoxLayout,
+)
 from gui.components.collapsible import Collapsible
 from gui.style import constants
 
 
-class ParameterFormSection(QWidget):
+class ParameterFormSection(StylableWidget):
     """
     A section of the parameter form.
 
@@ -95,13 +97,3 @@ class ParameterFormSection(QWidget):
     def untouch_all(self) -> None:
         for widget in self._parameter_widgets:
             widget.untouch()
-
-    def paintEvent(self, event) -> None:
-        """
-        Override paintEvent so that QSS styling (background, border,
-        etc.) is applied to this plain QWidget subclass.
-        """
-        opt = QStyleOption()
-        opt.initFrom(self)
-        painter = QPainter(self)
-        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, painter, self)

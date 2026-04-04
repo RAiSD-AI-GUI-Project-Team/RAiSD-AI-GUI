@@ -9,15 +9,12 @@ from PySide6.QtCore import (
     Qt,
     Slot,
 )
-from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (
     QFileDialog,
     QLabel,
     QPushButton,
     QRadioButton,
     QWidget,
-    QStyleOption,
-    QStyle
 )
 
 from gui.model.settings import app_settings
@@ -36,14 +33,15 @@ from gui.components.label import (
 )
 from gui.widgets import (
     HBoxLayout,
-    VBoxLayout,
     ResizableStackedWidget,
+    StylableWidget,
+    VBoxLayout,
 )
 from gui.components.parameter import ParameterWidget
 from gui.style import constants
 
 
-class FileProducerNodeWidget(QWidget):
+class FileProducerNodeWidget(StylableWidget):
     """
     An abstract widget class to display a `FileProducerNode`.
 
@@ -85,7 +83,7 @@ class FileProducerNodeWidget(QWidget):
         raise NotImplementedError()
 
 
-class FileConsumerNodeWidget(QWidget):
+class FileConsumerNodeWidget(StylableWidget):
     """
     A widget to display a `FileConsumerNode`.
 
@@ -169,12 +167,6 @@ class FileConsumerNodeWidget(QWidget):
                 button.setChecked(i == self._file_consumer_node.selected_index)
             widget.reset()
 
-    def paintEvent(self, event) -> None:
-        opt = QStyleOption()
-        opt.initFrom(self)
-        painter = QPainter(self)
-        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, painter, self)
-
 
 class CommonParentDirectoryNodeWidget(FileProducerNodeWidget):
     """
@@ -222,12 +214,6 @@ class CommonParentDirectoryNodeWidget(FileProducerNodeWidget):
     @property
     def button_text(self) -> str:
         return "Run multiple operations to generate the input files."
-
-    def paintEvent(self, event) -> None:
-        opt = QStyleOption()
-        opt.initFrom(self)
-        painter = QPainter(self)
-        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, painter, self)
 
 
 class FilePickerNodeWidget(FileProducerNodeWidget):
@@ -436,14 +422,8 @@ class OperationNodeWidget(FileProducerNodeWidget):
     def _file_changed(self, new_file: str) -> None:
         self._output_info_label.text = self.output_label_text + new_file
 
-    def paintEvent(self, event) -> None:
-        opt = QStyleOption()
-        opt.initFrom(self)
-        painter = QPainter(self)
-        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, painter, self)
 
-
-class OperationTreeWidget(QWidget):
+class OperationTreeWidget(StylableWidget):
     """
     A widget to display an `OperationTree`.
 
@@ -478,9 +458,3 @@ class OperationTreeWidget(QWidget):
 
     def reset(self) -> None:
         self.body.reset()
-
-    def paintEvent(self, event) -> None:
-        opt = QStyleOption()
-        opt.initFrom(self)
-        painter = QPainter(self)
-        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, painter, self)

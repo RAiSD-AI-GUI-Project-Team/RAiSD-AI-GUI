@@ -1,20 +1,20 @@
 from PySide6.QtCore import Signal
-from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (
     QWidget,
     QScrollArea,
     QLabel,
-    QStyleOption,
-    QStyle,
 )
 
 from .history_record_widget import HistoryRecordWidget
 from gui.model.history_record import HistoryRecord
-from gui.widgets import VBoxLayout
+from gui.widgets import (
+    StylableWidget,
+    VBoxLayout,
+)
 from gui.style import constants
 
 
-class HistoryListWidget(QWidget):
+class HistoryListWidget(StylableWidget):
     """
     The widget that holds the all operation records to display in history_widget
     """
@@ -85,9 +85,3 @@ class HistoryListWidget(QWidget):
         """
         for widget in self._history_widgets:
             widget.update_time()
-
-    def paintEvent(self, event) -> None:
-        opt = QStyleOption()
-        opt.initFrom(self)
-        painter = QPainter(self)
-        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, painter, self)

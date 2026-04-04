@@ -9,7 +9,26 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
+    QStyle,
+    QStyleOption,
 )
+from PySide6.QtGui import (
+    QPainter,
+)
+
+
+class StylableWidget(QWidget):
+    def paintEvent(self, event) -> None:
+        # Override paintEvent so that QSS styling is applied.
+        opt = QStyleOption()
+        opt.initFrom(self)
+        painter = QPainter(self)
+        self.style().drawPrimitive(
+            QStyle.PrimitiveElement.PE_Widget,
+            opt,
+            painter,
+            self,
+        )
 
 
 class HBoxLayout(QHBoxLayout):

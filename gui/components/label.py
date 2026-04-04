@@ -2,24 +2,19 @@
 Utility classes for displaying text with an icon, e.g. as a warning.
 """
 
-from PySide6.QtGui import (
-    QColor,
-    QPainter
-)
 from PySide6.QtWidgets import(
     QLabel,
     QStyle,
-    QWidget,
-    QStyleOption,
 )
 
 from gui.widgets import (
     HBoxLayout,
+    StylableWidget,
 )
 from gui.style import constants
 
 
-class IconLabel(QWidget):
+class IconLabel(StylableWidget):
     """
     Base class for icon labels.
 
@@ -68,12 +63,6 @@ class IconLabel(QWidget):
     @text.setter
     def text(self, new_text: str) -> None:
         self.text_label.setText(new_text)
-
-    def paintEvent(self, event) -> None:
-        opt = QStyleOption()
-        opt.initFrom(self)
-        painter = QPainter(self)
-        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, painter, self)
 
 
 class InfoLabel(IconLabel):
