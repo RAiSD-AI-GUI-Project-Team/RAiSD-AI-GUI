@@ -797,7 +797,7 @@ parameter_groups:
         constraints:
           - type: interval
             min: 1
-      "-Q": # What is the relation to L?
+      "-Q":
         name: Memory size
         description: The memory size (in MB) to be allocated for the conversion.
         cli: "-Q "
