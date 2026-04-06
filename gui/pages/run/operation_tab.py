@@ -137,7 +137,6 @@ class OperationTab(RunPageTab):
                 self.button.clicked.connect(lambda _, i=i: self._button_clicked(i))
                 self.tree_selectors.append((self.button, widget))
 
-            print(operation_categories)
             for category in operation_categories:
                 mode_label = QLabel(category+" Modes")
                 mode_label.setObjectName("mode_label")
