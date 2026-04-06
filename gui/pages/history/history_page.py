@@ -8,9 +8,10 @@ from PySide6.QtWidgets import (
     QStackedWidget,
     QScrollArea,
     QStyleOption,
-    QStyle
+    QStyle,
+    QPushButton
 )
-from PySide6.QtCore import Slot, Qt
+from PySide6.QtCore import Slot, Qt, Signal
 
 from ..page import Page
 from gui.components.history import HistoryListWidget
@@ -18,6 +19,7 @@ from gui.components.results import ResultsWidget
 from gui.model.settings import app_settings
 from gui.model.run_record import RunRecord
 from gui.model.history_record import HistoryRecord
+from gui.pages.run.run_page_tab import NavigationButtonsHolder
 
 class HistoryPage(Page):
     """
@@ -25,6 +27,8 @@ class HistoryPage(Page):
     showing a list of completed runs on the left and
     the details of the selected run on the right.
     """
+
+    re_use_run_clicked = Signal(HistoryRecord)
 
     def __init__(self):
         """
@@ -62,6 +66,7 @@ class HistoryPage(Page):
         run_results_label.setObjectName("run_results_label")
         results_layout.addWidget(run_results_label)
 
+        # Resultswidget of right panel
         self.results_widget = ResultsWidget(self._run_record)
         results_scroll = QScrollArea()
         results_scroll.setObjectName("history_results_scroll")
@@ -70,11 +75,23 @@ class HistoryPage(Page):
         results_scroll.setWidgetResizable(True)
         results_scroll.setWidget(self.results_widget)
         results_layout.addWidget(results_scroll, 1)
+
+        # Navigation buttons of right panel
+        navigation = self._setup_navigation_buttons()
+        results_layout.addWidget(navigation)
+        results_layout.setContentsMargins(0, 0, 0, 0)
+        results_layout.setSpacing(0)
+
         self._right_panel.addWidget(self.results_panel)
         self.results_panel.hide()
 
         # Give the list 1/3 and the detail panel 2/3 of the width
         splitter.setSizes([200, 400])
+
+    def _setup_navigation_buttons(self) -> NavigationButtonsHolder:
+        self.edit_button = QPushButton("Edit")
+        self.edit_button.clicked.connect(lambda : self.re_use_run_clicked.emit(self._selected))
+        return NavigationButtonsHolder(right_button=self.edit_button)
 
     @Slot(HistoryRecord)
     def add_completed_run(self, history_record: HistoryRecord) -> None:
