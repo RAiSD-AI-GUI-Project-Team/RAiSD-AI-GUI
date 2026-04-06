@@ -221,6 +221,14 @@ QWidget#parameter_form_section {
     margin-bottom: 10px;
 }
 
+QWidget#parameter_form_section[invalid="true"] {
+    background-color: white;
+    border-radius: 12px;
+    border: 2px solid red;
+    padding: 32px, 16px;
+    margin-bottom: 10px;
+}
+
 QWidget#heading{
     font-size: $font-size + 2px;
 }
