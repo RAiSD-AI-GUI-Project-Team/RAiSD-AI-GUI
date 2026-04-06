@@ -59,7 +59,10 @@ class ConfirmationTab(RunPageTab):
 
         # Commands
         commands_widget = QWidget()
-        commands_layout = VBoxLayout(commands_widget)
+        commands_layout = VBoxLayout(
+            commands_widget,
+            spacing=constants.GAP_TINY,
+        )
 
         commands_header = QWidget()
         commands_header_layout = HBoxLayout(commands_header)
