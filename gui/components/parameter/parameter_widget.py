@@ -46,20 +46,9 @@ from gui.widgets import (
 from gui.style import constants
 
 
-class AbstractQWidgetMeta(type(ABC), type(QWidget)):
-    """
-    Metaclass for an abstract base QWidget class.
-    """
-
-    pass
-
-
-class ParameterWidget(ABC, QWidget, metaclass=AbstractQWidgetMeta):
+class ParameterWidget(QWidget):
     """
     A base class for input widgets to fill in parameters using the GUI.
-
-    The class inherits from `ABC` to make it abstract and from
-    `QWidget`.
 
     A `ParameterWidget` object holds a reference to a `Parameter`
     object, which it updates with values entered by the user.
