@@ -818,10 +818,16 @@ class OperationNode(FileProducerNode):
 
     @property
     def overwrite_parameter(self) -> BoolParameter:
+        """
+        The overwrite parameter of this node.
+        """
         return self._overwrite_parameter
 
     @property
     def parameters(self) -> dict[str, Parameter[Any]]:
+        """
+        The parameters of this node's operation.
+        """
         return self._parameters
 
     @property
