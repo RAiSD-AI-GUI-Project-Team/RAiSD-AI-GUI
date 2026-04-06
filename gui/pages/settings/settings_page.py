@@ -27,11 +27,11 @@ class SettingsPage(Page):
     def _setup_ui(self):
         layout = VBoxLayout(
             self,
-            left=constants.GAP_DEFAULT,
-            top=constants.GAP_DEFAULT,
-            right=constants.GAP_DEFAULT,
-            bottom=constants.GAP_DEFAULT,
-            spacing=constants.GAP_DEFAULT,
+            left=constants.GAP_MEDIUM,
+            top=constants.GAP_MEDIUM,
+            right=constants.GAP_MEDIUM,
+            bottom=constants.GAP_MEDIUM,
+            spacing=constants.GAP_MEDIUM,
         )
 
         title_label = QLabel("Settings")
@@ -45,7 +45,7 @@ class SettingsPage(Page):
             left=constants.GAP_SMALL,
             top=constants.GAP_SMALL,
             right=constants.GAP_SMALL,
-            bottom=constants.GAP_DEFAULT,
+            bottom=constants.GAP_MEDIUM,
             spacing=constants.GAP_SMALL,
         )
 

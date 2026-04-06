@@ -63,9 +63,9 @@ class MainWindow(QMainWindow):
         left_sidebar_layout = VBoxLayout(
             left_sidebar,
             left=constants.GAP_TINY,
-            top=constants.GAP_DEFAULT,
+            top=constants.GAP_MEDIUM,
             right=constants.GAP_TINY,
-            bottom=constants.GAP_DEFAULT,
+            bottom=constants.GAP_MEDIUM,
             spacing=constants.GAP_TINY,
         )
 

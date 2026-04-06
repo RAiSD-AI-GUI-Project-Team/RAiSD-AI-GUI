@@ -388,7 +388,7 @@ class OperationNodeWidget(FileProducerNodeWidget):
         input_files_widget = QWidget()
         input_files_layout = HBoxLayout(
             input_files_widget,
-            spacing=constants.GAP_DEFAULT,
+            spacing=constants.GAP_MEDIUM,
         )
 
         self.file_consumer_widgets: list[FileConsumerNodeWidget] = []

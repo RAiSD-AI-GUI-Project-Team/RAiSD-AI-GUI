@@ -46,7 +46,7 @@ class ViewTab(RunPageTab):
         widget.setObjectName("run_view_widget")
         layout = VBoxLayout(
             widget,
-            spacing=constants.GAP_DEFAULT,
+            spacing=constants.GAP_MEDIUM,
         )
 
         title_label = QLabel("Run View")

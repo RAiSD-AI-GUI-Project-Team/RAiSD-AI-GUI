@@ -36,7 +36,7 @@ class ParameterTab(RunPageTab):
         widget.setObjectName("parameter_input_widget")
         layout = VBoxLayout(
             widget,
-            spacing=constants.GAP_DEFAULT,
+            spacing=constants.GAP_MEDIUM,
         )
 
         title_label = QLabel("Parameter Input")

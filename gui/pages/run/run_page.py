@@ -72,10 +72,10 @@ class RunPage(Page):
         # Step stacked widget
         stacked_step_widget = QWidget()
         stacked_step_widget.setContentsMargins(
-            constants.GAP_DEFAULT,
-            constants.GAP_DEFAULT,
-            constants.GAP_DEFAULT,
-            constants.GAP_DEFAULT,
+            constants.GAP_MEDIUM,
+            constants.GAP_MEDIUM,
+            constants.GAP_MEDIUM,
+            constants.GAP_MEDIUM,
         )
         self.stacked_step_widget_layout = QStackedLayout(stacked_step_widget)
         self.stacked_step_widget_layout.setContentsMargins(0, 0, 0, 0)

@@ -41,10 +41,10 @@ class HistoryPage(Page):
         # Main layout with a splitter
         layout = HBoxLayout(
             self,
-            left=constants.GAP_DEFAULT,
-            top=constants.GAP_DEFAULT,
-            right=constants.GAP_DEFAULT,
-            bottom=constants.GAP_DEFAULT,
+            left=constants.GAP_MEDIUM,
+            top=constants.GAP_MEDIUM,
+            right=constants.GAP_MEDIUM,
+            bottom=constants.GAP_MEDIUM,
         )
 
         splitter = QSplitter(Qt.Orientation.Horizontal)

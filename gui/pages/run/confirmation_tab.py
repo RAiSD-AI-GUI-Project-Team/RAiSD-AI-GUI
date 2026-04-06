@@ -49,7 +49,7 @@ class ConfirmationTab(RunPageTab):
         widget.setObjectName("parameter_confirmation_widget")
         layout = VBoxLayout(
             widget,
-            spacing=constants.GAP_DEFAULT,
+            spacing=constants.GAP_MEDIUM,
         )
 
         # Header
