@@ -44,8 +44,6 @@ class IconLabel(StylableWidget):
         :type expanded: bool
         """
         super().__init__()
-        self._expanded = expanded
-
         layout = HBoxLayout(
             self,
             left=constants.GAP_SMALL,
@@ -64,8 +62,9 @@ class IconLabel(StylableWidget):
 
         self.text_label = QLabel(text)
         self.text_label.setWordWrap(True)
-        self.text_label.setVisible(expanded)
         layout.addWidget(self.text_label, stretch=1)
+
+        self.expanded = expanded
 
     @property
     def text(self) -> str:
@@ -117,7 +116,6 @@ class InfoLabel(IconLabel):
             expanded=False,
         )
         self.setObjectName("info_label")
-        self.setProperty("expanded", "false")
 
 
 class WarningLabel(IconLabel):
@@ -138,7 +136,6 @@ class WarningLabel(IconLabel):
             expanded=True,
         )
         self.setObjectName("warning_label")
-        self.setProperty("expanded", "true")
 
 
 class ErrorLabel(IconLabel):
@@ -159,4 +156,3 @@ class ErrorLabel(IconLabel):
             expanded=True,
         )
         self.setObjectName("error_label")
-        self.setProperty("expanded", "true")
