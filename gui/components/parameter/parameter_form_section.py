@@ -36,6 +36,7 @@ class ParameterFormSection(QWidget):
         self._parameter_group = parameter_group
         self._parameter_group.enabled_changed.connect(self._parameter_group_enabled_changed)
         self._editable = editable
+        self._invalid = False
         self._parameter_widgets: list[ParameterWidget] = []
 
         # Make widgets
@@ -82,11 +83,20 @@ class ParameterFormSection(QWidget):
         for widget in self._parameter_widgets:
             widget.untouch()
 
-    def set_invalid(self, invalid: bool) -> None:
+    @property
+    def invalid(self) -> bool:
+        """
+        Get invalid property on the parameter_form_section
+        """
+        return self._invalid
+
+    @invalid.setter
+    def invalid(self, value: bool) -> None:
         """
         Set invalid property on the parameter_form_section
         """
-        self.setProperty("invalid", "true" if invalid else "false")
+        self._invalid = value
+        self.setProperty("invalid", "true" if value else "false")
         self.style().unpolish(self)
         self.style().polish(self)
 
