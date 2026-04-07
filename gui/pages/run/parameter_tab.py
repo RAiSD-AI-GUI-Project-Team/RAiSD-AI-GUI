@@ -14,6 +14,7 @@ from gui.model.parameter import MultiParameter, OptionalParameter, Parameter
 from gui.model.run_record import RunRecord
 from gui.widgets import (
     VBoxLayout,
+    HBoxLayout
 )
 from gui.components.parameter import ParameterForm
 from gui.style import constants
@@ -40,9 +41,21 @@ class ParameterTab(RunPageTab):
             spacing=constants.GAP_MEDIUM,
         )
 
+        header_widget = QWidget()
+        header_layout = HBoxLayout(header_widget)
         title_label = QLabel("Parameter Input")
         title_label.setProperty("title", "true")
-        layout.addWidget(title_label)
+
+        header_layout.addWidget(title_label)
+        header_layout.addStretch(1)
+
+        self._all_expanded = False
+        self._toggle_all_button = QPushButton("Expand All")
+        self._toggle_all_button.setObjectName("toggle_all_button")
+        self._toggle_all_button.clicked.connect(self._toggle_all_sections)
+        header_layout.addWidget(self._toggle_all_button, alignment=Qt.AlignmentFlag.AlignVCenter)
+
+        layout.addWidget(header_widget)
 
         self._parameter_form = ParameterForm(self._run_record, editable=True)
         self._parameter_form.setObjectName("parameter_form")
@@ -151,3 +164,12 @@ class ParameterTab(RunPageTab):
         self.update_next_button_state()
         if self._section_validity_hints:
             self._parameter_form.update_active_hints()
+
+    def _toggle_all_sections(self) -> None:
+        self._all_expanded = not self._all_expanded
+        for section in self._parameter_form._parameter_form_sections:
+            section._collapsible.collapsed = not self._all_expanded
+        if self._all_expanded:
+            self._toggle_all_button.setText("Collapse All")
+        else:
+            self._toggle_all_button.setText("Expand All")
