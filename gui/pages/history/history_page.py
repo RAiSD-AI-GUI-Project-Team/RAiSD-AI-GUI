@@ -82,8 +82,7 @@ class HistoryPage(Page):
 
         self.populate_history_list_widget()
 
-        self.results_panel.hide()
-        self._selected = None
+        self.selected = None
 
     def populate_history_list_widget(self) -> None:
         """
