@@ -3,7 +3,8 @@ Utility classes for displaying text with an icon, e.g. as a warning.
 
 Clicking the icon toggles the text and background visibility.
 """
-
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import(
     QLabel,
     QStyle,
