@@ -146,13 +146,9 @@ class Settings(QObject):
                     + "Expected string."
                 )
             workspace = QDir(workspace_path)
-            if not workspace.exists():
-                raise ValueError(
-                    f"Incorrect folder path for workspace: {workspace} "
-                    + "This workspace does not exist."
-                )
+            if workspace.exists():
             # Do not use setters because do not write to file
-            self._workspace_path = workspace
+                self._workspace_path = workspace
 
         # Executable
         if "executable" in settings_obj:
