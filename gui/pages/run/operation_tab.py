@@ -50,6 +50,9 @@ class OperationTab(RunPageTab):
         self.operation_selector = self.__class__.OperationSelector(
             self._run_record
         )
+        self._run_record.selected_operation_tree_index_changed.connect(
+            self.operation_selector.operation_selection_changed
+        )
         layout.addWidget(self.operation_selector, stretch=1000)
 
         layout.addStretch(1)
@@ -80,9 +83,6 @@ class OperationTab(RunPageTab):
 
     def refresh(self) -> None:
         pass
-
-    def reset(self) -> None:
-        self.operation_selector.reset()
     
     class OperationSelector(QWidget):
         def __init__(self, run_record: RunRecord):
@@ -135,10 +135,10 @@ class OperationTab(RunPageTab):
             self._run_record.selected_operation_tree_index = i
             self.tree_stacked_widget.current_index = i
 
-        def reset(self) -> None:
-            self.tree_stacked_widget.current_index = 0
+        def operation_selection_changed(self, index: int) -> None:
+            self.tree_stacked_widget.current_index = index
             for i, (button, widget) in enumerate(self.tree_selectors):
-                button.setChecked(i == self._run_record.selected_operation_tree_index) 
+                button.setChecked(i == index) 
                 widget.reset()
 
     @Slot()

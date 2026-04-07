@@ -194,6 +194,5 @@ class RunPage(Page):
     @Slot()
     def _new_run(self) -> None:
         self._run_record.reset()
-        self.operation_tab.reset()
         self._switch_to_operation_tab()
 

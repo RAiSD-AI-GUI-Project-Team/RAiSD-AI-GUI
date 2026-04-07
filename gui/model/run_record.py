@@ -50,6 +50,7 @@ class RunRecord(QObject):
 
     run_id_valid_changed = Signal(bool)
     operations_valid_changed = Signal(bool)
+    selected_operation_tree_index_changed = Signal(int)
 
     def __init__(
             self,
@@ -1194,6 +1195,7 @@ class RunRecord(QObject):
     def selected_operation_tree_index(self, new_index: int) -> None:
         self.selected_operation_tree.enabled = False
         self._selected_operation_tree_index = new_index
+        self.selected_operation_tree_index_changed.emit(new_index)
         self.selected_operation_tree.enabled = True
         self.operations_valid_changed.emit(self.operations_valid)
 
