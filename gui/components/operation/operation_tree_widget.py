@@ -123,8 +123,8 @@ class FileConsumerNodeWidget(StylableWidget):
             heading.setObjectName("heading")
 
         self._buttons: list[QRadioButton] = []
-        self._file_consumer_widgets: list[FileConsumerNodeWidget] = []
-        self.file_producer_widget = ResizableStackedWidget()
+        self._file_producer_widgets: list[FileProducerNodeWidget] = []
+        self.file_producer_stack = ResizableStackedWidget()
         self.file_selectors : list[tuple[QRadioButton | None, FileProducerNodeWidget]] = []
         if len(self._file_consumer_node.producers) == 1:
             # There is only one way to produce the required file, so
@@ -133,7 +133,8 @@ class FileConsumerNodeWidget(StylableWidget):
             producer_widget = FileProducerNodeWidget.from_file_producer(
                 producer,
             )
-            self.file_producer_widget.addWidget(producer_widget)
+            self._file_producer_widgets.append(producer_widget)
+            self.file_producer_stack.addWidget(producer_widget)
             self.file_selectors.append((None, producer_widget))
         else:
             # There are multiple options for obtaining the file, so
@@ -156,26 +157,27 @@ class FileConsumerNodeWidget(StylableWidget):
                 self._buttons.append(button)
                 button_layout.addWidget(button)
 
-                self.file_producer_widget.addWidget(producer_widget)
+                self._file_producer_widgets.append(producer_widget)
+                self.file_producer_stack.addWidget(producer_widget)
                 self.file_selectors.append((button, producer_widget))
 
                 button.clicked.connect(lambda _, i=i: self._button_clicked(i))
             layout.addWidget(button_widget)
-        layout.addWidget(self.file_producer_widget)
+        layout.addWidget(self.file_producer_stack)
 
     def _button_clicked(self, i: int) -> None:
         self._file_consumer_node.selected_index = i
-        self.file_producer_widget.current_index = i
+        self.file_producer_stack.current_index = i
 
     def refresh(self) -> None:
         for i, button in enumerate(self._buttons):
             button.setChecked(i == self._file_consumer_node.selected_index)
 
-        for file_consumer_widget in self._file_consumer_widgets:
+        for file_consumer_widget in self._file_producer_widgets:
             file_consumer_widget.refresh()
 
     def reset(self) -> None:
-        self.file_producer_widget.current_index = 0
+        self.file_producer_stack.current_index = 0
         for (i, (button, widget)) in enumerate(self.file_selectors):
             if button:
                 button.setChecked(i == self._file_consumer_node.selected_index)
