@@ -927,7 +927,10 @@ class OperationNode(FileProducerNode):
         return {
             "file_consumers": [
                 consumer.to_dict() for consumer in self.file_consumers
-            ]
+            ],
+            "parameters": {
+                parameter.name : parameter.to_dict() for parameter in self.parameters.values()
+            }
         }
 
     def populate_from_dict(self, values: dict) -> None:
@@ -950,6 +953,18 @@ class OperationNode(FileProducerNode):
                     + "Expected a dict."
                 )
             self.file_consumers[i].populate_from_dict(file_consumer_values)
+
+        if "parameters" not in values:
+            raise ValueError("Missing 'parameters' key in dict.")
+        parameters_dict = values["parameters"]
+        if not isinstance(parameters_dict, dict):
+            raise ValueError(
+                f"Wrong 'parameters': {parameters_dict}. "
+                + "Expected a dictionary."
+            )
+        for parameter in self.parameters.values():
+            if parameter.name in parameters_dict:
+                parameter.populate(parameters_dict[parameter.name])
 
     @Slot(bool)
     def _consumer_valid_changed(self, new_valid: bool) -> None:
