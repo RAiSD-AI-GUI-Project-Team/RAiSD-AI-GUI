@@ -64,7 +64,7 @@ class IconLabel(StylableWidget):
 
         self.text_label = QLabel(text)
         self.text_label.setWordWrap(True)
-        self.text_label.setVisible(False)
+        self.text_label.setVisible(expanded)
         layout.addWidget(self.text_label, stretch=1)
 
     @property
