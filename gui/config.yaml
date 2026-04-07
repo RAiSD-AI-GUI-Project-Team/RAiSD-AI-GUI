@@ -197,7 +197,7 @@ modes:
           type: bool
           default: false
         path:
-          - RAiSD_Report.
+          - RAiSD_Info.
           - type: run id
   - name: Common outlier analysis
     operations:
