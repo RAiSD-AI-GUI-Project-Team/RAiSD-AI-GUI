@@ -103,7 +103,8 @@ class OperationTab(RunPageTab):
 
             button_widget = QWidget()
             button_layout = VBoxLayout(button_widget)
-            # TODO button_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+            button_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+            button_layout.setSpacing(constants.GAP_TINY)
 
             tree_scroll = QScrollArea()
             tree_scroll.setObjectName("tree_scroll")
@@ -139,6 +140,8 @@ class OperationTab(RunPageTab):
                     self.button.clicked.connect(lambda _, i=idx: self._button_clicked(i))
                     self.tree_selectors.append((self.button, widget))
                     flat_index += 1
+
+                button_layout.addSpacing(constants.GAP_SMALL)
 
             tree_scroll.setWidget(self.tree_stacked_widget)
 
