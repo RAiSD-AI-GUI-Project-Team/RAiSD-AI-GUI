@@ -67,8 +67,8 @@ class ParameterFormSection(StylableWidget):
             self._parameter_widgets.append(widget)
             row_layout.addWidget(widget.build_form_row())
 
-        widget = Collapsible(heading, row_widget)
-        layout.addWidget(widget)
+        self._collapsible = Collapsible(heading, row_widget)
+        layout.addWidget(self._collapsible)
 
         self.setVisible(self._parameter_group.enabled)
 
