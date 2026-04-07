@@ -216,6 +216,10 @@ QWidget#parameter_form_section {
     border-radius: 12px;
 }
 
+QWidget#parameter_form_section[invalid="true"] {
+    border: 2px solid red;
+}
+
 QWidget#heading{
     font-size: $font-size + 3px;
 }
