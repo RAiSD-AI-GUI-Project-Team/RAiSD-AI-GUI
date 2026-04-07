@@ -803,7 +803,7 @@ parameter_groups:
       - VCF-MS
     parameters:
       "-L-vcf-ms":
-        name: Region length
+        name: Ms region length
         description: The region size (in basepairs) for the ms file obtained from the conversion. # ?
         cli: "-L "
         type: int
