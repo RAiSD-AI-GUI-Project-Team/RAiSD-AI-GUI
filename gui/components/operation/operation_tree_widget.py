@@ -420,11 +420,11 @@ class OperationNodeWidget(FileProducerNodeWidget):
         description.setWordWrap(True)
         layout.addWidget(description)
 
+        self.parameter_widgets: list[ParameterWidget] = []
         if self._operation_node.parameters:
             parameter_rows_widget = QWidget()
             parameter_rows_layout = VBoxLayout(parameter_rows_widget)
 
-            self.parameter_widgets : list[ParameterWidget] = []
             for parameter in self._operation_node.parameters.values():
                 parameter_widget = ParameterWidget.from_parameter(
                     parameter=parameter,
@@ -457,22 +457,39 @@ class OperationNodeWidget(FileProducerNodeWidget):
         )
         layout.addWidget(self._overwrite_parameter_row)
 
-        input_files_widget = QWidget()
-        input_files_layout = HBoxLayout(
-            input_files_widget,
-            spacing=constants.GAP_MEDIUM,
+        self._overwrite_warning_label = WarningLabel(
+            "You are about to overwrite existing data!"
         )
+        self._overwrite_warning_label.setVisible(
+            self._operation_node.overwrite,
+        )
+        layout.addWidget(self._overwrite_warning_label)
+
+        self._overwrite_parameter_row = ParameterWidget.from_parameter(
+            self._operation_node.overwrite_parameter,
+            editable=True,
+        ).build_form_row()
+        self._overwrite_parameter_row.setVisible(
+            self._operation_node.overwrite,
+        )
+        layout.addWidget(self._overwrite_parameter_row)
 
         self.file_consumer_widgets: list[FileConsumerNodeWidget] = []
-        for file_consumer in operation_node.file_consumers:
-            file_consumer_widget = FileConsumerNodeWidget(file_consumer)
-            self.file_consumer_widgets.append(file_consumer_widget)
-            input_files_layout.addWidget(
-                file_consumer_widget,
-                alignment=Qt.AlignmentFlag.AlignTop,
-                stretch=1,
+        if operation_node.file_consumers:
+            input_files_widget = QWidget()
+            input_files_layout = HBoxLayout(
+                input_files_widget,
+                spacing=constants.GAP_MEDIUM,
             )
-        layout.addWidget(input_files_widget)
+            for file_consumer in operation_node.file_consumers:
+                file_consumer_widget = FileConsumerNodeWidget(file_consumer)
+                self.file_consumer_widgets.append(file_consumer_widget)
+                input_files_layout.addWidget(
+                    file_consumer_widget,
+                    alignment=Qt.AlignmentFlag.AlignTop,
+                    stretch=1,
+                )
+            layout.addWidget(input_files_widget)
 
         self._operation_node.file_changed.connect(self._file_changed)
         self._operation_node.overwrite_changed.connect(self._overwrite_changed)
