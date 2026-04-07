@@ -86,6 +86,7 @@ class OperationTab(RunPageTab):
 
     def refresh(self) -> None:
         self.operation_selector.refresh()
+        self._update_next_button_state()
 
     def reset(self) -> None:
         self.operation_selector.reset()
