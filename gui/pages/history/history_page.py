@@ -87,8 +87,6 @@ class HistoryPage(Page):
         # Navigation buttons of right panel
         navigation = self._setup_navigation_buttons()
         results_layout.addWidget(navigation)
-        results_layout.setContentsMargins(0, 0, 0, 0)
-        results_layout.setSpacing(0)
 
         self._right_panel.addWidget(self.results_panel)
         self.results_panel.hide()

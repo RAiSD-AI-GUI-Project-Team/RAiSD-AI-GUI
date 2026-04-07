@@ -214,7 +214,6 @@ class RunPage(Page):
         self._switch_to_operation_tab()
 
     def reuse_run(self) -> None:
-        self.results_tab.results_widget.show_results()
         self._set_active_tab(self.operation_tab)    
         
     @Slot()
