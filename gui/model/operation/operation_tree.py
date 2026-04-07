@@ -123,6 +123,7 @@ class FileConsumerNode(QObject):
     them.
     """
 
+    selected_index_changed = Signal(int)
     valid_changed = Signal(bool)
 
     def __init__(
@@ -207,6 +208,7 @@ class FileConsumerNode(QObject):
     def selected_index(self, new_selected_index: int) -> None:
         self.selected_producer.enabled = False
         self._selected_index = new_selected_index
+        self.selected_index_changed.emit(new_selected_index)
         self.selected_producer.enabled = self.enabled
         self.valid_changed.emit(self.valid)
 

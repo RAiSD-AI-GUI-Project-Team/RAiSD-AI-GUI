@@ -104,6 +104,7 @@ class FileConsumerNodeWidget(StylableWidget):
         super().__init__()
         self.setObjectName("file_consumer_node")
         self._file_consumer_node = file_consumer_node
+        self._file_consumer_node.selected_index_changed.connect(self._selected_index_changed)
 
         layout = VBoxLayout(
             self,
