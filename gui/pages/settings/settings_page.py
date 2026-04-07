@@ -89,7 +89,6 @@ class SettingsPage(Page):
         config_widget.button_clicked.connect(app_settings.set_config_path)
         container_layout.addWidget(config_widget)
 
-        layout.addSpacing(40)
         layout.addWidget(container_widget)
 
         info_label = QLabel("Developers")
