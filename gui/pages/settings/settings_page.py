@@ -14,6 +14,7 @@ from gui.model.settings import app_settings
 from gui.widgets import (
     HBoxLayout,
     VBoxLayout,
+    StylableWidget
 )
 from gui.style import constants
 
@@ -135,7 +136,7 @@ class SettingsPage(Page):
         layout.addStretch()
 
 
-class SettingsItemWidget(QWidget):
+class SettingsItemWidget(StylableWidget):
     """
     A widget for a single setting. 
     Includes a name, current value and button to set it.
@@ -150,7 +151,7 @@ class SettingsItemWidget(QWidget):
         super().__init__()
         self._name = name
         self._value = value
-        self.setObjectName("workspace_widget")
+        self.setObjectName("settings_item_widget")
         layout = HBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
         layout.setSpacing(0)
