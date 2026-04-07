@@ -1,8 +1,7 @@
 """
 Utility classes for displaying text with an icon, e.g. as a warning.
 
-The text is hidden by default. Clicking the icon toggles the text
-and background visibility.
+Clicking the icon toggles the text and background visibility.
 """
 
 from PySide6.QtGui import (
@@ -24,14 +23,14 @@ class IconLabel(QWidget):
     Base class for icon labels.
 
     An `IconLabel` combines the provided icon and text in a horizontal
-    layout. The text is hidden by default — clicking the icon toggles
-    the text and styled background on and off.
+    layout. Visibility of the text and the background are determined by expanded parameter.
     """
 
     def __init__(
             self,
             pixmapi: QStyle.StandardPixmap,
             text: str,
+            expanded: bool,
     ) -> None:
         """
         Initialize an `IconLabel` object.
@@ -41,9 +40,12 @@ class IconLabel(QWidget):
 
         :param text: the text to display
         :type text: str
+
+        :param expanded: whether the text is expanded
+        :type expanded: bool
         """
         super().__init__()
-        self._expanded = False
+        self._expanded = expanded
 
         layout = QHBoxLayout(self)
 
@@ -58,9 +60,6 @@ class IconLabel(QWidget):
         self.text_label.setWordWrap(True)
         self.text_label.setVisible(False)
         layout.addWidget(self.text_label, stretch=1)
-
-        # Start collapsed
-        self.setProperty("expanded", "false")
 
     @property
     def text(self) -> str:
@@ -115,8 +114,10 @@ class InfoLabel(IconLabel):
         super().__init__(
             pixmapi=QStyle.StandardPixmap.SP_MessageBoxInformation,
             text=text,
+            expanded=False,
         )
         self.setObjectName("info_label")
+        self.setProperty("expanded", "false")
 
 
 class WarningLabel(IconLabel):
@@ -134,8 +135,10 @@ class WarningLabel(IconLabel):
         super().__init__(
             pixmapi=QStyle.StandardPixmap.SP_MessageBoxWarning,
             text=text,
+            expanded=True,
         )
         self.setObjectName("warning_label")
+        self.setProperty("expanded", "true")
 
 
 class ErrorLabel(IconLabel):
@@ -153,5 +156,7 @@ class ErrorLabel(IconLabel):
         super().__init__(
             pixmapi=QStyle.StandardPixmap.SP_MessageBoxCritical,
             text=text,
+            expanded=True,
         )
         self.setObjectName("error_label")
+        self.setProperty("expanded", "true")
