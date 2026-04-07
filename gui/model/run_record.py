@@ -1151,7 +1151,7 @@ class RunRecord(QObject):
         parameters_dict = {}
         for parameter_group in self.parameter_groups:
             for parameter in parameter_group:
-                parameters_dict[parameter.name] = HistoryRecord.parameter_to_value(parameter)
+                parameters_dict[parameter.name] = parameter.to_dict()
 
         return HistoryRecord(
             self.run_id,
@@ -1181,36 +1181,9 @@ class RunRecord(QObject):
         for parameter_group in self.parameter_groups:
             for parameter in parameter_group:
                 if parameter.name in dictionary:
-                    self.populate_parameter(parameter, dictionary[parameter.name])
+                    parameter.populate(dictionary[parameter.name])
                     #TODO: validity checking?
         self._time_completed = history_record.time_completed
-    
-    def populate_parameter(self, parameter: Parameter, value: dict | str) -> None:
-        """
-        Populate a parameter with the values from a dict or string. Uses
-        recursion for optional parameters and multi parameters.
-        """
-        # This could be moved to the parameters?
-        if isinstance(parameter, MultiParameter):
-            for param in parameter.parameters:
-                if isinstance(value, dict) and value[param.name] is not None:
-                    self.populate_parameter(param, value[param.name])
-        elif isinstance(parameter, OptionalParameter):
-            if isinstance(value, dict) and 'enabled' not in value:
-                raise ValueError(
-                    f"Incorrect format for {parameter.name}: {value}"
-                    + "Optional parameter must have 'enabled' value."
-                )
-            
-            if isinstance(value, dict) and isinstance(value["enabled"], bool):
-                parameter.value = value["enabled"]
-                if parameter.parameter in value:
-                    self.populate_parameter(
-                        parameter.parameter, 
-                        value[parameter.parameter.name]
-                    )
-        else:
-            parameter.value = value
     
     def reset(self) -> None:
         self.selected_operation_tree_index = 0
