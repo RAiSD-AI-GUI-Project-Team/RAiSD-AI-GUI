@@ -113,7 +113,7 @@ class MainWindow(QMainWindow):
     def _setup_main_widget(self, layout: QStackedLayout):
         self.run_page = RunPage(self.run_record, self.command_executor)
         self.history_page = HistoryPage()
-        self.history_page.re_use_run_clicked.connect(self._re_use_run)
+        self.history_page.reuse_run_clicked.connect(self._reuse_run)
         self.settings_page = SettingsPage()
 
         layout.addWidget(self.run_page)
@@ -121,7 +121,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.settings_page)
 
     @Slot(HistoryRecord)
-    def _re_use_run(self, history_record: HistoryRecord) -> None:
+    def _reuse_run(self, history_record: HistoryRecord) -> None:
         self.run_record.populate(history_record)
         self.run_page._switch_to_operation_tab()
         self._set_active_view(self.run_button)

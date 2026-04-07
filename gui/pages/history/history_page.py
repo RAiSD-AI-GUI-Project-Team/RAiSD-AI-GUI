@@ -28,7 +28,7 @@ class HistoryPage(Page):
     the details of the selected run on the right.
     """
 
-    re_use_run_clicked = Signal(HistoryRecord)
+    reuse_run_clicked = Signal(HistoryRecord)
 
     def __init__(self):
         """
@@ -90,7 +90,7 @@ class HistoryPage(Page):
 
     def _setup_navigation_buttons(self) -> NavigationButtonsHolder:
         self.edit_button = QPushButton("Edit")
-        self.edit_button.clicked.connect(lambda : self.re_use_run_clicked.emit(self._selected))
+        self.edit_button.clicked.connect(lambda : self.reuse_run_clicked.emit(self._selected))
         return NavigationButtonsHolder(right_button=self.edit_button)
 
     @Slot(HistoryRecord)
