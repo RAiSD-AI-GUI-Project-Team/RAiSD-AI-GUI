@@ -24,6 +24,7 @@ from gui.widgets import (
 )
 from gui.components.parameter import ParameterForm
 from gui.components.dialog import ErrorDialog
+from gui.execution.command_executor import default_command_builder
 from gui.style import constants
 
 
@@ -64,22 +65,27 @@ class ConfirmationTab(RunPageTab):
             spacing=constants.GAP_TINY,
         )
 
-        commands_header = QWidget()
-        commands_header_layout = HBoxLayout(commands_header)
+        parameters_header = QWidget()
+        parameters_header_layout = HBoxLayout(parameters_header)
 
-        commands_label = QLabel("Parameters generated from the input:")
-        commands_header_layout.addWidget(commands_label, 1)
+        parameters_label = QLabel("Parameters generated from the input:")
+        parameters_header_layout.addWidget(parameters_label, 1)
 
         copy_button = QPushButton("Copy")
         copy_button.clicked.connect(self._copy_all)
-        commands_header_layout.addWidget(copy_button)
-        commands_layout.addWidget(commands_header)
+        parameters_header_layout.addWidget(copy_button)
+        commands_layout.addWidget(parameters_header)
 
-        self.commands_view = QListWidget()
-        self.commands_view.setObjectName("commands_view")
-        self.commands_view.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
-        self.commands_view.clicked.connect(self._copy_command)
-        commands_layout.addWidget(self.commands_view)
+        self.parameters_view = QListWidget()
+        self.parameters_view.setObjectName("parameters_view")
+        self.parameters_view.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.parameters_view.clicked.connect(self._copy_parameters)
+        commands_layout.addWidget(self.parameters_view)
+
+        self.commands_label = QLabel()
+        self.commands_label.setWordWrap(True)
+        commands_layout.addWidget(self.commands_label)
+
         layout.addWidget(commands_widget)
 
         # Parameters
@@ -105,29 +111,38 @@ class ConfirmationTab(RunPageTab):
         return NavigationButtonsHolder(left_button=self.edit_button, right_button=self.run_button)
 
     def refresh(self) -> None:
-        self.update_commands()
+        self.update_parameters()
+        self.update_command()
 
     def reset(self) -> None:
-        self.update_commands()
+        self.update_parameters()
+        self.update_command()
 
-    def update_commands(self) -> None:
+    def update_parameters(self) -> None:
         """
-        Updates the ParameterConfirmationWidget with the commands from
+        Updates the ParameterConfirmationWidget with the parameters from
         the RunResult.
         """
-        self.commands_view.clear()
+        self.parameters_view.clear()
         if self._run_record.to_cli():
-            self.commands_view.addItems([command for command in self._run_record.to_cli()])
-            self.commands_view.setMaximumHeight(self.commands_view.sizeHintForRow(0)*(self.commands_view.count()+1))
+            self.parameters_view.addItems([command for command in self._run_record.to_cli()])
+            self.parameters_view.setMaximumHeight(self.parameters_view.sizeHintForRow(0)*(self.parameters_view.count()+1))
+
+    def update_command(self) -> None:
+        """
+        Updates the command in the ConfirmationTab.
+        """
+        
+        self.commands_label.setText(f"Each line of parameters will be run with the following command: {default_command_builder("<parameters>")}")
 
     @Slot(int)
-    def _copy_command(self, index) -> None:
+    def _copy_parameters(self, index) -> None:
         """
-        Copies a singular command from the QTreeWidget to the clipboard.
+        Copies a singular line of parameters from the QTreeWidget to the clipboard.
         """
-        command = self.commands_view.itemFromIndex(index).text()
+        parameters = self.parameters_view.itemFromIndex(index).text()
         cb = QGuiApplication.clipboard()
-        cb.setText(command)
+        cb.setText(parameters)
 
     @Slot()
     def _copy_all(self) -> None:
