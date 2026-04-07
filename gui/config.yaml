@@ -1178,24 +1178,6 @@ parameter_groups:
   - name: Additional parameters
     operations: []
     parameters:
-      "-frm-img-gen":
-        name: Remove existing IMG-GEN directory
-        description: Remove the directory RAiSD_Images.runID if it already exists.
-        operations:
-          add:
-            - IMG-GEN
-        cli: "-frm"
-        type: bool
-        default: false
-      "-frm-swp-scn":
-        name: Remove existing SWP-SCN directory
-        description: Remove the directory RAiSD_Report.runID if it already exists.
-        operations:
-          add:
-            - SWP-SCN
-        cli: "-frm"
-        type: bool
-        default: false
       "-gpu":
         name: Use GPU
         description: Change the target hardware platform to be used for training, inference for model testing, and sweep scans from CPU to GPU. CUDA must be enabled to use this option.
