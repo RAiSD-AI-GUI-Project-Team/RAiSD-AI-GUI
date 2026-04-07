@@ -123,7 +123,7 @@ class MainWindow(QMainWindow):
     @Slot(HistoryRecord)
     def _reuse_run(self, history_record: HistoryRecord) -> None:
         self.run_record.populate(history_record)
-        self.run_page._switch_to_operation_tab()
+        self.run_page.reuse_run()
         self._set_active_view(self.run_button)
 
     def _set_active_view(self, active_button: QPushButton) -> None:
