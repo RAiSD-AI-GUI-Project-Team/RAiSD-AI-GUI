@@ -10,13 +10,15 @@ from PySide6.QtCore import (
 from PySide6.QtWidgets import (
     QFileDialog,
     QDialog,
-    QVBoxLayout,
     QLabel,
     QPushButton,
     QDialogButtonBox,
     QComboBox,
     QLineEdit
 )
+
+from gui.style import constants
+from gui.widgets import VBoxLayout
 
 
 class Settings(QObject):
@@ -41,7 +43,7 @@ class Settings(QObject):
             self.setModal(True)
             self.resize(400, 300)
             
-            layout = QVBoxLayout(self)
+            layout = VBoxLayout(self, spacing=constants.GAP_TINY)
 
             # workspace
             workspace_header = QLabel("Select workspace")
@@ -446,7 +448,7 @@ class Settings(QObject):
         self.dialog.setModal(True)
         self.dialog.resize(300, 200)
 
-        layout = QVBoxLayout(self.dialog)
+        layout = VBoxLayout(self.dialog, spacing=constants.GAP_TINY)
 
         combo_box = QComboBox()
         combo_box.addItems(self.environment_managers)
@@ -483,7 +485,7 @@ class Settings(QObject):
         self.dialog.setModal(True)
         self.dialog.resize(300, 200)
 
-        layout = QVBoxLayout(self.dialog)
+        layout = VBoxLayout(self.dialog, spacing=constants.GAP_TINY)
 
         line_edit = QLineEdit()
         line_edit.setText(self.environment_name)
