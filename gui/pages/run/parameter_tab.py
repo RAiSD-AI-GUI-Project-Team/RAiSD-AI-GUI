@@ -14,6 +14,7 @@ from gui.model.parameter import MultiParameter, OptionalParameter, Parameter
 from gui.model.run_record import RunRecord
 from gui.widgets import (
     VBoxLayout,
+    HBoxLayout
 )
 from gui.components.parameter import ParameterForm
 from gui.components.navigation_buttons_holder import NavigationButtonsHolder
@@ -30,6 +31,7 @@ class ParameterTab(RunPageTab):
 
     def __init__(self, run_record: RunRecord):
         self._run_record = run_record
+        self._section_validity_hints = False
         super().__init__()
 
     def _setup_widget(self) -> QWidget:
@@ -40,9 +42,21 @@ class ParameterTab(RunPageTab):
             spacing=constants.GAP_MEDIUM,
         )
 
+        header_widget = QWidget()
+        header_layout = HBoxLayout(header_widget)
         title_label = QLabel("Parameter Input")
         title_label.setProperty("title", "true")
-        layout.addWidget(title_label)
+
+        header_layout.addWidget(title_label)
+        header_layout.addStretch(1)
+
+        self._all_expanded = False
+        self._toggle_all_button = QPushButton("Expand All")
+        self._toggle_all_button.setObjectName("toggle_all_button")
+        self._toggle_all_button.clicked.connect(self._toggle_all_sections)
+        header_layout.addWidget(self._toggle_all_button, alignment=Qt.AlignmentFlag.AlignVCenter)
+
+        layout.addWidget(header_widget)
 
         self._parameter_form = ParameterForm(self._run_record, editable=True)
         self._parameter_form.setObjectName("parameter_form")
@@ -71,7 +85,7 @@ class ParameterTab(RunPageTab):
         self.update_next_button_state()
         # TODO: make this just connect to a signal on the parameter group list
         self._run_record.run_id_parameter.value_changed.connect(
-            self.update_next_button_state
+            self._on_parameter_changed
         )
         for group in self._run_record.parameter_groups:
             for parameter in group.parameters:
@@ -80,7 +94,7 @@ class ParameterTab(RunPageTab):
         return NavigationButtonsHolder(left_button=self.back_button, right_button=self.next_button)
 
     def refresh(self) -> None:
-        self.reset_touched()
+        self.reset_touched_section_validity()
         self.update_next_button_state()
 
     def reset(self) -> None:
@@ -95,10 +109,10 @@ class ParameterTab(RunPageTab):
             for child in parameter.parameters:
                 self._connect_parameter_to_update_next_button_state(child)
         elif isinstance(parameter, OptionalParameter):
-            parameter.value_changed.connect(self.update_next_button_state)
+            parameter.value_changed.connect(self._on_parameter_changed)
             self._connect_parameter_to_update_next_button_state(parameter.parameter)
         else:
-            parameter.value_changed.connect(self.update_next_button_state)
+            parameter.value_changed.connect(self._on_parameter_changed)
 
     def update_next_button_state(self) -> None:
         """
@@ -128,12 +142,35 @@ class ParameterTab(RunPageTab):
         """
         valid = self._run_record.valid
         if valid:
+            self._section_validity_hints = False
+            self._parameter_form.clear_validity_hints()
             self.navigate_next.emit()
         else:
+            self._section_validity_hints = True
+            self._parameter_form.update_validity_hints()
             self._parameter_form.touch_all()
 
-    def reset_touched(self) -> None:
+    def reset_touched_section_validity(self) -> None:
         """
-        Helper function to make touched false for all parameters
+        Helper function to make touched false for all parameters and validity hints false for all sections
         """
+        self._section_validity_hints = False
         self._parameter_form.untouch_all()
+        self._parameter_form.clear_validity_hints()
+
+    def _on_parameter_changed(self) -> None:
+        """
+        Update section borders if validity section hints are active
+        """
+        self.update_next_button_state()
+        if self._section_validity_hints:
+            self._parameter_form.update_active_hints()
+
+    def _toggle_all_sections(self) -> None:
+        self._all_expanded = not self._all_expanded
+        for section in self._parameter_form._parameter_form_sections:
+            section._collapsible.collapsed = not self._all_expanded
+        if self._all_expanded:
+            self._toggle_all_button.setText("Collapse All")
+        else:
+            self._toggle_all_button.setText("Expand All")
