@@ -1,16 +1,15 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget,
-    QHBoxLayout,
     QPushButton,
-    QStyle,
-    QStyleOption,
-)
-from PySide6.QtGui import (
-    QPainter,
 )
 
-class NavigationButtonsHolder(QWidget):
+from gui.widgets import (
+    StylableWidget,
+    HBoxLayout,
+)
+
+class NavigationButtonsHolder(StylableWidget):
     """
     A widget to hold the navigation buttons for a RunPageTab, and to allow
     for consistent styling and layout of these buttons across different tabs.
@@ -28,7 +27,7 @@ class NavigationButtonsHolder(QWidget):
 
         self.setObjectName("navigation_buttons_holder")
 
-        layout = QHBoxLayout(self)
+        layout = HBoxLayout(self)
         for button, alignment in ((self.left_button, Qt.AlignmentFlag.AlignLeft), 
                                   (self.middle_button, Qt.AlignmentFlag.AlignHCenter), 
                                   (self.right_button, Qt.AlignmentFlag.AlignRight)):
@@ -36,13 +35,3 @@ class NavigationButtonsHolder(QWidget):
                 layout.addWidget(button, alignment=alignment)
             else:
                 layout.addWidget(QWidget(), 1)
-
-    def paintEvent(self, event) -> None:
-        """
-        Override paintEvent so that QSS styling (background, border,
-        etc.) is applied to this plain QWidget subclass.
-        """
-        opt = QStyleOption()
-        opt.initFrom(self)
-        painter = QPainter(self)
-        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, painter, self)
