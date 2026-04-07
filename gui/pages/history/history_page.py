@@ -4,8 +4,6 @@ from PySide6.QtWidgets import (
     QSplitter,
     QStackedWidget,
     QScrollArea,
-    QStyleOption,
-    QStyle,
     QPushButton
 )
 from PySide6.QtCore import Slot, Qt, Signal
