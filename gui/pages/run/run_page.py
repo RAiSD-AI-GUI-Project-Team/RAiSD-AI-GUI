@@ -198,4 +198,12 @@ class RunPage(Page):
 
     def reuse_run(self) -> None:
         self.results_tab.results_widget.show_results()
+        self._set_active_tab(self.operation_tab)    
+        
+    @Slot()
+    def reset_page(self) -> None:
+        self._run_record.reset()
+        for tab in self.button_tab_pairs.values():
+            tab.reset()
         self._set_active_tab(self.operation_tab)
+
