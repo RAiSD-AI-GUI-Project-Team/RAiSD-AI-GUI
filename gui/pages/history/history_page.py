@@ -61,7 +61,10 @@ class HistoryPage(Page):
         self._right_panel = QStackedWidget()
         splitter.addWidget(self._right_panel)
         self.results_panel = QWidget()
-        results_layout = VBoxLayout(self.results_panel)
+        results_layout = VBoxLayout(
+            self.results_panel,
+            spacing=constants.GAP_SMALL,
+        )
 
         results_title_label = QLabel("Results")
         results_title_label.setProperty("title", "true")

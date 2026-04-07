@@ -19,6 +19,7 @@ from gui.widgets import (
 )
 from gui.components.parameter import ParameterForm
 from gui.components.collapsible import Collapsible
+from gui.style import constants
 
 
 class ResultsWidget(StylableWidget):
@@ -35,11 +36,17 @@ class ResultsWidget(StylableWidget):
         super().__init__()
         self._run_record = run_record
         self.setObjectName('results_widget')
-        layout = VBoxLayout(self)
+        layout = VBoxLayout(
+            self,
+            spacing=constants.GAP_TINY,
+        )
 
         # Folder widget
         files_widget = QWidget()
-        files_layout = VBoxLayout(files_widget)
+        files_layout = VBoxLayout(
+            files_widget,
+            spacing=constants.GAP_TINY,
+        )
         files_label = QLabel("Files in the generated directory")
         files_layout.addWidget(files_label)
         self.folder_structure = QFileSystemModel()
