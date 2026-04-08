@@ -10,6 +10,8 @@ from PySide6.QtWidgets import (
     QLabel,
 )
 
+from gui.components.label import ErrorLabel
+
 from .run_page_tab import RunPageTab
 from gui.model.run_record import RunRecord
 from gui.widgets import (
@@ -45,6 +47,10 @@ class ResultsTab(RunPageTab):
         self.title_label.setProperty("title", "true")
         layout.addWidget(self.title_label)
 
+        self.run_failed_label = ErrorLabel("RUN FAILED. The files shown below may be incomplete. The run won't be listed in the history tab.")
+        self.run_failed_label.hide()
+        layout.addWidget(self.run_failed_label)
+
         self.results_widget = ResultsWidget(self._run_record)
 
         results_scroll = QScrollArea()
@@ -75,7 +81,7 @@ class ResultsTab(RunPageTab):
     @Slot(bool)
     def run_ended(self, run_successful: bool) -> None:
         if (run_successful):
-            self.title_label.setText("Run Results (Successful)")
+            self.run_failed_label.hide()
         else:  
-            self.title_label.setText("Run Results (FAILED - Not saved in History)")
+            self.run_failed_label.show()
         self.results_widget.show_results()
