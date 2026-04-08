@@ -123,8 +123,8 @@ class Settings(QObject):
         """
         self.from_yaml(self.settings_file_path)
         if not self._workspace_path:
-            dialog = self.SetupDialog()
-            dialog.exec()
+            self.workspace_path = QDir("./")
+
 
     def from_yaml(self, file_path: str) -> None:
         """
