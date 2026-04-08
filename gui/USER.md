@@ -37,6 +37,16 @@ The parameter input tab allows you to configure the parameters for the selected 
 
 Most parameters have default values. To reset a parameter to its default value, click on the reset button next to it. If a parameter is invalid or missing, the GUI will show which parameters are causing the issue. You are only able to continue to the next step if all parameters are valid and the required ones are provided.
 
+#### Parameter Confirmation Tab
+
+![Screenshot of the Run Page Parameter Confirmation](/screenshots/run-page.parameter-confirmation.run1.png)
+
+The parameter confirmation tab allows you to review the parameters you have set before starting the execution. It provides a summary of all the parameters and their values. You can go back to the previous tab to edit if needed. Once you are satisfied with the parameters, you can proceed to start the run the commands.
+
+The parameters that the gui generated and will use for the execution of the operations are also shown in this tab. To copy these either click on one line to copy it or use the copy button to copy all parameters at once.
+
+The command that is each line of parameters will be run with is also shown.
+
 ### History Page
 blabla
 
