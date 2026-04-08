@@ -17,6 +17,7 @@ from PySide6.QtCore import (
     Signal,
     Slot,
     QFileInfo,
+    QFileSystemWatcher,
     QDir,
 )
 
@@ -84,6 +85,13 @@ class FileProducerNode(QObject):
     file_changed = Signal(str)
     overwrite_changed = Signal(bool)
     valid_changed = Signal(bool)
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._watcher = QFileSystemWatcher()
+        self.file_changed.connect(self._update_watcher_path)
+        self._watcher.fileChanged.connect(self._watched_file_changed)
+        self._watcher.directoryChanged.connect(self._watched_file_changed)
 
     @property
     def produces(self) -> FileStructure:
@@ -164,6 +172,25 @@ class FileProducerNode(QObject):
 
     def populate_from_dict(self, values: dict) -> None:
         raise NotImplementedError()
+
+    @Slot()
+    def _update_watcher_path(self) -> None:
+        # Remove the watched path, if any.
+        paths = self._watcher.files() + self._watcher.directories()
+        if paths:
+            self._watcher.removePaths(paths)
+
+        # Watch the closest existing ancestor of the output location.
+        file = self.file
+        added: bool = False
+        while file and not added:
+            added = self._watcher.addPath(file)
+            file = QFileInfo(file).dir().absolutePath()
+
+    @Slot()
+    def _watched_file_changed(self) -> None:
+        self._update_watcher_path()
+        self.overwrite_changed.emit(self.overwrite)
 
 
 class FileConsumerNode(QObject):
@@ -452,6 +479,8 @@ class CommonParentDirectoryNode(FileProducerNode):
             )
         )
 
+        self._update_watcher_path()
+
     @property
     def produces(self) -> Directory:
         """
@@ -653,6 +682,8 @@ class FilePickerNode(FileProducerNode):
         self._produces = produces
         self._file: str | None = None
         self._enabled = enabled
+
+        self._update_watcher_path()
 
     @property
     def produces(self) -> FileStructure:
@@ -1008,6 +1039,8 @@ class OperationNode(FileProducerNode):
                 parent=self,
             ),
         )
+
+        self._update_watcher_path()
 
     @property
     def id(self) -> str:
