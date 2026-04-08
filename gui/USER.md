@@ -73,10 +73,15 @@ The results tab allows you to view the results of the execution. It shows the fi
 - The **RAiSD_Info** files contain the terminal output of the RAiSD-AI tool for each command that was run. This can be useful for debugging and understanding the results.
 - The **RAiSD_Report** files contain the output of a sweep scan operation.
 
-Below the file browser you can view the parameters that were used for the run. If you want to slightly modify these parameters and run again, you can click  the *"Edit Run"* button. This will take you back to the operation selection tab with the operations and parameters pre-filled with the values from the previous run. When you want to start without the previous values, you can click the *"New Run"* button.
+Below the file browser you can view the parameters that were used for the run. If you want to slightly modify these parameters and run again, you can click  the *"Edit Run"* button. This will take you back to the [operation selection tab](#operation-selection-tab) with the operations and parameters pre-filled with the values from the previous run. When you want to start a new run without the previous values, you can click the *"New Run"* button.
 
 ### History Page
-blabla
+
+The history page allows you to view all your previous runs and their results. It shows a list of all runs with their run id, ordered by date. You can click on a run to view its details and results.
+
+You can use the *"Reuse"* button to reuse the selected operations and parameters of that previous run for a new run. This will take you to the run page's [operation selection tab](#operation-selection-tab) with the operations and parameters pre-filled with the values from the selected run.
+
+![Screenshot of the History Page](/screenshots/history-page.run1.png)
 
 ### Settings Page
 blabla
