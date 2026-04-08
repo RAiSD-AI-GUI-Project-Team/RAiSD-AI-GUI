@@ -9,6 +9,10 @@ For information about installing and running the GUI see the appropriate chapter
 
 The RAiSD-AI-GUI consists of several pages that allow you to navigate through the different features and functionalities of the tool. Below is an overview of all pages.
 
+### Workspace Selection
+
+The workspace selection page is the first page you see when you open the GUI for the first time. It allows you to select a workspace where all your runs and their results will be stored. You can choose an existing folder or create a new one. This workspace can be changed later in the [settings page](#settings-page) if needed.
+
 ### Run Page
 
 The Run Page is the main page of the GUI. It is used to execute RAiSD-AI operations. It's tabs allows you to select the operation you want to perform, configure the parameters, start the execution, monitor the progress, and view the results.
@@ -54,12 +58,22 @@ The command that is each line of parameters will be run with is also shown.
 The run tab allows you to monitor the progress of the execution. It shows the status of each command, the output, and any errors that may occur. You can also stop the execution if needed.
 
 Each command is symbolized with a circle. The color of the circle indicates the status of the command:
-- Empty: Not started
-- Yellow: Running
-- Blue: Completed successfully
-- Red: Completed with error
+- *Empty*: Not started
+- *Yellow*: Running
+- *Blue*: Completed successfully
+- *Red*: Completed with error
 
-To see the output of the RAiSD-AI tool use the "Toggle Console" button. This will show the standard output on the left and error output on the right. You can toggle the console at any time during the execution to check the output.
+To see the output of the RAiSD-AI tool use the *"Toggle Console"* button. This will show the standard output on the left and error output on the right. You can toggle the console at any time during the execution to check the output.
+
+#### Results Tab
+
+![Screenshot of the Run Page Results Tab](/screenshots/run-page.results.run1.png)
+
+The results tab allows you to view the results of the execution. It shows the files in the output folder of the run. You can double click on a file to view its contents. 
+- The **RAiSD_Info** files contain the terminal output of the RAiSD-AI tool for each command that was run. This can be useful for debugging and understanding the results.
+- The **RAiSD_Report** files contain the output of a sweep scan operation.
+
+Below the file browser you can view the parameters that were used for the run. If you want to slightly modify these parameters and run again, you can click  the *"Edit Run"* button. This will take you back to the operation selection tab with the operations and parameters pre-filled with the values from the previous run. When you want to start without the previous values, you can click the *"New Run"* button.
 
 ### History Page
 blabla
