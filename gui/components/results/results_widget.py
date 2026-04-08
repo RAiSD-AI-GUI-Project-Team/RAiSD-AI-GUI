@@ -1,4 +1,6 @@
 from PySide6.QtCore import (
+    Qt,
+    QDir,
     Slot,
     QUrl
 )
@@ -42,25 +44,35 @@ class ResultsWidget(StylableWidget):
         )
 
         # Folder widget
-        files_widget = QWidget()
+        self.files_widget = QWidget()
         files_layout = VBoxLayout(
-            files_widget,
+            self.files_widget,
             spacing=constants.GAP_TINY,
         )
-        files_label = QLabel("Files in the generated directory")
-        files_layout.addWidget(files_label)
+        self.files_label = QLabel("Files in the generated directory")
+        files_layout.addWidget(self.files_label)
         self.folder_structure = QFileSystemModel()
         self.folder_widget = QTreeView()
         self.folder_widget.setObjectName("folder_widget")
         self.folder_widget.doubleClicked.connect(self._on_double_click)
         files_layout.addWidget(self.folder_widget)
-        layout.addWidget(files_widget, 1)
+
+        self.no_files_label = QLabel("Directory does not exist anymore", alignment=Qt.AlignmentFlag.AlignCenter)
+        self.no_files_label.setObjectName("no_files_label")
+        self.no_files_label.hide()
+        layout.addWidget(self.no_files_label, 1)
+
+        layout.addWidget(self.files_widget, 1)
 
         # Parameter widget
-        parameters_header = QLabel("Parameters used")
-        parameter_form = ParameterForm(self._run_record, editable=False)
-        parameters_collapsible = Collapsible(parameters_header, parameter_form)
-        layout.addWidget(parameters_collapsible)
+        try:
+            parameters_header = QLabel("Parameters used")
+            parameter_form = ParameterForm(self._run_record, editable=False)
+            parameters_collapsible = Collapsible(parameters_header, parameter_form)
+            layout.addWidget(parameters_collapsible)
+        except Exception as e:
+            layout.addWidget(QLabel("Error occurred while creating parameter form"))
+            print(f"Error occurred while creating parameter widget: {e}")
 
     def show_results(self) -> None:
         """
@@ -68,10 +80,17 @@ class ResultsWidget(StylableWidget):
         """
         # Set folder widget to right folder
         path = app_settings.workspace_path.filePath(self._run_record.run_id)
-        self.folder_structure.setRootPath(path)
-        self.folder_widget.setModel(self.folder_structure)
-        self.folder_widget.setRootIndex(self.folder_structure.index(path))
-        self.folder_widget.header().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        if not QDir(path).exists():
+            self.files_widget.hide()
+            self.no_files_label.show()
+        else:
+            self.files_label.setText(f"Files in the generated directory '{app_settings.workspace_path.dirName()}/{self._run_record.run_id}':")
+            self.folder_structure.setRootPath(path)
+            self.folder_widget.setModel(self.folder_structure)
+            self.folder_widget.setRootIndex(self.folder_structure.index(path))
+            self.folder_widget.header().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+            self.files_widget.show()
+            self.no_files_label.hide()
 
     @Slot(int)
     def _on_double_click(self, index) -> None:
