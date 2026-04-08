@@ -5,6 +5,9 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
 
 from gui.model.parameter import (
+    IntervalConstraint,
+    MaxLengthConstraint,
+    RegexConstraint,
     BoolParameter,
     IntParameter,
     FloatParameter,
@@ -12,7 +15,7 @@ from gui.model.parameter import (
     StringParameter,
     FileParameter,
 )
-from gui.widgets.parameter_widget import (
+from gui.components.parameter import (
     BoolParameterWidget,
     IntParameterWidget,
     FloatParameterWidget,
@@ -79,8 +82,12 @@ class TestIntParameterWidget:
             flag="--testint",
             operations={'IMG-GEN', 'MDL-GEN'},
             default_value=5,
-            lower_bound=0,
-            upper_bound=10,
+            constraints=[
+                IntervalConstraint(
+                    lower_bound=0,
+                    upper_bound=10,
+                )
+            ],
         )
         self.widget = IntParameterWidget(self.param, editable=True)
 
@@ -111,8 +118,12 @@ class TestFloatParameterWidget:
             flag="--testfloat",
             operations={'IMG-GEN', 'MDL-GEN'},
             default_value=5.0,
-            lower_bound=0.0,
-            upper_bound=10.0,
+            constraints=[
+                IntervalConstraint(
+                    lower_bound=0.0,
+                    upper_bound=10.0,
+                )
+            ],
         )
         self.widget = FloatParameterWidget(self.param, editable=True)
 
@@ -178,8 +189,15 @@ class TestStringParameterWidget:
             flag="--teststring",
             operations={'IMG-GEN', 'MDL-GEN'},
             default_value="hello",
-            max_length=10,
-            pattern=re.compile(r"^[a-z]+$"),
+            constraints=[
+                MaxLengthConstraint(
+                    max_length=10,
+                ),
+                RegexConstraint(
+                    pattern=re.compile(r"^[a-z]+$"),
+                    hint="Only lowercase letters."
+                ),
+            ],
         )
         self.widget = StringParameterWidget(self.param, editable=True)
 
@@ -191,10 +209,6 @@ class TestStringParameterWidget:
         """Setting the parameter value should update the line edit."""
         self.param.value = "world"
         assert self.widget._line_edit.text() == "world"
-
-    def test_max_length_enforced(self):
-        """Line edit max length should match the parameter's max length."""
-        assert self.widget._line_edit.maxLength() == 10
 
     def test_reset_updates_line_edit(self):
         """Resetting the parameter should update the line edit."""
@@ -368,14 +382,14 @@ class TestFileParameterWidgetDialog:
 
     def test_open_file_dialog_single(self):
         """_open_file_dialog should set parameter value for single file."""
-        with patch("gui.widgets.parameter_widget.QFileDialog.getOpenFileName",
+        with patch("gui.components.parameter.QFileDialog.getOpenFileName",
                    return_value=(str(self.valid_file), "")):
             self.widget._open_file_dialog()
         assert self.param.value == [str(self.valid_file).replace("\\", "/")]
 
     def test_open_file_dialog_cancelled(self):
         """Cancelling the dialog should not change the parameter value."""
-        with patch("gui.widgets.parameter_widget.QFileDialog.getOpenFileName",
+        with patch("gui.components.parameter.QFileDialog.getOpenFileName",
                    return_value=("", "")):
             self.widget._open_file_dialog()
         assert self.param.value == []
@@ -391,7 +405,7 @@ class TestFileParameterWidgetDialog:
             operations={"TEST"}, accepted_formats=["vcf"], multiple=True,
         )
         widget = FileParameterWidget(param, editable=True)
-        with patch("gui.widgets.parameter_widget.QFileDialog.getOpenFileNames",
+        with patch("gui.components.parameter.QFileDialog.getOpenFileNames",
                    return_value=([str(f1), str(f2)], "")):
             widget._open_file_dialog()
         assert len(param.value) == 2

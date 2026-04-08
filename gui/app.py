@@ -14,9 +14,9 @@ from PySide6.QtGui import (
     QPixmap,
 )
 
-from gui.model.settings import app_settings, EnvironmentManager
+from gui.model.settings import app_settings
 from gui.model.run_record import RunRecord
-from gui.windows.main import MainWindow
+from gui.window import MainWindow
 
 
 def main():
