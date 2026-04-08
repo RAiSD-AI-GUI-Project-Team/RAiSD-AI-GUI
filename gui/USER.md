@@ -7,11 +7,11 @@ For information about installing and running the GUI see the appropriate chapter
 
 ## The Interface
 
-The RAiSD-AI-GUI consists of several pages and tabs that allow you to navigate through the different features and functionalities of the tool. Below is an overview of all pages.
+The RAiSD-AI-GUI consists of several pages that allow you to navigate through the different features and functionalities of the tool. Below is an overview of all pages.
 
 ### Run Page
 
-The Run Page is the main page of the GUI. It is used to execute RAiSD-AI operations. It allows you to select the operation you want to perform, configure the parameters, start the execution, monitor the progress, and view the results.
+The Run Page is the main page of the GUI. It is used to execute RAiSD-AI operations. It's tabs allows you to select the operation you want to perform, configure the parameters, start the execution, monitor the progress, and view the results.
 
 #### Operation Selection Tab
 
