@@ -29,8 +29,13 @@ TODO: write something about how one operation will itself run the required ones 
 
 > Note: If the choice of run id or other input parameters will cause data to be overwritten, the GUI will show a warning and ask for confirmation before proceeding.
 
-#### tab two
-this one is cool two
+#### Parameter Input Tab
+
+![Screenshot of the Run Page Parameter Input uncollapsed](/screenshots/run-page.parameter-input.run1.png)
+
+The parameter input tab allows you to configure the parameters for the selected operations. The parameters are organized into sections based on category and there are specific sections each related to the selected operations. You can expand or collapse each section to focus on the parameters that are most relevant.
+
+Most parameters have default values. To reset a parameter to its default value, click on the reset button next to it. If a parameter is invalid or missing, the GUI will show which parameters are causing the issue. You are only able to continue to the next step if all parameters are valid and the required ones are provided.
 
 ### History Page
 blabla
