@@ -29,7 +29,6 @@ class TestCommandExecutor:
         mock_run_record.run_id = "test-command-executor"
 
         self.command_executor = CommandExecutor(mock_run_record)
-        self.command_executor.command_builder = (lambda cmd: cmd)
         self.command_executor.output.connect(self.output_signal)
         self.command_executor.err_output.connect(self.err_output_signal)
         self.command_executor.execution_started.connect(self.execution_started_signal)
@@ -52,7 +51,7 @@ class TestCommandExecutor:
         self.process_failed = []
         self.process_stopped = []
 
-        self.command_img_gen = ""
+        self.command_img_gen = f"-n TestCommandExecutor -I {app_settings.executable_file_path.absoluteDir().absolutePath()}/datasets/train/msneutral1_100sims.out -L 100000 -its 50000 -op IMG-GEN -icl neutralTR -f -frm -O"
 
         yield   # everything after this will be run after the test methods.
 
@@ -84,6 +83,7 @@ class TestCommandExecutor:
 
     def test_start_execution_emit_execution_started_commands(self, qtbot):
         # arrange
+        self.command_executor.command_builder = (lambda cmd: cmd)
         commands = ["echo test1", "echo test2"]
 
         # act
@@ -105,7 +105,7 @@ class TestCommandExecutor:
 
     def test_start_execution_while_running_exception(self):
         # arrange
-        commands = ["ping -c 4"]
+        commands = [self.command_img_gen]
 
         # act
         self.command_executor.start_execution(commands)
@@ -117,11 +117,13 @@ class TestCommandExecutor:
     # test stop_execution / execution_stopped
     def test_stop_execution(self, qtbot):
         # arrange
-        commands = ["exit 15"]
+        commands = [self.command_img_gen]
 
         # act
         self.command_executor.start_execution(commands)
         qtbot.wait(500)
+        self.command_executor.stop_execution()
+
         # assert
         assert len(self.execution_started) == 1
         assert self.execution_started == [len(commands)]
@@ -139,6 +141,7 @@ class TestCommandExecutor:
     # test execution_finished
     def test_execution_finished(self, qtbot):
         # arrange
+        self.command_executor.command_builder = (lambda cmd: cmd)
         commands = ["echo test1", "echo test2"]
 
         # act
@@ -161,6 +164,7 @@ class TestCommandExecutor:
     # test execution_failed / process_failed
     def test_execution_failed_first_command(self, qtbot):
         # arrange
+        self.command_executor.command_builder = (lambda cmd: cmd)
         commands = ["pwd -rt", "echo test1"]
 
         # act
@@ -183,6 +187,7 @@ class TestCommandExecutor:
 
     def test_execution_failed_second_command(self, qtbot):
         # arrange
+        self.command_executor.command_builder = (lambda cmd: cmd)
         commands = ["echo test1", "pwd -rt"]
 
         # act
@@ -226,6 +231,7 @@ class TestCommandExecutor:
 
     def test_process_started_one_commands(self, qtbot):
         # arrange
+        self.command_executor.command_builder = (lambda cmd: cmd)
         commands = ["echo test1"]
 
         # act
@@ -247,6 +253,7 @@ class TestCommandExecutor:
 
     def test_process_started_two_commands(self, qtbot):
         # arrange
+        self.command_executor.command_builder = (lambda cmd: cmd)
         commands = ["echo test1", "echo test2"]
 
         # act
@@ -269,6 +276,7 @@ class TestCommandExecutor:
     # test output
     def test_output(self, qtbot):
         # arrange
+        self.command_executor.command_builder = (lambda cmd: cmd)
         commands = ["echo test1", "echo test2"]
 
         # act
@@ -282,6 +290,7 @@ class TestCommandExecutor:
     # test err output
     def test_output_and_err_output(self, qtbot):
         # arrange
+        self.command_executor.command_builder = (lambda cmd: cmd)
         commands = ["echo test1", "pwd -rt", ]
 
         # act
