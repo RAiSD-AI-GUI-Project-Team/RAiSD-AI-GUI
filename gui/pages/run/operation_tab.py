@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QLabel,
 )
 
-from .run_page_tab import RunPageTab, NavigationButtonsHolder
+from .run_page_tab import RunPageTab
 from gui.model.run_record import RunRecord
 from gui.widgets import (
     HBoxLayout,
@@ -20,6 +20,7 @@ from gui.widgets import (
 )
 from gui.components.operation import OperationTreeWidget
 from gui.components.parameter import ParameterWidget
+from gui.components.navigation_buttons_holder import NavigationButtonsHolder
 from gui.style import constants
 
 
@@ -56,6 +57,9 @@ class OperationTab(RunPageTab):
         self.operation_selector = self.__class__.OperationSelector(
             self._run_record
         )
+        self._run_record.selected_operation_tree_index_changed.connect(
+            self.operation_selector.operation_selection_changed
+        )
         layout.addWidget(self.operation_selector, stretch=1000)
 
         layout.addStretch(1)
@@ -85,10 +89,8 @@ class OperationTab(RunPageTab):
         return NavigationButtonsHolder(right_button=self.next_button)
 
     def refresh(self) -> None:
-        pass
-
-    def reset(self) -> None:
-        self.operation_selector.reset()
+        self.operation_selector.refresh()
+        self._update_next_button_state()
     
     class OperationSelector(QWidget):
         def __init__(self, run_record: RunRecord):
@@ -98,11 +100,13 @@ class OperationTab(RunPageTab):
 
             layout = HBoxLayout(
                 self,
-                spacing=constants.GAP_TINY,
+                spacing=constants.GAP_MEDIUM,
             )
 
             button_widget = QWidget()
             button_layout = VBoxLayout(button_widget)
+            button_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+            button_layout.setSpacing(constants.GAP_TINY)
 
             tree_scroll = QScrollArea()
             tree_scroll.setObjectName("tree_scroll")
@@ -114,41 +118,59 @@ class OperationTab(RunPageTab):
             )
             tree_scroll.setWidgetResizable(True)
 
+            self.operation_tree_widgets: list[OperationTreeWidget] = []
             self.tree_stacked_widget = ResizableStackedWidget()
             self.tree_stacked_widget.setObjectName("tree_stacked_widget")
-            
-            self.tree_selectors : list[tuple[QRadioButton, OperationTreeWidget]]= []
-            for i, tree in enumerate(
-                    self._run_record.operation_trees
-            ):
-                self.button = QRadioButton(tree.root.name)
-                self.button.setChecked(
-                    i
-                    == self._run_record.selected_operation_tree_index
-                )
-                button_layout.addWidget(self.button)
 
-                widget = OperationTreeWidget(tree)
-                self.tree_stacked_widget.addWidget(widget)
+            self.tree_selectors: list[tuple[QRadioButton, OperationTreeWidget]] = []
+            flat_index = 0
+            for mode_name, trees in self._run_record.categorized_operation_trees:
+                mode_label = QLabel(mode_name)
+                mode_label.setObjectName("mode_label")
+                button_layout.addWidget(mode_label)
 
-                self.button.clicked.connect(lambda _, i=i: self._button_clicked(i))
-                self.tree_selectors.append((self.button, widget))
+                for tree in trees:
+                    self.button = QRadioButton(tree.root.name)
+                    self.button.setChecked(
+                        flat_index == self._run_record.selected_operation_tree_index
+                    )
+                    button_layout.addWidget(self.button)
+
+                    widget = OperationTreeWidget(tree)
+                    self.operation_tree_widgets.append(widget)
+                    self.tree_stacked_widget.addWidget(widget)
+
+                    idx = flat_index
+                    self.button.clicked.connect(lambda _, i=idx: self._button_clicked(i))
+                    self.tree_selectors.append((self.button, widget))
+                    flat_index += 1
+
+                button_layout.addSpacing(constants.GAP_SMALL)
+
             tree_scroll.setWidget(self.tree_stacked_widget)
-
-            button_layout.addStretch()
 
             layout.addWidget(button_widget)
             layout.addWidget(tree_scroll)
+
+        def refresh(self) -> None:
+            for tree_widget in self.operation_tree_widgets:
+                for i, (button, _) in enumerate(self.tree_selectors):
+                    button.setChecked(
+                        i == self._run_record.selected_operation_tree_index
+                    )
+                self.tree_stacked_widget.current_index = (
+                    self._run_record.selected_operation_tree_index
+                )
+                tree_widget.refresh()
 
         def _button_clicked(self, i: int) -> None:
             self._run_record.selected_operation_tree_index = i
             self.tree_stacked_widget.current_index = i
 
-        def reset(self) -> None:
-            self.tree_stacked_widget.current_index = 0
+        def operation_selection_changed(self, index: int) -> None:
+            self.tree_stacked_widget.current_index = index
             for i, (button, widget) in enumerate(self.tree_selectors):
-                button.setChecked(i == self._run_record.selected_operation_tree_index) 
-                widget.reset()
+                button.setChecked(i == index) 
 
     @Slot()
     def _run_id_valid_changed(self, new_valid) -> None:

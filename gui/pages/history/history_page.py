@@ -4,13 +4,15 @@ from PySide6.QtWidgets import (
     QSplitter,
     QStackedWidget,
     QScrollArea,
+    QPushButton
 )
-from PySide6.QtCore import Slot, Qt
+from PySide6.QtCore import Slot, Qt, Signal
 
 from ..page import Page
 from gui.model.settings import app_settings
 from gui.model.run_record import RunRecord
 from gui.model.history_record import HistoryRecord
+from gui.components.navigation_buttons_holder import NavigationButtonsHolder
 from gui.widgets import (
     HBoxLayout,
     VBoxLayout,
@@ -26,13 +28,15 @@ class HistoryPage(Page):
     the details of the selected run on the right.
     """
 
+    reuse_run_clicked = Signal(HistoryRecord)
+
     def __init__(self):
         """
         Initialize a `HistoryPage` object.
         """
         super().__init__()
         self._history_list: HistoryListWidget = HistoryListWidget()
-        self._run_record = RunRecord.from_yaml(app_settings.config_path)
+        self._run_record = RunRecord.from_yaml(app_settings.config_path.absoluteFilePath())
         self._selected : HistoryRecord | None = None
         self._setup_ui()
         self._history_list.setObjectName("history_list")
@@ -70,6 +74,7 @@ class HistoryPage(Page):
         results_title_label.setProperty("title", "true")
         results_layout.addWidget(results_title_label)
 
+        # Resultswidget of right panel
         self.results_widget = ResultsWidget(self._run_record)
         results_scroll = QScrollArea()
         results_scroll.setObjectName("history_results_scroll")
@@ -78,11 +83,21 @@ class HistoryPage(Page):
         results_scroll.setWidgetResizable(True)
         results_scroll.setWidget(self.results_widget)
         results_layout.addWidget(results_scroll, 1)
+
+        # Navigation buttons of right panel
+        navigation = self._setup_navigation_buttons()
+        results_layout.addWidget(navigation)
+
         self._right_panel.addWidget(self.results_panel)
         self.results_panel.hide()
 
         # Give the list 1/3 and the detail panel 2/3 of the width
         splitter.setSizes([200, 400])
+
+    def _setup_navigation_buttons(self) -> NavigationButtonsHolder:
+        self.edit_button = QPushButton("Reuse")
+        self.edit_button.clicked.connect(lambda : self.reuse_run_clicked.emit(self._selected))
+        return NavigationButtonsHolder(right_button=self.edit_button)
 
     def reset_page(self) -> None:
         """

@@ -64,7 +64,6 @@ class CommandExecutor(QObject):
         self._commands = []
         self._command_queue = queue.Queue()
 
-
     @Slot(list)
     def start_execution(self, commands:list[str]=[]) -> None:
         """

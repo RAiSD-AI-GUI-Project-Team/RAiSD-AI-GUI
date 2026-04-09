@@ -55,11 +55,12 @@ class RunRecord(QObject):
 
     run_id_valid_changed = Signal(bool)
     operations_valid_changed = Signal(bool)
+    selected_operation_tree_index_changed = Signal(int)
 
     def __init__(
             self,
             run_id_parameter: StringParameter,
-            operation_trees: list[OperationTree],
+            categorized_operation_trees: list[tuple[str, list[OperationTree]]],
             parameter_groups: list[ParameterGroup] | None = None,
             dependencies: list[Dependency] | None = None,
     ) -> None:
@@ -75,8 +76,8 @@ class RunRecord(QObject):
         self._run_id_parameter.value_changed.connect(
             self._run_id_parameter_value_changed
         )
-        self._operation_trees = operation_trees
-        for tree in self._operation_trees:
+        self._categorized_operation_trees = categorized_operation_trees
+        for tree in self.operation_trees:
             tree.valid_changed.connect(self._operation_tree_valid_changed)
         self._selected_operation_tree_index = 0
         self._parameter_groups = parameter_groups or []
@@ -195,7 +196,7 @@ class RunRecord(QObject):
 
         def parse_operation(
                 obj: dict,
-                id: str
+                id: str,
         ) -> Operation:
             name = obj.get("name", "") or ""
             if not isinstance(name, str):
@@ -1049,6 +1050,7 @@ class RunRecord(QObject):
         config_obj = load(config_text, Loader=Loader)
 
         operations = {}
+        mode_operation_ids: list[tuple[str, list[str]]] = []
         if "modes" not in config_obj:
             raise ValueError("Configuration file contains no list of modes.")
         mode_list = config_obj["modes"]
@@ -1059,6 +1061,13 @@ class RunRecord(QObject):
         for mode_obj in mode_list:
             if not isinstance(mode_obj, dict):
                 raise ValueError(f"Invalid mode: {mode_obj}. Expected object.")
+            if "name" not in mode_obj:
+                raise ValueError("Mode has no name.")
+            mode_name = mode_obj.get("name")
+            if not isinstance(mode_name, str):
+                raise ValueError(
+                    f"Invalid mode name: {mode_name}. Expected string."
+                )
             if "operations" not in mode_obj:
                 raise ValueError(f"Mode has no operation list.")
             operations_obj = mode_obj["operations"]
@@ -1067,6 +1076,7 @@ class RunRecord(QObject):
                     f"Invalid operations dictionary: {operations_obj}. "
                     + "Expected an object."
                 )
+            current_mode_op_ids = []
             for operation_id in operations_obj:
                 operation_obj = operations_obj[operation_id]
                 if not isinstance(operation_obj, dict):
@@ -1075,7 +1085,8 @@ class RunRecord(QObject):
                         + "Expected an object."
                     )
                 operations[operation_id] = parse_operation(operation_obj, operation_id)
-
+                current_mode_op_ids.append(operation_id)
+            mode_operation_ids.append((mode_name, current_mode_op_ids))
         if "run_id_parameter" not in config_obj:
             raise ValueError(
                 "Run ID parameter missing from configuration file!"
@@ -1099,13 +1110,47 @@ class RunRecord(QObject):
             )
         id_to_parameter["run-id"] = run_id_parameter
 
+        if "common_directory_overwrite_parameter" not in config_obj:
+            raise ValueError(
+                "Missing overwrite parameter definition for common parent "
+                + "directory nodes."
+            )
+        overwrite_parameter_obj = config_obj[
+            "common_directory_overwrite_parameter"
+        ]
+        if not isinstance(overwrite_parameter_obj, dict):
+            raise ValueError(
+                "Invalid value for common parent directory node overwrite "
+                + f"parameter: {overwrite_parameter_obj}. Expected object."
+            )
+        overwrite_parameter_builder = (
+            lambda: parse_parameter(
+                overwrite_parameter_obj,
+                operations=set(operations.keys()),
+            )
+        )
+
         parameter_groups = []
         for parameter_group_obj in config_obj["parameter_groups"]:
             parameter_groups.append(parse_parameter_group(parameter_group_obj))
 
-        operation_trees, operation_conditions = OperationTree.build_trees(operations)
+        operation_trees, operation_conditions = OperationTree.build_trees(
+            operations,
+            overwrite_parameter_builder,
+        )
 
-        result = cls(run_id_parameter, operation_trees, parameter_groups)
+        # Build a mapping from operation ID to its tree
+        op_id_to_tree = {}
+        for tree in operation_trees:
+            op_id_to_tree[tree.root.id] = tree
+
+        # Group trees by mode
+        categorized_operation_trees: list[tuple[str, list[OperationTree]]] = []
+        for mode_name, op_ids in mode_operation_ids:
+            mode_trees = [op_id_to_tree[op_id] for op_id in op_ids]
+            categorized_operation_trees.append((mode_name, mode_trees))
+
+        result = cls(run_id_parameter, categorized_operation_trees, parameter_groups)
 
         for param in parameters:
             for constraint_obj in parameter_to_constraint_objs[param]:
@@ -1150,7 +1195,7 @@ class RunRecord(QObject):
         parameters_dict = {}
         for parameter_group in self.parameter_groups:
             for parameter in parameter_group:
-                parameters_dict[parameter.name] = HistoryRecord.parameter_to_value(parameter)
+                parameters_dict[parameter.name] = parameter.to_dict()
 
         return HistoryRecord(
             self.run_id,
@@ -1180,40 +1225,13 @@ class RunRecord(QObject):
         for parameter_group in self.parameter_groups:
             for parameter in parameter_group:
                 if parameter.name in dictionary:
-                    self.populate_parameter(parameter, dictionary[parameter.name])
+                    parameter.populate(dictionary[parameter.name])
                     #TODO: validity checking?
         self._time_completed = history_record.time_completed
     
-    def populate_parameter(self, parameter: Parameter, value: dict | str) -> None:
-        """
-        Populate a parameter with the values from a dict or string. Uses
-        recursion for optional parameters and multi parameters.
-        """
-        # This could be moved to the parameters?
-        if isinstance(parameter, MultiParameter):
-            for param in parameter.parameters:
-                if isinstance(value, dict) and value[param.name] is not None:
-                    self.populate_parameter(param, value[param.name])
-        elif isinstance(parameter, OptionalParameter):
-            if isinstance(value, dict) and 'enabled' not in value:
-                raise ValueError(
-                    f"Incorrect format for {parameter.name}: {value}"
-                    + "Optional parameter must have 'enabled' value."
-                )
-            
-            if isinstance(value, dict) and isinstance(value["enabled"], bool):
-                parameter.value = value["enabled"]
-                if parameter.parameter in value:
-                    self.populate_parameter(
-                        parameter.parameter, 
-                        value[parameter.parameter.name]
-                    )
-        else:
-            parameter.value = value
-    
     def reset(self) -> None:
         self.selected_operation_tree_index = 0
-        for tree in self._operation_trees:
+        for tree in self.operation_trees:
             tree.reset()
         self.run_id_parameter.reset_value()
         for parameter_group in self.parameter_groups:
@@ -1248,8 +1266,18 @@ class RunRecord(QObject):
         return app_settings.workspace_path.absoluteFilePath(self.run_id)
 
     @property
+    def categorized_operation_trees(self) -> list[tuple[str, list[OperationTree]]]:
+        """Operation trees grouped by mode name."""
+        return self._categorized_operation_trees
+
+    @property
     def operation_trees(self) -> list[OperationTree]:
-        return self._operation_trees
+        """Flat list of all operation trees."""
+        return [
+            tree
+            for _, trees in self._categorized_operation_trees
+            for tree in trees
+        ]
 
     @property
     def selected_operation_tree(self) -> OperationTree:
@@ -1263,6 +1291,7 @@ class RunRecord(QObject):
     def selected_operation_tree_index(self, new_index: int) -> None:
         self.selected_operation_tree.enabled = False
         self._selected_operation_tree_index = new_index
+        self.selected_operation_tree_index_changed.emit(new_index)
         self.selected_operation_tree.enabled = True
         self.operations_valid_changed.emit(self.operations_valid)
 

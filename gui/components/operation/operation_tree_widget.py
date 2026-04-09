@@ -30,6 +30,7 @@ from gui.model.operation import (
 )
 from gui.components.label import (
     InfoLabel,
+    WarningLabel,
 )
 from gui.widgets import (
     HBoxLayout,
@@ -78,7 +79,10 @@ class FileProducerNodeWidget(StylableWidget):
         The text to be displayed on the button that selects this widget.
         """
         raise NotImplementedError()
-    
+
+    def refresh(self) -> None:
+        raise NotImplementedError()
+
     def reset(self) -> None:
         raise NotImplementedError()
 
@@ -104,6 +108,7 @@ class FileConsumerNodeWidget(StylableWidget):
         super().__init__()
         self.setObjectName("file_consumer_node")
         self._file_consumer_node = file_consumer_node
+        self._file_consumer_node.selected_index_changed.connect(self._selected_index_changed)
 
         layout = VBoxLayout(
             self,
@@ -118,7 +123,9 @@ class FileConsumerNodeWidget(StylableWidget):
             layout.addWidget(heading)
             heading.setObjectName("heading")
 
-        self.file_producer_widget = ResizableStackedWidget()
+        self._buttons: list[QRadioButton] = []
+        self._file_producer_widgets: list[FileProducerNodeWidget] = []
+        self.file_producer_stack = ResizableStackedWidget()
         self.file_selectors : list[tuple[QRadioButton | None, FileProducerNodeWidget]] = []
         if len(self._file_consumer_node.producers) == 1:
             # There is only one way to produce the required file, so
@@ -127,7 +134,8 @@ class FileConsumerNodeWidget(StylableWidget):
             producer_widget = FileProducerNodeWidget.from_file_producer(
                 producer,
             )
-            self.file_producer_widget.addWidget(producer_widget)
+            self._file_producer_widgets.append(producer_widget)
+            self.file_producer_stack.addWidget(producer_widget)
             self.file_selectors.append((None, producer_widget))
         else:
             # There are multiple options for obtaining the file, so
@@ -147,26 +155,34 @@ class FileConsumerNodeWidget(StylableWidget):
                     )
                 button = QRadioButton(producer_widget.button_text)
                 button.setChecked(i == self._file_consumer_node.selected_index)
+                self._buttons.append(button)
                 button_layout.addWidget(button)
 
-                self.file_producer_widget.addWidget(producer_widget)
+                self._file_producer_widgets.append(producer_widget)
+                self.file_producer_stack.addWidget(producer_widget)
                 self.file_selectors.append((button, producer_widget))
 
                 button.clicked.connect(lambda _, i=i: self._button_clicked(i))
             layout.addWidget(button_widget)
-        layout.addWidget(self.file_producer_widget)
+        layout.addWidget(self.file_producer_stack)
 
     def _button_clicked(self, i: int) -> None:
         self._file_consumer_node.selected_index = i
-        self.file_producer_widget.current_index = i
+        self.file_producer_stack.current_index = i
 
-    def reset(self) -> None:
-        self.file_producer_widget.current_index = 0
-        for (i, (button, widget)) in enumerate(self.file_selectors):
+    def refresh(self) -> None:
+        for i, button in enumerate(self._buttons):
+            button.setChecked(i == self._file_consumer_node.selected_index)
+
+        for file_consumer_widget in self._file_producer_widgets:
+            file_consumer_widget.refresh()
+
+    @Slot(int)
+    def _selected_index_changed(self, index: int) -> None:
+        self.file_producer_stack.current_index = index
+        for (i, (button, _)) in enumerate(self.file_selectors):
             if button:
-                button.setChecked(i == self._file_consumer_node.selected_index)
-            widget.reset()
-
+                button.setChecked(i == index)
 
 class CommonParentDirectoryNodeWidget(FileProducerNodeWidget):
     """
@@ -186,7 +202,7 @@ class CommonParentDirectoryNodeWidget(FileProducerNodeWidget):
         """
         super().__init__()
         self.setObjectName("common_parent_directory_node")
-        self._common_parent_directory = common_parent_directory
+        self._common_parent_directory_node = common_parent_directory
 
         layout = VBoxLayout(
             self,
@@ -200,19 +216,53 @@ class CommonParentDirectoryNodeWidget(FileProducerNodeWidget):
         heading.setWordWrap(True)
         layout.addWidget(heading)
 
-        self.widgets : list[FileConsumerNodeWidget]= []
-        for file_consumer in self._common_parent_directory.file_consumers:
+        self._overwrite_warning_label = WarningLabel(
+            "You are about to overwrite existing data!"
+        )
+        self._overwrite_warning_label.setVisible(
+            self._common_parent_directory_node.overwrite,
+        )
+        layout.addWidget(self._overwrite_warning_label)
+
+        self._overwrite_parameter_row = ParameterWidget.from_parameter(
+            self._common_parent_directory_node.overwrite_parameter,
+            editable=True,
+        ).build_form_row()
+        self._overwrite_parameter_row.setVisible(
+            self._common_parent_directory_node.overwrite,
+        )
+        layout.addWidget(self._overwrite_parameter_row)
+
+        self.file_consumer_widgets : list[FileConsumerNodeWidget]= []
+        for file_consumer in self._common_parent_directory_node.file_consumers:
             file_consumer_widget = FileConsumerNodeWidget(file_consumer)
             layout.addWidget(file_consumer_widget)
-            self.widgets.append(file_consumer_widget)
+            self.file_consumer_widgets.append(file_consumer_widget)
 
-    def reset(self) -> None:
-        for widget in self.widgets:
-            widget.reset()
+        self._common_parent_directory_node.overwrite_changed.connect(
+            self._overwrite_changed,
+        )
+
+    def refresh(self) -> None:
+        self._overwrite_warning_label.setVisible(
+            self._common_parent_directory_node.overwrite,
+        )
+        self._overwrite_parameter_row.setVisible(
+            self._common_parent_directory_node.overwrite,
+        )
+        self._common_parent_directory_node.overwrite_parameter.value = False
+
+        for file_consumer_widget in self.file_consumer_widgets:
+            file_consumer_widget.refresh()
 
     @property
     def button_text(self) -> str:
         return "Run multiple operations to generate the input files."
+
+    @Slot(bool)
+    def _overwrite_changed(self, new_overwrite: bool) -> None:
+        self._overwrite_warning_label.setVisible(new_overwrite)
+        self._overwrite_parameter_row.setVisible(new_overwrite)
 
 
 class FilePickerNodeWidget(FileProducerNodeWidget):
@@ -295,6 +345,9 @@ class FilePickerNodeWidget(FileProducerNodeWidget):
 
         self._file_picker.file_changed.connect(self._file_picker_file_changed)
 
+    def refresh(self) -> None:
+        pass
+
     def reset(self) -> None:
         pass
 
@@ -365,11 +418,11 @@ class OperationNodeWidget(FileProducerNodeWidget):
         description.setWordWrap(True)
         layout.addWidget(description)
 
+        self.parameter_widgets: list[ParameterWidget] = []
         if self._operation_node.parameters:
             parameter_rows_widget = QWidget()
             parameter_rows_layout = VBoxLayout(parameter_rows_widget)
 
-            self.parameter_widgets : list[ParameterWidget] = []
             for parameter in self._operation_node.parameters.values():
                 parameter_widget = ParameterWidget.from_parameter(
                     parameter=parameter,
@@ -385,30 +438,91 @@ class OperationNodeWidget(FileProducerNodeWidget):
         )
         layout.addWidget(self._output_info_label)
 
-        input_files_widget = QWidget()
-        input_files_layout = HBoxLayout(
-            input_files_widget,
-            spacing=constants.GAP_MEDIUM,
+        self._overwrite_warning_label = WarningLabel(
+            "You are about to overwrite existing data!"
         )
+        self._overwrite_warning_label.setVisible(
+            self._operation_node.overwrite,
+        )
+        layout.addWidget(self._overwrite_warning_label)
+
+        self._overwrite_parameter_row = ParameterWidget.from_parameter(
+            self._operation_node.overwrite_parameter,
+            editable=True,
+        ).build_form_row()
+        self._overwrite_parameter_row.setVisible(
+            self._operation_node.overwrite,
+        )
+        layout.addWidget(self._overwrite_parameter_row)
+
+        self._overwrite_warning_label = WarningLabel(
+            "You are about to overwrite existing data!"
+        )
+        self._overwrite_warning_label.setVisible(
+            self._operation_node.overwrite,
+        )
+        layout.addWidget(self._overwrite_warning_label)
+
+        self._overwrite_parameter_row = ParameterWidget.from_parameter(
+            self._operation_node.overwrite_parameter,
+            editable=True,
+        ).build_form_row()
+        self._overwrite_parameter_row.setVisible(
+            self._operation_node.overwrite,
+        )
+        layout.addWidget(self._overwrite_parameter_row)
+
+        self._overwrite_warning_label = WarningLabel(
+            "You are about to overwrite existing data!"
+        )
+        self._overwrite_warning_label.setVisible(
+            self._operation_node.overwrite,
+        )
+        layout.addWidget(self._overwrite_warning_label)
+
+        self._overwrite_parameter_row = ParameterWidget.from_parameter(
+            self._operation_node.overwrite_parameter,
+            editable=True,
+        ).build_form_row()
+        self._overwrite_parameter_row.setVisible(
+            self._operation_node.overwrite,
+        )
+        layout.addWidget(self._overwrite_parameter_row)
 
         self.file_consumer_widgets: list[FileConsumerNodeWidget] = []
-        for file_consumer in operation_node.file_consumers:
-            file_consumer_widget = FileConsumerNodeWidget(file_consumer)
-            self.file_consumer_widgets.append(file_consumer_widget)
-            input_files_layout.addWidget(
-                file_consumer_widget,
-                alignment=Qt.AlignmentFlag.AlignTop,
-                stretch=1,
+        if operation_node.file_consumers:
+            input_files_widget = QWidget()
+            input_files_layout = HBoxLayout(
+                input_files_widget,
+                spacing=constants.GAP_MEDIUM,
             )
-        layout.addWidget(input_files_widget)
+            for file_consumer in operation_node.file_consumers:
+                file_consumer_widget = FileConsumerNodeWidget(file_consumer)
+                self.file_consumer_widgets.append(file_consumer_widget)
+                input_files_layout.addWidget(
+                    file_consumer_widget,
+                    alignment=Qt.AlignmentFlag.AlignTop,
+                    stretch=1,
+                )
+            layout.addWidget(input_files_widget)
 
         self._operation_node.file_changed.connect(self._file_changed)
+        self._operation_node.overwrite_changed.connect(self._overwrite_changed)
 
-    def reset(self) -> None:
-        for widget in self.parameter_widgets:
-            widget.parameter.reset_value()
-        for file_consumer in self.file_consumer_widgets:
-            file_consumer.reset()
+    def refresh(self) -> None:
+        self._output_info_label.text = (
+            self.output_label_text + self._operation_node.file
+        )
+        self._overwrite_warning_label.setVisible(
+            self._operation_node.overwrite,
+        )
+        self._overwrite_parameter_row.setVisible(
+            self._operation_node.overwrite,
+        )
+        self._operation_node.overwrite_parameter.value = False
+
+        for file_consumer_widget in self.file_consumer_widgets:
+            file_consumer_widget.refresh()
 
     @property
     def button_text(self) -> str:
@@ -420,6 +534,11 @@ class OperationNodeWidget(FileProducerNodeWidget):
     @Slot(str)
     def _file_changed(self, new_file: str) -> None:
         self._output_info_label.text = self.output_label_text + new_file
+
+    @Slot(bool)
+    def _overwrite_changed(self, new_overwrite: bool) -> None:
+        self._overwrite_warning_label.setVisible(new_overwrite)
+        self._overwrite_parameter_row.setVisible(new_overwrite)
 
 
 class OperationTreeWidget(StylableWidget):
@@ -455,5 +574,5 @@ class OperationTreeWidget(StylableWidget):
             alignment=Qt.AlignmentFlag.AlignTop,
         )
 
-    def reset(self) -> None:
-        self.body.reset()
+    def refresh(self) -> None:
+        self.body.refresh()
