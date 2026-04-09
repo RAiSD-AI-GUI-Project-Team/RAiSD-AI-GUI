@@ -4,16 +4,19 @@ A module containing base UI classes.
 The classes extend default PySide widgets and layouts to make them
 stylable and remove margins and spacing.
 """
-
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
     QStyle,
     QStyleOption,
+    QSplashScreen,
 )
 from PySide6.QtGui import (
     QPainter,
+    QPixmap,
+    QColor,
 )
 
 
@@ -169,3 +172,36 @@ class ResizableStackedWidget(QWidget):
             widget.hide()
         self._widgets[self.current_index].show()
         self.updateGeometry()
+
+class SplashScreen(QSplashScreen):
+    """
+    A splash screen that displays the RAiSD-AI GUI splash image with
+    support for showing messages in the bottom-left corner.
+    """
+
+    def __init__(self) -> None:
+        """
+        Initialize a `SplashScreen` object.
+        """
+        pixmap = QPixmap("gui/style/resources/Raisd_ai_splash_screen.png")
+        super().__init__(pixmap)
+        self.setWindowFlag(self.windowFlags() & ~Qt.WindowType.WindowStaysOnTopHint)
+
+    def showMessage(self, message: str, /, alignment: int = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom, color: QColor = QColor(10,13,79)) -> None:
+        """
+        Show a message in the bottom-left corner of the splash screen.
+
+        :param message: the message to display
+        :type message: str
+
+        :param alignment: the alignment of the message
+        :type alignment: int
+
+        :param color: the text color
+        :type color: QColor
+        """
+        super().showMessage(
+            message,
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom,
+            color,
+        )
