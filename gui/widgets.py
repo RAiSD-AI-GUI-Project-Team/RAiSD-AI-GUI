@@ -200,9 +200,9 @@ class SplashScreen(QSplashScreen):
         painter.setPen(self._text_color)
         rect = self.rect().adjusted(
             constants.GAP_TINY,   # left
-            constants.GAP_TINY,   # top
+            0,   # top
             0,  # right
-            0,  # bottom
+            -constants.GAP_TINY,  # bottom
         )
         painter.drawText(
             rect,
