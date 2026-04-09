@@ -10,7 +10,7 @@ from PySide6.QtCore import (
 
 class Condition(QObject):
     """
-    An abstract condition class.
+    An base condition class.
 
     A condition tracks a certain property and exposes a boolean
     value, emitting a signal when that property changes.
