@@ -599,6 +599,20 @@ class NumberParameter(Parameter[X]):
     lower bound and lower than or equal to the upper bound, when provided.
     """
 
+    @property
+    def valid(self) -> bool:
+        if not self.enabled:
+            return True
+        if self._value is None:
+            return False
+        return (
+                all(self.constraints_valid)
+                and all(
+            constraint.valid(self._value)
+            for constraint in self._hidden_constraints
+            )
+        )
+
     def _to_cli(
             self,
             operation: str | None = None,
@@ -611,12 +625,12 @@ class NumberParameter(Parameter[X]):
         return f"{self.flag}{self.value}"
 
 
-class IntParameter(NumberParameter[int]):
+class IntParameter(NumberParameter[int | None]):
     """
     An integer parameter in the GUI.
     """
 
-    value_changed = Signal(int, bool)
+    value_changed = Signal(object, bool)
 
     def __str__(self) -> str:
         return (
@@ -628,12 +642,12 @@ class IntParameter(NumberParameter[int]):
         )
 
 
-class FloatParameter(NumberParameter[float]):
+class FloatParameter(NumberParameter[float | None]):
     """
     A floating-point parameter in the GUI.
     """
 
-    value_changed = Signal(float, bool)
+    value_changed = Signal(object, bool)
 
     def __str__(self) -> str:
         return (
