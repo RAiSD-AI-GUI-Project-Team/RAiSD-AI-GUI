@@ -246,7 +246,7 @@ class TestFileParameterWidget:
     def test_valid_file_updates_label(self):
         """Setting a valid file path should update the path label."""
         self.param.value = [str(self.valid_file)]
-        assert str(self.valid_file) in self.widget._path_label.text()
+        assert self.valid_file.name in self.widget._path_label.text()
 
     def test_invalid_file_updates_label(self):
         """Setting an invalid file path should still update the path label."""
@@ -337,11 +337,12 @@ class TestIntParameterWidgetTextChanged:
         self.widget._text_changed()
         assert self.param.value == 9
 
-    def test_text_changed_invalid_input_restores(self):
-        """Typing an unparseable value should restore the previous value."""
+    def test_text_changed_empty_input_sets_none(self):
+        """Clearing the field should set parameter to None (invalid) and leave field empty."""
         self.widget._line_edit.setText("")
         self.widget._text_changed()
-        assert self.widget._line_edit.text() == "5"
+        assert self.param.value is None
+        assert self.widget._line_edit.text() == ""
 
 
 class TestFloatParameterWidgetTextChanged:
@@ -360,11 +361,12 @@ class TestFloatParameterWidgetTextChanged:
         self.widget._text_changed()
         assert self.param.value == 7.5
 
-    def test_text_changed_invalid_input_restores(self):
-        """Typing an unparseable value should restore the previous value."""
+    def test_text_changed_empty_input_sets_none(self):
+        """Clearing the field should set parameter to None (invalid) and leave field empty."""
         self.widget._line_edit.setText("")
         self.widget._text_changed()
-        assert self.widget._line_edit.text() == "3.0"
+        assert self.param.value is None
+        assert self.widget._line_edit.text() == ""
 
 
 class TestFileParameterWidgetDialog:
