@@ -69,19 +69,22 @@ class IntervalConstraint(Constraint[X]):
         )
 
     def valid(self, value: X) -> bool:
-        if self._lower_bound is not None:
-            if self._lower_bound_inclusive:
-                if value < self._lower_bound:
+        if value is not None:
+            if self._lower_bound is not None:
+                if self._lower_bound_inclusive:
+                    if value < self._lower_bound:
+                        return False
+                elif value <= self._lower_bound:
                     return False
-            elif value <= self._lower_bound:
-                return False
-        if self._upper_bound is not None:
-            if self._upper_bound_inclusive:
-                if value > self._upper_bound:
+            if self._upper_bound is not None:
+                if self._upper_bound_inclusive:
+                    if value > self._upper_bound:
+                        return False
+                elif value >= self._upper_bound:
                     return False
-            elif value >= self._upper_bound:
-                return False
-        return True
+            return True
+        else:
+            return False
 
 
 class EvenConstraint(Constraint[int]):
