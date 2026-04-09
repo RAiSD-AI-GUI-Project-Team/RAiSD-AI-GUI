@@ -22,7 +22,7 @@ def default_command_builder(parameters: str) -> str:
         :type parameters: str
         """
         return (
-            f"{app_settings.environment_manager.value} run "
+            f"{app_settings.environment_manager_name} run "
             f"-n {app_settings.environment_name} "
             f"{app_settings.executable_file_path.absoluteFilePath()} {parameters}"
         )
