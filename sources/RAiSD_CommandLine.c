@@ -237,7 +237,7 @@ FASTER-NN-G:\t2-class model for selective sweeps and 4-class model for 2-factor 
 
 	fprintf(fp, "\n\t-- RAiSD-AI SWEEP SCAN (MODE: SWP-SCN) \n\n");
 	fprintf(fp, "\t-pci\tProvides the number of positive classes (1 for SweepNet/FAST-NN/FASTER-NN/FASTER-NN-G, 2 for FASTER-NN-G with -cl4) followed\n\t\tby the positive class indices. The class index can be found in parentheses after the class label in file\n\t\tRAiSD_Model.some-runID/classLabels.txt, where some-runID is the run ID of the MDL-GEN run that generated the CNN model.\n\t\tThis flag is only required when -pcs is not used. The -pci and -pcs flags are mutually exclusive.\n\t\tExample: \"-pci 1 1\" for SweepNet/FAST-NN/FASTER-NN/FASTER-NN-G, \"-pci 2 1 3\" for FASTER-NN-G with -cl4.\n");
-	fprintf(fp, "\t-pcs\tProvides the number of positive classes (1 for SweepNet/FAST-NN/FASTER-NN/FASTER-NN-G, 2 for FASTER-NN-G with -cl4) followed\n\t\tby the positive class labels. The class labels must exist in file RAiSD_Model.some-runID/classLabels.txt, where some-runID is\n\t\tthe run ID of the MDL-GEN run that generated the CNN model. The -mdl flag must preced -pcs in the command line.\n\t\tThis flag is only required when -pci is not used. \n\t\tExample: \"-pcs 1 sweepClass\" for SweepNet/FAST-NN/FASTER-NN/FASTER-NN-G, \"-pcs 2 sweepClass sweepHotspotClass\" for FASTER-NN-G with -cl4.\n");
+	fprintf(fp, "\t-pcs\tProvides the number of positive classes (1 for SweepNet/FAST-NN/FASTER-NN/FASTER-NN-G, 2 for FASTER-NN-G with -cl4) followed\n\t\tby the positive class labels. The class labels must exist in file RAiSD_Model.some-runID/classLabels.txt, where some-runID is\n\t\tthe run ID of the MDL-GEN run that generated the CNN model. The -mdl flag must precede -pcs in the command line.\n\t\tThis flag is only required when -pci is not used. \n\t\tExample: \"-pcs 1 sweepClass\" for SweepNet/FAST-NN/FASTER-NN/FASTER-NN-G, \"-pcs 2 sweepClass sweepHotspotClass\" for FASTER-NN-G with -cl4.\n");
 	
 	fprintf(fp, "\n\t-- RAiSD-AI ADDITIONAL PARAMETERS \n\n");
 	fprintf(fp, "\t-frm\tRemoves the directories RAiSD_Images.runID (IMG-GEN) and RAiSD_Grid.runID (SWP-SCN), if they already exist.\n\t\trunID is provided through -n.\n");
@@ -1775,7 +1775,7 @@ void RSDCommandLine_load(RSDCommandLine_t * RSDCommandLine, int argc, char ** ar
 						{
 							if (!(flagVector[MDL_PATH_FLAG_INDEX]))
 							{
-								fprintf(stderr, "\nERROR: Input parameter -mdl must preced -pcs in the command line!\n\n");
+								fprintf(stderr, "\nERROR: Input parameter -mdl must precede -pcs in the command line!\n\n");
 								exit(1);	
 							}
 							else
