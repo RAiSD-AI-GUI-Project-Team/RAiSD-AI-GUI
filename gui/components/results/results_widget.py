@@ -57,7 +57,7 @@ class ResultsWidget(StylableWidget):
         self.folder_widget.doubleClicked.connect(self._on_double_click)
         files_layout.addWidget(self.folder_widget)
 
-        self.no_files_label = QLabel("Directory does not exist anymore", alignment=Qt.AlignmentFlag.AlignCenter)
+        self.no_files_label = QLabel("The output directory does not exist anymore.", alignment=Qt.AlignmentFlag.AlignCenter)
         self.no_files_label.setObjectName("no_files_label")
         self.no_files_label.hide()
         layout.addWidget(self.no_files_label, 1)
