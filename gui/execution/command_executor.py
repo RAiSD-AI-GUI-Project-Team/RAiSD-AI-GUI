@@ -27,6 +27,7 @@ def default_command_builder(parameters: str) -> str:
             f"{app_settings.executable_file_path.absoluteFilePath()} {parameters}"
         )
 
+
 class CommandExecutor(QObject):
     """
     A class that manages the execution of shell commands in QProcesses.
