@@ -283,12 +283,11 @@ parameter_groups:
   - name: SNP and sample handling
     operations:
       - RSD-DEF
-      - IMG-GEN
       - SWP-SCN
     parameters:
       input-file-type:
         name: Input file format
-        description: Choose the format of your input file(s). Choosing the correct file format is important because it may change the available parameters.
+        description: Choose the format of the input file to be scanned. Choosing the correct file format is important, because it may change the available parameters.
         cli: null
         type: enum
         options:
@@ -328,7 +327,7 @@ parameter_groups:
               - 3
       "-L":
         name: Region length
-        description: The region size (in basepairs) for an ms file.
+        description: The region size (in basepairs) for your ms file.
         cli: "-L "
         type: int
         default: 1
@@ -342,7 +341,7 @@ parameter_groups:
               - 0
       "-S":
         name: Provide sample file
-        description: Provide a file containing the list of samples to be processed for VCF files.
+        description: Provide a file containing the list of samples to be processed for your VCF file.
         type: optional
         parameter:
           name: Sample file
@@ -400,7 +399,7 @@ parameter_groups:
           type: file
       "-B":
         name: Provide chromosome size
-        description: For VCF files with a single chromosome, you can provide the chromosome size. If not provided, the values will be determined at runtime by parsing each chromosome in its entirety before processing, leading to slightly longer overall execution time.
+        description: For a VCF file with a single chromosome, you can provide the chromosome size. If not provided, the values will be determined at runtime by parsing each chromosome in its entirety before processing, leading to slightly longer overall execution time.
         type: optional
         default: false
         parameter:
@@ -433,7 +432,7 @@ parameter_groups:
               - 0
       "-o":
         name: Order VCF
-        description: Enables dataset check and reordering of the input VCF file (only for unzipped VCF files).
+        description: Enable dataset check and reordering of the unzipped VCF file.
         cli: "-o"
         type: bool
         default: false
@@ -979,6 +978,164 @@ parameter_groups:
     operations:
       - IMG-GEN
     parameters:
+      input-file-type-img-gen:
+        name: Input file format
+        description: Choose the format of the input file(s) for data preparation. Choosing the correct file format is important, because it may change the available parameters.
+        cli: null
+        type: enum
+        options:
+          - name: ms
+          - name: mbs
+            cli: "-b"
+          - name: FASTA
+          - name: VCF
+        default: 0
+      vcf-chromosome-count-img-gen:
+        name: Number of chromosomes
+        description: Choose whether your VCF file(s) contain one chromosome each, or multiple.
+        cli: null
+        type: enum
+        options:
+          - name: A single chromosome
+          - name: Multiple chromosomes
+        default: 1
+        conditions:
+          - type: enum
+            parameter: input-file-type-img-gen
+            values:
+              - 3
+      vcf-compressed-img-gen:
+        name: Compressed VCF
+        description: Choose whether your VCF file(s) are compressed.
+        cli: null
+        type: enum
+        options:
+          - name: Uncompressed
+          - name: Compressed
+        default: 0
+        conditions:
+          - type: enum
+            parameter: input-file-type-img-gen
+            values:
+              - 3
+      "-L-img-gen":
+        name: Region length
+        description: The region size (in basepairs) for your ms file(s).
+        cli: "-L "
+        type: int
+        default: 1
+        constraints:
+          - type: interval
+            min: 1
+        conditions:
+          - type: enum
+            parameter: input-file-type-img-gen
+            values:
+              - 0
+      "-S-img-gen":
+        name: Provide sample file
+        description: Provide a file containing the list of samples to be processed for your VCF file(s).
+        type: optional
+        parameter:
+          name: Sample file
+          description: The file containing the list of samples to be processed.
+          cli: "-S "
+          type: file
+        conditions:
+          - type: enum
+            parameter: input-file-type-img-gen
+            values:
+              - 3
+      "-m-img-gen":
+        name: Minor allele frequency
+        description: The threshold value for excluding SNPs with minor allele frequency.
+        cli: "-m "
+        default: 0.0
+        type: float
+        constraints:
+          - type: interval
+            min: 0.0
+            max: 1.0
+      "-y-img-gen":
+        name: Ploidy
+        description: The ploidy, which is used to correctly represent missing data.
+        cli: "-y "
+        type: int
+        default: 2
+        constraints:
+          - type: interval
+            min: 1
+      "-M-img-gen":
+        name: Missing data handling strategy
+        description: Choose the method to handle missing data.
+        cli: "-M "
+        type: enum
+        options:
+          - name: Discard SNPs
+            cli: "0"
+          - name: Impute N per SNP
+            cli: "1"
+          - name: Represent N through a mask
+            cli: "2"
+          - name: Ignore allele pairs with N
+            cli: "3"
+        default: 0
+      "-X-img-gen":
+        name: Exclude regions
+        description: Exclude specific regions in the input file(s) from the analysis.
+        type: optional
+        default: false
+        parameter:
+          name: Excluded regions file
+          description: "A tab-delimited file that contains regions per chromosome (one per line) to be excluded from the analysis (Format: chromosome [tab] regionStart [tab] regionStop)."
+          cli: "-X "
+          type: file
+      "-B-img-gen":
+        name: Provide chromosome size
+        description: For VCF file(s) with a single chromosome, you can provide the chromosome size. If not provided, the values will be determined at runtime by parsing each chromosome in its entirety before processing, leading to slightly longer overall execution time.
+        type: optional
+        default: false
+        parameter:
+          name: Chromosome size
+          description: The two values that describe the chromosome size.
+          cli: "-B "
+          type: multi
+          parameters:
+            - type: int
+              name: Region length in basepairs
+              default: 1
+              constraints:
+                - type: interval
+                  min: 1
+            - type: int
+              name: Number of SNPs
+              default: 1
+              constraints:
+                - type: interval
+                  min: 1
+                # number of SNPs <= region length in basepairs
+          # selection target <= region length
+          # selection target D threshold <= region length
+        conditions:
+          - type: enabled
+            parameter: vcf-chromosome-count-img-gen
+          - type: enum
+            parameter: vcf-chromosome-count-img-gen
+            values:
+              - 0
+      "-o-img-gen":
+        name: Order VCF
+        description: Enable dataset check and reordering of unzipped VCF file(s).
+        cli: "-o"
+        type: bool
+        default: false
+        conditions:
+          - type: enabled
+            parameter: vcf-compressed-img-gen
+          - type: enum
+            parameter: vcf-compressed-img-gen
+            values:
+              - 0
       "-poc": 
         name: Construct position-centered windows
         description: Changes the data-generation mode from using SNP-driven windows to constructing position-centered windows. When SNP-driven windows are used, the SNP located to the image target site position becomes the central SNP in the window and an equal number of SNPs are placed on both sides. When position-centered windows are used, the image target site position is (as close as possible to) the midpoint between the leftmost and rightmost SNPs per window.
