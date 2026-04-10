@@ -8,6 +8,7 @@ stylable and remove margins and spacing.
 from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
+    QLabel,
     QLineEdit,
     QVBoxLayout,
     QWidget,
@@ -23,7 +24,7 @@ from gui.style import constants
 
 class StylableWidget(QWidget):
     """
-    A base class for `QWidgets` that will be targeted by an object name
+    A base class for `QWidget`s that will be targeted by an object name
     selector in QSS.
 
     `QWidget` subclasses that use the `setObjectName` should instead
