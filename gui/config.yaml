@@ -17,8 +17,8 @@ modes:
   - name: Standard RAiSD
     operations:
       RSD-DEF:
-        name: Standard sweep scan
-        description: Do a sweep scan with standard RAiSD.
+        name: Sweep scan with the μ statistic
+        description: Perform a standard RAiSD sweep scan using the μ statistic.
         cli: ""
         input:
           - name: Input data
@@ -46,8 +46,8 @@ modes:
   - name: RAiSD-AI
     operations:
       IMG-GEN:
-        name: Data formatting
-        description: Make raw data into PNGs.
+        name: Data preparation
+        description: Convert raw data into a suitable input format for CNN training.
         cli: "-op IMG-GEN"
         input:
           - name: Input data
@@ -66,7 +66,7 @@ modes:
               formats:
                 - .png
         overwrite_parameter:
-          name: Overwrite formatted data
+          name: Overwrite prepared data
           description: You are about to overwrite existing data in the output folder. Are you sure?
           cli: "-f"
           type: bool
@@ -135,7 +135,7 @@ modes:
           - type: run id
       MDL-TST:
         name: Model testing
-        description: Evaluate a model.
+        description: Evaluate a sweep detection CNN model on a test dataset.
         cli: "-op MDL-TST"
         input:
           - name: Model
@@ -176,7 +176,7 @@ modes:
           - type: run id
       SWP-SCN:
         name: Model sweep scan
-        description: Use a trained model to scan for selective sweeps.
+        description: Use a CNN model to scan for selective sweeps.
         cli: "-op SWP-SCN"
         input:
           - name: Model
@@ -187,7 +187,7 @@ modes:
                 - type: single
                   formats:
                     - .pt
-          - name: Testing data
+          - name: Data to scan
             cli: "-I "
             file:
               type: single
@@ -955,7 +955,7 @@ parameter_groups:
               - type: enabled
                 parameter: "-CO-already-run"
                 value: true
-  - name: RAiSD-AI data generation
+  - name: RAiSD-AI data preparation
     operations:
       - IMG-GEN
     parameters:
