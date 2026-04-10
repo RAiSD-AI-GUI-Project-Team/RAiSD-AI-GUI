@@ -67,8 +67,6 @@ class ResultsWidget(StylableWidget):
             "The output directory does not exist anymore.", 
             alignment=Qt.AlignmentFlag.AlignCenter
         )
-        self.no_files_label.setObjectName("no_files_label")
-        self.no_files_label
         self.files_widget_stack.addWidget(self.no_files_label)
 
         layout.addWidget(self.files_widget_stack, 1)
