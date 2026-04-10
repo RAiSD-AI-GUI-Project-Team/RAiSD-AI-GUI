@@ -41,7 +41,7 @@
 #endif
 
 #define MAJOR_VERSION 4
-#define MINOR_VERSION 4
+#define MINOR_VERSION 5
 #define RELEASE_MONTH "April"
 #define RELEASE_YEAR 2026
 
@@ -147,6 +147,7 @@ extern double TotalMuTime;
 #define POSITIVE_CLASS_FLAG_INDEX 43
 #define CLASS_PAIRINGS_4 44
 #define POSITIVE_CLASS_FLAG_INDEX2 45
+#define POSITIVE_CLASS_FLAG_STRING 49
 #endif
 
 #define FASTA2VCF_CONVERT_n_PROCESS 0
@@ -284,17 +285,19 @@ int 			getStringLengthExp 		(int prv, double in);
 double 			maxd 				(double a, double b); 
 int 			skipToken			(FILE * fp);
 void 			sanitizeString			(const char *input, char *output, size_t maxlen); 
+int 			isPositiveInteger 		(const char *str);
 
 #ifdef _RSDAI
-int 			split_string 			(char * src, char * str1, char * str2, char delimiter);
-void 			exec_command 			(char * cmd);
-void 			dir_exists_check 		(char * path);
-void			getIndicesFromImageName		(char * imgName, int * setIndex, int * gridPointIndex, int * gridPointDataIndex);
+int 			split_string 				(char * src, char * str1, char * str2, char delimiter);
+void 			exec_command 				(char * cmd);
+void 			dir_exists_check 			(char * path);
+void			getIndicesFromImageName			(char * imgName, int * setIndex, int * gridPointIndex, int * gridPointDataIndex);
 int 			numOfClasses_NN_architecture		(char * arc, int classification2x2En);
 int 			numOfPositiveClasses_NN_architecture 	(char * arc, int classification2x2En);
 int 			is_valid_NN_architecture 		(char * arc);
-char * 			getDataType_string 		(char * imgFormat, int imgDataType);
+char * 			getDataType_string 			(char * imgFormat, int imgDataType);
 int			getValidNumberOf_FASTER_NN_G_Groups 	(int imageHeight, int groups);
+int 			getPositiveClassIndex			(const char * modelPath, const char * classLabel);
 #endif
 
 #ifndef _INTRINSIC_POPCOUNT
