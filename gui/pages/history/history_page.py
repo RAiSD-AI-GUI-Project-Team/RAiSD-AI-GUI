@@ -102,7 +102,10 @@ class HistoryPage(Page):
             spacing=constants.GAP_SMALL,
         )
 
-        self.error_label = QLabel("Error occurred while loading the run from history. The old run may be corrupted or incompatible with the current version of the application.")
+        self.error_label = QLabel(
+            "An error occurred while loading the run from history. " \
+            "The old run may be corrupted or " \
+            "incompatible with the current version of the application.")
         self.error_label.setWordWrap(True)
         self.error_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         self.error_panel_layout.addWidget(self.error_label)
