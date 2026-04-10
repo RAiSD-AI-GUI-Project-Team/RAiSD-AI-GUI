@@ -219,7 +219,7 @@ class RunPage(Page):
     @Slot()
     def reset_page(self) -> None:
         self._run_record.reset()
-        for tab in self.label_to_tab    .values():
+        for tab in self.label_to_tab.values():
             tab.reset()
         self._set_active_tab(self.operation_tab)
 

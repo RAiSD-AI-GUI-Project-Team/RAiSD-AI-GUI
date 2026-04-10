@@ -47,7 +47,12 @@ class ResultsTab(RunPageTab):
         self.title_label.setProperty("title", "true")
         layout.addWidget(self.title_label)
 
-        self.run_failed_label = ErrorLabel("RUN FAILED. The files shown below may be incomplete. The run won't be listed in the history tab.")
+        self.run_failed_label = ErrorLabel(
+            "Running RAiSD-AI failed. The files shown below may be incomplete. " \
+            "Go back to the 'Run' tab to see the error output. " \
+            "The results won't be listed in the 'History' page. "
+        )
+        
         self.run_failed_label.hide()
         layout.addWidget(self.run_failed_label)
 
@@ -63,14 +68,18 @@ class ResultsTab(RunPageTab):
         return widget
 
     def _setup_navigation_buttons(self) -> NavigationButtonsHolder:
-        self.back_to_view_button = QPushButton("Back to Run")
-        self.back_to_view_button.clicked.connect(self.navigate_back.emit)
+        self.navigate_back_button = QPushButton("Back")
+        self.navigate_back_button.clicked.connect(self.navigate_back.emit)
         self.new_run_button = QPushButton("New Run")
         self.new_run_button.clicked.connect(self.new_run.emit)
         self.edit_run_button = QPushButton("Edit Run")
         self.edit_run_button.clicked.connect(self.edit_run.emit)
 
-        return NavigationButtonsHolder(left_button=self.back_to_view_button, right_button=self.new_run_button, middle_button=self.edit_run_button)
+        return NavigationButtonsHolder(
+            left_button=self.navigate_back_button, 
+            right_button=self.new_run_button, 
+            middle_button=self.edit_run_button
+        )
 
     def refresh(self) -> None:
         pass
