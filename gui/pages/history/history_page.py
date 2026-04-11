@@ -7,7 +7,12 @@ from PySide6.QtWidgets import (
     QPushButton,
     QSizePolicy,
 )
-from PySide6.QtCore import Slot, Qt, Signal
+from PySide6.QtCore import (
+    Slot, 
+    Qt, 
+    Signal,
+    QTimer,
+)
 
 from ..page import Page
 from gui.model.settings import app_settings
@@ -41,6 +46,9 @@ class HistoryPage(Page):
         self._selected : HistoryRecord | None = None
         self._setup_ui()
         self._history_list.setObjectName("history_list")
+        timer = QTimer(self)
+        timer.timeout.connect(self.update_history_time)
+        timer.start(60000)
 
     def _setup_ui(self):
         # Main layout with a splitter
@@ -160,6 +168,7 @@ class HistoryPage(Page):
         else:
             self.selected = history_record
 
+    @Slot()
     def update_history_time(self) -> None:
         """
         Update the time labels of the history record widgets
