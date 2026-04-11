@@ -104,7 +104,7 @@ class ConfirmationTab(RunPageTab):
         parameters_label = QLabel("Command-line parameters generated from the input:")
         parameters_header_layout.addWidget(parameters_label, 1)
 
-        copy_button = QPushButton("Copy")
+        copy_button = QPushButton("Copy as commands")
         copy_button.clicked.connect(self._copy_all)
         parameters_header_layout.addWidget(copy_button)
         commands_layout.addWidget(parameters_header)
@@ -193,7 +193,8 @@ class ConfirmationTab(RunPageTab):
         Copies all commands from the run result to the clipboard.
         """
         if self._run_record.to_cli():
-            string = '; '.join(self._run_record.to_cli())
+            commands = [default_command_builder(params) for params in self._run_record.to_cli()]
+            string = '; '.join(commands)
             cb = QGuiApplication.clipboard()
             cb.setText(string)
 
