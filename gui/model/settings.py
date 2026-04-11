@@ -40,24 +40,82 @@ class Settings(QObject):
                 parent=None, 
                 ):
             super().__init__(parent)
+            self.setObjectName("settings_dialog")
             self.setWindowTitle("Complete setup")
             self.setModal(True)
-            self.resize(400, 300)
-            
-            layout = VBoxLayout(self, spacing=constants.GAP_TINY)
+            # self.resize(500, 300)
+
+            layout = VBoxLayout(
+                self,
+                left=constants.GAP_SMALL,
+                right=constants.GAP_SMALL,
+                top=constants.GAP_TINY,
+                bottom=constants.GAP_TINY,
+                spacing=constants.GAP_TINY,
+            )
 
             # workspace
-            workspace_header = QLabel("Select workspace")
-            layout.addWidget(workspace_header)
+            workspace_widget = StylableWidget()
+            workspace_widget.setObjectName("container_widget")
+            workspace_layout = VBoxLayout(
+                workspace_widget,
+                left=constants.GAP_SMALL,
+                right=constants.GAP_SMALL,
+                top=constants.GAP_TINY,
+                bottom=constants.GAP_MEDIUM,
+                spacing=constants.GAP_TINY,
+            )
+            workspace_header = QLabel("Select a workspace to use")
+            workspace_layout.addWidget(workspace_header)
 
             self._file_browse = QPushButton('Browse')
+            self._file_browse.setObjectName("file_button")
             self._file_browse.clicked.connect(lambda _, i=self._file_browse: self._open_file_dialog_folder(i))
-            layout.addWidget(self._file_browse)
+            workspace_layout.addWidget(self._file_browse)
+            layout.addWidget(workspace_widget)
 
+            settings_widget = StylableWidget()
+            settings_widget.setObjectName("container_widget")
+            settings_layout = VBoxLayout(
+                settings_widget,
+                left=constants.GAP_SMALL,
+                right=constants.GAP_TINY,
+                top=constants.GAP_TINY,
+                bottom=constants.GAP_MEDIUM,
+                spacing=constants.GAP_TINY,
+            )
+
+            # Executable
+            executable_widget = SettingsItemWidget("Executable", app_settings.executable_file_path.absoluteFilePath())
+            app_settings.executable_file_path_changed.connect(
+                lambda p : executable_widget._update_label(p.absoluteFilePath()))
+            executable_widget.button_clicked.connect(app_settings.set_executable_path)
+            settings_layout.addWidget(executable_widget)
+
+            # Environment manager
+            environment_manager_widget = SettingsItemWidget("Environment manager", app_settings.environment_manager_name)
+            app_settings.environment_manager_changed.connect(
+                lambda _ : environment_manager_widget._update_label(app_settings.environment_manager_name))
+            environment_manager_widget.button_clicked.connect(app_settings.set_environment_manager)
+            settings_layout.addWidget(environment_manager_widget)
+
+            # Environment name
+            environment_name_widget = SettingsItemWidget("Environment name", app_settings.environment_name)
+            app_settings.environment_name_changed.connect(
+                lambda _ : environment_name_widget._update_label(app_settings.environment_name)
+            )
+            environment_name_widget.button_clicked.connect(app_settings.set_environment_name)
+            settings_layout.addWidget(environment_name_widget)
+            layout.addWidget(settings_widget)
+
+            # OK button
             self.buttonbox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
             self.buttonbox.setCenterButtons(True)
             self.buttonbox.accepted.connect(self._close_clicked)
+            for button in self.buttonbox.buttons():
+                button.setObjectName("file_button")
             layout.addWidget(self.buttonbox)
+            
 
         @Slot()
         def _close_clicked(self) -> None:
