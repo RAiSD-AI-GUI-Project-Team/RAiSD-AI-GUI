@@ -175,15 +175,6 @@ class Settings(QObject):
         self._environment_manager = environment_manager
         self._environment_name = environment_name
         self._config_path = config_path
-    
-    def initialize(self) -> None:
-        """
-        Initialize a settings object by filling it.
-        """
-        self.from_yaml(self.settings_file_path)
-        if not self._workspace_path:
-            dialog = self.SetupDialog()
-            dialog.exec()
 
     def from_yaml(self, file_path: str) -> None:
         """
