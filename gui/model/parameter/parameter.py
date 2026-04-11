@@ -115,7 +115,7 @@ class Parameter(QObject, Generic[T]):
         self.operations = operations
         self.default_value = default_value
         self._value = default_value
-        self._constraints = []
+        self._constraints: list[Constraint] = []
         for constraint in constraints or []:
             self.add_constraint(constraint)
         self._hidden_constraints: list[Constraint] = []
