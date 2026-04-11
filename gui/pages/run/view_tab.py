@@ -61,16 +61,40 @@ class ViewTab(RunPageTab):
         layout.addWidget(step_widget,1)
 
         self.output_widget = QSplitter()
-        layout.addWidget(self.output_widget,1)
 
-        self.execution_output = QTextEdit(readOnly=True)
-        self.execution_output.setObjectName("execution_output")
-        self.output_widget.addWidget(self.execution_output)
+        self.standard_output_widget = QWidget()
+        self.standard_output_widget_layout = VBoxLayout(
+            self.standard_output_widget,
+            spacing=constants.GAP_TINY
+        )
+
+        self.standard_output_label = QLabel("Standard Output:")
+        self.standard_output_widget_layout.addWidget(self.standard_output_label)
+
+        self.standard_output = QTextEdit(readOnly=True)
+        self.standard_output.setObjectName("execution_output")
+        self.standard_output_widget_layout.addWidget(self.standard_output, 1)
+
+        self.output_widget.addWidget(self.standard_output_widget)
+
+        self.error_output_widget = QWidget()
+        self.error_output_widget_layout = VBoxLayout(
+            self.error_output_widget,
+            spacing=constants.GAP_TINY,
+        )
+
+        self.error_output_label = QLabel("Error Output:")
+        self.error_output_widget_layout.addWidget(self.error_output_label)
 
         self.error_output = QTextEdit(readOnly=True)
         self.error_output.setObjectName("error_output")
-        self.output_widget.addWidget(self.error_output)
+        self.error_output_widget_layout.addWidget(self.error_output, 1)
+
+        self.output_widget.addWidget(self.error_output_widget)
+
         self.output_widget.setVisible(False)
+
+        layout.addWidget(self.output_widget,1)
 
         self._command_executor.output.connect(self._command_executor_output)
         self._command_executor.err_output.connect(self._command_executor_err_output)
@@ -188,7 +212,7 @@ class ViewTab(RunPageTab):
         """
         Append the output from the command_executor to execution_output.
         """
-        self.execution_output.append(output)
+        self.standard_output.append(output)
 
     @Slot(str)
     def _command_executor_err_output(self, output: str) -> None:
@@ -239,7 +263,7 @@ class ViewTab(RunPageTab):
         """
         Clear the output fields.
         """
-        self.execution_output.clear()
+        self.standard_output.clear()
         self.error_output.clear()
 
     # SLOTS
@@ -269,7 +293,7 @@ class ViewTab(RunPageTab):
         self.run_ended.emit(False)        
 
         if process_error is None: # otherwise _process_failed will show an error dialog:
-            self.execution_output.append(f"Execution failed with exit code '{exit_code}'")
+            self.standard_output.append(f"Execution failed with exit code '{exit_code}'")
             self.execution_error_dialog = ErrorDialog(self, f"Execution Failed ({exit_code})", f"Execution failed with exit code '{exit_code}'")
             self.execution_error_dialog.exec()
     
@@ -303,7 +327,7 @@ class ViewTab(RunPageTab):
 
         if process_error is not None:
             print(f"Process '{process_index}' failed with process error '{process_error}'")
-            self.execution_output.append(f"Process '{process_index}' failed with process error '{process_error}'")
+            self.standard_output.append(f"Process '{process_index}' failed with process error '{process_error}'")
             process_error_dialog = ErrorDialog(self, f"Process Failed ({process_error})", f"Process '{process_index}' failed with process error '{process_error}'")
             process_error_dialog.exec()
 
