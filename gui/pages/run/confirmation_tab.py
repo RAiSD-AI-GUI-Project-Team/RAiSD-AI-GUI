@@ -102,7 +102,10 @@ class ConfirmationTab(RunPageTab):
         )
 
         parameters_label = QLabel("Command-line parameters generated from the input:")
-        parameters_header_layout.addWidget(parameters_label, 1)
+        parameters_header_layout.addWidget(parameters_label)
+
+        self.commands_label = InfoLabel("")
+        parameters_header_layout.addWidget(self.commands_label, 1)
 
         copy_button = QPushButton("Copy as commands")
         copy_button.clicked.connect(self._copy_all)
@@ -114,16 +117,6 @@ class ConfirmationTab(RunPageTab):
         self.parameters_view.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         self.parameters_view.clicked.connect(self._copy_parameters)
         commands_layout.addWidget(self.parameters_view)
-
-        run_instructions = QWidget()
-        run_instructions_layout = HBoxLayout(run_instructions, spacing=constants.GAP_SMALL)
-
-        run_instructions_label = QLabel("Running these commands:")
-        run_instructions_layout.addWidget(run_instructions_label, alignment=Qt.AlignmentFlag.AlignTop)
-
-        self.commands_label = InfoLabel("")
-        run_instructions_layout.addWidget(self.commands_label, 1)
-        commands_layout.addWidget(run_instructions)
 
         layout.addWidget(commands_widget)
 
