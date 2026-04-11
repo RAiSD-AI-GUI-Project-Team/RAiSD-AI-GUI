@@ -151,7 +151,10 @@ class HistoryRecord():
                     history = json.load(f)
                 except:
                     # File could not be parsed
-                    print("Problem reading file: might be empty or incorrect format")
+                    print("Problem reading history file: might be empty or incorrect format.")
+                    print("Corrupted history file will be overwritten")
+                    history = {}
+                    f.truncate(0)
                 history[f"{self.time_completed}-{self.name}"] = self.to_dict()
                 f.seek(0)
                 json.dump(history, f, indent=4, default=str)
