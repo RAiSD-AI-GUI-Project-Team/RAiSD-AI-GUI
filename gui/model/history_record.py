@@ -49,7 +49,10 @@ class HistoryRecord():
                             f"Incorrect format in .history.json for {key}: {data[key]}"
                             + "Expected dict."
                         )
-                    history_records.append(cls.from_dict(data[key]))
+                    try:
+                        history_records.append(cls.from_dict(data[key]))
+                    except ValueError:
+                        print(f"Error parsing {key}")
                 return history_records
         except FileNotFoundError:
             print("No history file found in this workspace")
