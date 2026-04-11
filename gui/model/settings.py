@@ -225,7 +225,7 @@ class Settings(QObject):
                 )
             self._executable_file_path = executable_file
         if not self._executable_file_path:
-            self._executable_file_path = QFileInfo("RAiSD-AI")
+            self._executable_file_path = QFileInfo("RAiSD-AI-ZLIB")
 
         # Environment manager
         if "environment_manager" in settings_obj:
