@@ -103,7 +103,8 @@ QWidget#settings_item_widget QPushButton,
 QPushButton#reset_button,
 QPushButton#file_button,
 QPushButton#file_selector_button,
-QPushButton#toggle_all_button{
+QPushButton#toggle_all_button,
+QPushButton#file_browser_button{
     padding: 5px 15px;
     background-color: $primary-purple;
     color: $primary-dark;
@@ -116,7 +117,8 @@ QWidget#settings_item_widget QPushButton:hover,
 QPushButton#reset_button:hover,
 QPushButton#file_button:hover,
 QPushButton#file_selector_button:hover,
-QPushButton#toggle_all_button:hover{
+QPushButton#toggle_all_button:hover,
+QPushButton#file_browser_button:hover{
     background-color: $button-hover;
 }
 
@@ -125,7 +127,8 @@ QWidget#settings_item_widget QPushButton:pressed,
 QPushButton#reset_button:pressed,
 QPushButton#file_button:pressed,
 QPushButton#file_selector_button:pressed,
-QPushButton#toggle_all_button:pressed{
+QPushButton#toggle_all_button:pressed,
+QPushButton#file_browser_button:pressed{
     background-color: $button-pressed;
 }
 

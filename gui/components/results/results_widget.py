@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QFileSystemModel,
     QTreeView,
     QHeaderView,
+    QPushButton,
 )
 from PySide6.QtGui import QDesktopServices
 
@@ -16,6 +17,7 @@ from gui.model.run_record import RunRecord
 from gui.widgets import (
     StylableWidget,
     VBoxLayout,
+    HBoxLayout,
 )
 from gui.components.parameter import ParameterForm
 from gui.components.collapsible import Collapsible
@@ -47,13 +49,29 @@ class ResultsWidget(StylableWidget):
             files_widget,
             spacing=constants.GAP_TINY,
         )
+
+        header_widget = QWidget()
+        header_layout = HBoxLayout(
+            header_widget,
+        )
+
         files_label = QLabel("Files in the generated directory")
-        files_layout.addWidget(files_label)
+        header_layout.addWidget(files_label, 1)
+
+        self.path = ""
+        self.file_browser_button = QPushButton("Open Directory")
+        self.file_browser_button.setObjectName("file_browser_button")
+        self.file_browser_button.clicked.connect(self._file_browser_button_clicked)
+        header_layout.addWidget(self.file_browser_button)
+
+        files_layout.addWidget(header_widget)
+
         self.folder_structure = QFileSystemModel()
         self.folder_widget = QTreeView()
         self.folder_widget.setObjectName("folder_widget")
         self.folder_widget.doubleClicked.connect(self._on_double_click)
         files_layout.addWidget(self.folder_widget)
+
         layout.addWidget(files_widget, 1)
 
         # Parameter widget
@@ -67,10 +85,11 @@ class ResultsWidget(StylableWidget):
         Updates the ResultWidget with results in the RunRecord.
         """
         # Set folder widget to right folder
-        path = app_settings.workspace_path.filePath(self._run_record.run_id)
-        self.folder_structure.setRootPath(path)
+        self.path = app_settings.workspace_path.filePath(self._run_record.run_id)
+
+        self.folder_structure.setRootPath(self.path)
         self.folder_widget.setModel(self.folder_structure)
-        self.folder_widget.setRootIndex(self.folder_structure.index(path))
+        self.folder_widget.setRootIndex(self.folder_structure.index(self.path))
         self.folder_widget.header().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
     @Slot(int)
@@ -78,3 +97,7 @@ class ResultsWidget(StylableWidget):
         if not self.folder_structure.isDir(index):
             path = self.folder_structure.filePath(index)
             QDesktopServices.openUrl(QUrl.fromLocalFile(path))
+
+    @Slot()
+    def _file_browser_button_clicked(self) -> None:
+        QDesktopServices.openUrl(QUrl.fromLocalFile(self.path))
