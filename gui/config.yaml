@@ -22,6 +22,7 @@ modes:
         cli: ""
         input:
           - name: Input data
+            description: The genomic data to be scanned for selective sweeps using the μ statistic. RAiSD expects a single file in ms, mbs, VCF or FASTA format.
             cli: "-I "
             file:
               type: single
@@ -47,10 +48,11 @@ modes:
     operations:
       IMG-GEN:
         name: Data preparation
-        description: Convert raw data into a suitable input format for CNN training.
+        description: Convert raw data into a suitable input format for CNN training and testing.
         cli: "-op IMG-GEN"
         input:
           - name: Input data
+            description: The genomic data to be prepared for CNN training and testing. RAiSD-AI expects a single file in ms, mbs, VCF or FASTA format.
             cli: "-I "
             file:
               type: single
@@ -104,6 +106,7 @@ modes:
         cli: "-op MDL-GEN"
         input:
           - name: Training data
+            description: The data used to train the CNN model. RAiSD-AI expects a directory with two subdirectories of data formatted with Data preparation. This is typically a RAiSD_Images directory.
             cli: "-I "
             file:
               type: directory
@@ -139,6 +142,7 @@ modes:
         cli: "-op MDL-TST"
         input:
           - name: Model
+            description: The sweep detection CNN model to test. RAiSD-AI expects a directory created by Model training. This is typically a RAiSD_Model directory.
             cli: "-mdl "
             file:
               type: directory
@@ -147,6 +151,7 @@ modes:
                   formats:
                     - .pt
           - name: Testing data
+            description: The data used to test the CNN model. RAiSD-AI expects a directory with two subdirectories of data formatted with Data preparation. This is typically a RAiSD_Images directory, and should be different from the data the model was trained on.
             cli: "-I "
             file:
               type: directory
@@ -180,6 +185,7 @@ modes:
         cli: "-op SWP-SCN"
         input:
           - name: Model
+            description: The sweep detection CNN model to use for scanning. RAiSD-AI expects a directory created by Model training. This is typically a RAiSD_Model directory.
             cli: "-mdl "
             file:
               type: directory
@@ -188,6 +194,7 @@ modes:
                   formats:
                     - .pt
           - name: Data to scan
+            description: The genomic data to be scanned for selective sweeps using the CNN model. RAiSD expects a single file in ms, mbs, VCF or FASTA format.
             cli: "-I "
             file:
               type: single
@@ -233,10 +240,11 @@ modes:
     operations:
       FASTA-VCF:
         name: FASTA to VCF
-        description: Convert a FASTA file to vcf
+        description: Convert a FASTA file to VCF.
         cli: "-E"
         input:
           - name: Input file
+            description: The file to be converted to VCF. RAiSD-AI expects a file in the FASTA format.
             cli: "-I "
             file:
               type: single
@@ -253,14 +261,15 @@ modes:
           type: bool
           default: false
         path:
-          - RAiSD_FastaVcf.
+          - RAiSD_Info.
           - type: run id
       VCF-MS:
         name: VCF to ms
-        description: Convert a vcf file to ms
+        description: Convert a VCF file to ms.
         cli: ""
         input:
           - name: Input file
+            description: The file to be converted to ms. RAiSD-AI expects a file in the VCF format.
             cli: "-I "
             file:
               type: single
@@ -277,7 +286,7 @@ modes:
           type: bool
           default: false
         path:
-          - RAiSD_VcfMs.
+          - RAiSD_Info.
           - type: run id
 parameter_groups:
   - name: SNP and sample handling

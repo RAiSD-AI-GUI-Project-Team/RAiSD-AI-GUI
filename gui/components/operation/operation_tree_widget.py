@@ -118,10 +118,16 @@ class FileConsumerNodeWidget(StylableWidget):
             spacing=constants.GAP_TINY,
         )
 
-        if self._file_consumer_node.label:
-            heading = QLabel(self._file_consumer_node.label)
+        if self._file_consumer_node.name:
+            heading = QLabel(self._file_consumer_node.name)
             layout.addWidget(heading)
             heading.setObjectName("heading")
+
+        if self._file_consumer_node.description:
+            description = QLabel(self._file_consumer_node.description)
+            description.setWordWrap(True)
+            layout.addWidget(description)
+            description.setObjectName("description")
 
         self._buttons: list[QRadioButton] = []
         self._file_producer_widgets: list[FileProducerNodeWidget] = []
@@ -142,12 +148,6 @@ class FileConsumerNodeWidget(StylableWidget):
             # present the user with a choice through radio buttons.
             button_widget = QWidget()
             button_layout = VBoxLayout(button_widget)
-
-            button_heading = QLabel(
-                "Select how you want to provide this input file or directory:"
-            )
-            button_heading.setWordWrap(True)
-            button_layout.addWidget(button_heading)
 
             for i, producer in enumerate(self._file_consumer_node.producers):
                 producer_widget = FileProducerNodeWidget.from_file_producer(
@@ -289,54 +289,6 @@ class FilePickerNodeWidget(FileProducerNodeWidget):
         )
 
         self._is_directory = isinstance(self._file_picker.produces, Directory)
-        # TODO: make this code cleaner and more reusable.
-        match self._file_picker.produces:
-            case SingleFile(formats=[single_format]):
-                heading_text = f"Select a {single_format} file."
-            case SingleFile(formats=[first_format, *other_formats]):
-                # TODO: preserve the order of the formats, maybe.
-                heading_text = (
-                    f"Select a {", ".join(other_formats)} "
-                    + f"or {first_format} file."
-                )
-            case Directory(
-                contents=[
-                    SingleFile(
-                        formats=[single_format]
-                    )
-                ]
-            ):
-                heading_text = (
-                    "Select a directory containing " 
-                    + f"{single_format} files."
-                )
-            case Directory(
-                contents=[
-                    Directory(
-                        contents=[
-                            SingleFile(
-                                formats=[first_format]
-                            )
-                        ]
-                    ),
-                    Directory(
-                        contents=[
-                            SingleFile(
-                                formats=[second_format]
-                            )
-                        ]
-                    )
-                ]
-            ) if first_format == second_format:
-                heading_text = (
-                    "Select a directory with two subdirectories, each "
-                    + f"containing {first_format} files."
-                )
-            case _:
-                heading_text = "Select a file."
-        heading = QLabel(heading_text)
-        heading.setWordWrap(True)
-        layout.addWidget(heading)
 
         self.button = QPushButton("Browse")
         self.button.setObjectName("file_selector_button")
