@@ -4,6 +4,7 @@ A module containing base UI classes.
 The classes extend default PySide widgets and layouts to make them
 stylable and remove margins and spacing.
 """
+
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,

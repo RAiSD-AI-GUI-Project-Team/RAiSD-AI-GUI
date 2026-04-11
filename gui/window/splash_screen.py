@@ -18,7 +18,11 @@ class SplashScreen(QSplashScreen):
     support for showing messages in the bottom-left corner.
     """
 
-    def __init__(self, text_color: QColor = QColor(10,13,79), alignment : int =  Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom) -> None:
+    def __init__(
+            self, 
+            text_color: QColor = QColor(10,13,79), 
+            alignment : int =  Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom
+        ) -> None:
         """
         Initialize a `SplashScreen` object.
         """
@@ -51,7 +55,7 @@ class SplashScreen(QSplashScreen):
             self, 
             message: str, 
             /, 
-            alignment: int = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom, 
+            alignment: int = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom,
             color = QColor(10,13,79)
         ) -> None:
         """
