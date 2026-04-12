@@ -100,10 +100,7 @@ class ResultsTab(RunPageTab):
 
     def refresh(self) -> None:
         self.enable_buttons(False)
-        QTimer.singleShot(1000, lambda: self.enable_buttons(True))
-
-    def reset(self) -> None:
-        pass
+        QTimer.singleShot(500, lambda: self.enable_buttons(True))
 
     @Slot(RunEndStatus)
     def run_ended(self, run_end_status: RunEndStatus) -> None:
