@@ -84,7 +84,12 @@ class ParameterWidget(QWidget):
         def _clicked(self) -> None:
             self._parameter.reset_value()
 
-    def __init__(self, parameter: Parameter[Any], editable: bool):
+    def __init__(
+            self,
+            parameter: Parameter[Any],
+            editable: bool,
+            include_reset_button: bool = True,
+    ):
         """
         Initialize a `ParameterWidget` object.
 
@@ -111,7 +116,7 @@ class ParameterWidget(QWidget):
             alignment=Qt.AlignmentFlag.AlignVCenter,
         )
 
-        if self._editable:
+        if self._editable and include_reset_button:
             reset_button = self.__class__.ResetButton(self._parameter)
             grid_layout.addWidget(
                 reset_button, 0, 1,
@@ -602,7 +607,12 @@ class StringParameterWidget(ParameterWidget):
     A widget to edit a string parameter.
     """
 
-    def __init__(self, parameter: StringParameter, editable: bool) -> None:
+    def __init__(
+            self,
+            parameter: StringParameter,
+            editable: bool,
+            include_reset_button: bool = True,
+    ) -> None:
         """
         Initialize a `StringParameterWidget` object.
 
@@ -615,7 +625,7 @@ class StringParameterWidget(ParameterWidget):
         :param editable: whether the widget is editable
         :type editable: bool
         """
-        super().__init__(parameter, editable)
+        super().__init__(parameter, editable, include_reset_button)
 
         self._line_edit = LineEdit(self)
         self._line_edit.setText(parameter.value)
@@ -690,6 +700,7 @@ class StringTableParameterWidget(ParameterWidget):
                 parameter_widget = StringParameterWidget(
                     string_parameter,
                     editable=editable,
+                    include_reset_button=False,
                 )
                 parameter_widget.setVisible(row_index < parameter.row_count)
                 widget_row.append(parameter_widget)
