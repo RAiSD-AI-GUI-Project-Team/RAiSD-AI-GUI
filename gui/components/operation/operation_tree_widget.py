@@ -391,8 +391,6 @@ class OperationNodeWidget(FileProducerNodeWidget):
     necessary input files are displayed side by side below.
     """
 
-    output_label_text = "The output of the operation will be stored at: "
-
     def __init__(self, operation_node: OperationNode):
         """
         Initialize an `OperationNodeWidget` object.
@@ -409,10 +407,18 @@ class OperationNodeWidget(FileProducerNodeWidget):
             spacing=constants.GAP_TINY,
         )
 
+        name_info = QWidget()
+        name_info_layout = HBoxLayout(
+            name_info,
+            spacing=constants.GAP_SMALL,
+        )
         name = QLabel(operation_node.name)
         name.setObjectName("heading")
         name.setWordWrap(True)
-        layout.addWidget(name)
+        name_info_layout.addWidget(name)
+        self._info_label = InfoLabel(self.info_label_text)
+        name_info_layout.addWidget(self._info_label)
+        layout.addWidget(name_info)
 
         description = QLabel(operation_node.description)
         description.setWordWrap(True)
@@ -432,11 +438,6 @@ class OperationNodeWidget(FileProducerNodeWidget):
                 parameter_row = parameter_widget.build_form_row()
                 parameter_rows_layout.addWidget(parameter_row)
             layout.addWidget(parameter_rows_widget)
-
-        self._output_info_label = InfoLabel(
-            self.output_label_text + self._operation_node.file
-        )
-        layout.addWidget(self._output_info_label)
 
         self._overwrite_warning_label = WarningLabel(
             "You are about to overwrite existing data!"
@@ -506,13 +507,12 @@ class OperationNodeWidget(FileProducerNodeWidget):
                 )
             layout.addWidget(input_files_widget)
 
-        self._operation_node.file_changed.connect(self._file_changed)
+        self._operation_node.file_changed.connect(self._refresh_info_label)
         self._operation_node.overwrite_changed.connect(self._overwrite_changed)
+        self._operation_node.run_id_changed.connect(self._refresh_info_label)
 
     def refresh(self) -> None:
-        self._output_info_label.text = (
-            self.output_label_text + self._operation_node.file
-        )
+        self._refresh_info_label()
         self._overwrite_warning_label.setVisible(
             self._operation_node.overwrite,
         )
@@ -531,9 +531,17 @@ class OperationNodeWidget(FileProducerNodeWidget):
             + "directory."
         )
 
-    @Slot(str)
-    def _file_changed(self, new_file: str) -> None:
-        self._output_info_label.text = self.output_label_text + new_file
+    @property
+    def info_label_text(self) -> str:
+        return (
+            "The following run ID will be given to RAiSD-AI: "
+            + f"{self._operation_node.run_id}\nThe output of the operation "
+            + f"will be stored at: {self._operation_node.file}"
+        )
+
+    @Slot()
+    def _refresh_info_label(self) -> None:
+        self._info_label.text = self.info_label_text
 
     @Slot(bool)
     def _overwrite_changed(self, new_overwrite: bool) -> None:
