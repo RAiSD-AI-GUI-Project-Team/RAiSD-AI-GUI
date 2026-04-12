@@ -883,6 +883,22 @@ class StringTableParameter(Parameter[tuple[()]]):
             for parameter in row:
                 parameter.reset_value()
 
+    def to_dict(self) -> str | dict:
+        result = {"parameters": []}
+        for row in self.parameters:
+            result_row: list[str] = []
+            for parameter in row:
+                result_row.append(parameter.to_dict())
+            result["parameters"].append(result_row)
+        return result
+
+    def populate(self, value: dict | str) -> None:
+        for row_index, row in enumerate(self.parameters):
+            for column_index, parameter in enumerate(row):
+                parameter.populate(
+                    value["parameters"][row_index][column_index]
+                )
+
     @property
     def allowed_row_counts(self) -> list[int]:
         return self._allowed_row_counts
