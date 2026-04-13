@@ -60,39 +60,6 @@ class ConfirmationTab(RunPageTab):
         title_label.setProperty("title", "true")
         layout.addWidget(title_label)
 
-        # Commands
-        commands_widget = QWidget()
-        commands_layout = VBoxLayout(
-            commands_widget,
-            spacing=constants.GAP_TINY,
-        )
-
-        parameters_header = QWidget()
-        parameters_header_layout = HBoxLayout(
-            parent=parameters_header,
-            spacing=constants.GAP_TINY,
-        )
-
-        parameters_label = QLabel("Command-line parameters generated from the input:")
-        parameters_header_layout.addWidget(parameters_label)
-
-        self.commands_label = InfoLabel("")
-        parameters_header_layout.addWidget(self.commands_label, 1)
-
-        copy_button = QPushButton("Copy")
-        copy_button.clicked.connect(self._copy_all)
-        parameters_header_layout.addWidget(copy_button)
-        commands_layout.addWidget(parameters_header)
-
-        self.parameters_view = QListWidget()
-        self.parameters_view.setObjectName("parameters_view")
-        self.parameters_view.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
-        self.parameters_view.clicked.connect(self._copy_parameters)
-        commands_layout.addWidget(self.parameters_view)
-
-
-        layout.addWidget(commands_widget)
-
         # Parameters
         header_widget = QWidget()
         header_layout = HBoxLayout(header_widget)
@@ -120,6 +87,38 @@ class ConfirmationTab(RunPageTab):
         parameter_form_scroll.setWidgetResizable(True)
         parameter_form_scroll.setWidget(self._parameter_form)
         layout.addWidget(parameter_form_scroll, 1)
+
+        # Commands
+        commands_widget = QWidget()
+        commands_layout = VBoxLayout(
+            commands_widget,
+            spacing=constants.GAP_TINY,
+        )
+
+        parameters_header = QWidget()
+        parameters_header_layout = HBoxLayout(
+            parent=parameters_header,
+            spacing=constants.GAP_TINY,
+        )
+
+        parameters_label = QLabel("Command-line parameters generated from the input:")
+        parameters_header_layout.addWidget(parameters_label)
+
+        self.commands_label = InfoLabel("")
+        parameters_header_layout.addWidget(self.commands_label, 1)
+
+        copy_button = QPushButton("Copy as commands")
+        copy_button.clicked.connect(self._copy_all)
+        parameters_header_layout.addWidget(copy_button)
+        commands_layout.addWidget(parameters_header)
+
+        self.parameters_view = QListWidget()
+        self.parameters_view.setObjectName("parameters_view")
+        self.parameters_view.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.parameters_view.clicked.connect(self._copy_parameters)
+        commands_layout.addWidget(self.parameters_view)
+
+        layout.addWidget(commands_widget)
 
         return widget
 
@@ -187,7 +186,8 @@ class ConfirmationTab(RunPageTab):
         Copies all commands from the run result to the clipboard.
         """
         if self._run_record.to_cli():
-            string = '; '.join(self._run_record.to_cli())
+            commands = [default_command_builder(params) for params in self._run_record.to_cli()]
+            string = '; '.join(commands)
             cb = QGuiApplication.clipboard()
             cb.setText(string)
 
