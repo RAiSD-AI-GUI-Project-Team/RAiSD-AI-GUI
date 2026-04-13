@@ -1,5 +1,5 @@
-<img width="1165" height="288" alt="Full name - Copy" src="https://github.com/user-attachments/assets/09238966-de9d-49ae-af7a-2e2b4bde681f" />
 
+<img width="1114" height="235" alt="Full name - Copy" src="https://github.com/user-attachments/assets/3aadbd69-0222-46c3-aa89-5e96e4efccdc" />
 
 RAiSD-AI: software to train, test, and use Convolutional Neural Networks for selective sweep detection
 ===============================================
