@@ -37,7 +37,7 @@ modes:
             - .txt
         overwrite_parameter:
           name: Overwrite RAiSD report
-          description: You are about to overwrite an existing RAiSD report. Are you sure?
+          description: You might overwrite an existing RAiSD report. Are you sure?
           cli: "-f"
           type: bool
           default: false
@@ -69,7 +69,7 @@ modes:
                 - .png
         overwrite_parameter:
           name: Overwrite prepared data
-          description: You are about to overwrite existing data in the output folder. Are you sure?
+          description: You might overwrite existing data in the output folder. Are you sure?
           cli: "-f"
           type: bool
           default: false
@@ -129,7 +129,7 @@ modes:
                 - .pt
         overwrite_parameter:
           name: Overwrite model
-          description: You are about to overwrite existing data in the output folder. Are you sure?
+          description: You might overwrite existing data in the output folder. Are you sure?
           cli: "-f"
           type: bool
           default: false
@@ -172,7 +172,7 @@ modes:
             - .txt
         overwrite_parameter:
           name: Overwrite results
-          description: You are about to overwrite existing data in the output folder. Are you sure?
+          description: You might overwrite existing data in the output folder. Are you sure?
           cli: "-f"
           type: bool
           default: false
@@ -209,7 +209,7 @@ modes:
             - .txt
         overwrite_parameter:
           name: Overwrite report
-          description: You are about to overwrite an existing RAiSD report. Are you sure?
+          description: You might overwrite an existing RAiSD report. Are you sure?
           cli: "-f -frm"
           type: bool
           default: false
@@ -229,12 +229,12 @@ modes:
             - .co-report
         overwrite_parameter:
           name: Overwrite existing results?
-          description: You are about to overwrite existing output data. Are you sure?
+          description: You might overwrite existing output data. Are you sure?
           cli: "-f"
           type: bool
           default: false
         path:
-          - RAiSD_CommonOutlierAnalysis.
+          - RAiSD_Info.
           - type: run id
   - name: File conversion
     operations:
@@ -256,7 +256,7 @@ modes:
             - .vcf
         overwrite_parameter:
           name: Overwrite existing data?
-          description: You are about to overwrite existing output data. Are you sure?
+          description: You might overwrite existing output data. Are you sure?
           cli: "-f"
           type: bool
           default: false
@@ -281,7 +281,7 @@ modes:
             - .ms
         overwrite_parameter:
           name: Overwrite existing data?
-          description: You are about to overwrite existing output data. Are you sure?
+          description: You might overwrite existing output data. Are you sure?
           cli: "-f"
           type: bool
           default: false
