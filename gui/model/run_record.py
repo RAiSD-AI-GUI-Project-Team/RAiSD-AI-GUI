@@ -141,6 +141,42 @@ class RunRecord(QObject):
                         f"Invalid file structure. Unknown file type {file_type}"
                     )
 
+        def parse_operation_input(obj: dict) -> Operation.Input:
+            if "name" not in obj:
+                raise ValueError("Missing name for operation input.")
+            name = obj["name"]
+            if not isinstance(name, str):
+                raise ValueError(
+                    f"Invalid input file name: {name}. Expected a string."
+                )
+
+            description = obj.get("description", "") or ""
+            if not isinstance(description, str):
+                raise ValueError(
+                    f"Invalid description for input file {name}: {description}"
+                    + ". Expected a string or null."
+                )
+
+            cli = obj.get("cli", "") or ""
+            if not isinstance(cli, str):
+                raise ValueError(
+                    f"Invalid CLI representation for input file {name}: {cli}."
+                    + " Expected a string or null."
+                )
+
+            if "file" not in obj:
+                raise ValueError(
+                    f"Missing file structure for input file {name}.")
+            file_obj = obj["file"]
+            file = parse_file_structure(file_obj)
+
+            return Operation.Input(
+                name=name,
+                description=description,
+                cli=cli,
+                file=file,
+            )
+
         def parse_path_fragment(obj: str | dict) -> Operation.PathFragment:
             if isinstance(obj, str):
                 return Operation.ConstPathFragment(obj)
@@ -228,23 +264,8 @@ class RunRecord(QObject):
                         f"Invalid item in input list: {requires_obj}. "
                         + "Expected object."
                     )
-                file_name = requires_obj.get("name", "")
-                if not isinstance(file_name, str):
-                    raise ValueError(
-                    f"Invalid file name: {file_name}. Expected string or null."
-                    )
-                file_cli = requires_obj.get("cli", "") or ""
-                if not isinstance(file_cli, str):
-                    raise ValueError(
-                        f"Invalid CLI representation for file {file_name}: "
-                        + f"{file_cli}. Expected string or null."
-                    )
-
-                if "file" not in requires_obj:
-                    raise ValueError("File missing.")
-                file_obj = requires_obj["file"]
-                file = parse_file_structure(file_obj)
-                requires.append((file_name, file_cli, file))
+                
+                requires.append(parse_operation_input(requires_obj))
 
             produces_obj = obj.get("output", "") or ""
             if not isinstance(produces_obj, dict):

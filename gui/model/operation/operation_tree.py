@@ -210,32 +210,26 @@ class FileConsumerNode(QObject):
 
     def __init__(
             self,
-            requires: FileStructure,
-            label: str,
-            cli: str,
+            required_file: Operation.Input,
             enabled: bool = False,
     ) -> None:
         """
         Initialize a `FileConsumerNode` object.
 
-        :param requires: the required file type
-        :type requires: FileStructure
-
-        :param label: what the required file represents, for the user
-        :type label: str
-
-        :param cli: the command-line option for this input file
-        :type cli: str
+        :param required_file: an object containing the details of the
+        required file
+        :type required_file: Operation.Input
 
         :param enabled: whether the node is initially enabled
         :type enabled: bool
         """
         super().__init__()
-        self._requires = requires
         self._producers = []
         self._selected_index = 0
-        self._label = label
-        self._cli = cli
+        self._name = required_file.name
+        self._description = required_file.description
+        self._cli = required_file.cli
+        self._requires = required_file.file
         self._enabled = enabled
 
     @property
@@ -263,12 +257,19 @@ class FileConsumerNode(QObject):
         return self._producers
 
     @property
-    def label(self) -> str:
+    def name(self) -> str | None:
         """
-        The label to display to the user, explaining what the required
-        input file represents.
+        The name of the required file to display to the user.
         """
-        return self._label
+        return self._name
+
+    @property
+    def description(self) -> str | None:
+        """
+        The description of the required file, explaining what it
+        represents for the operation that needs it.
+        """
+        return self._description
 
     @property
     def cli_parameter(self) -> str:
@@ -460,9 +461,12 @@ class CommonParentDirectoryNode(FileProducerNode):
         self._file_consumers = []
         for file_structure in self._produces.contents:
             file_consumer = FileConsumerNode(
-                file_structure,
-                "",
-                "",
+                Operation.Input(
+                    name=None,
+                    description=None,
+                    cli="",
+                    file=file_structure,
+                )
             )
             self._file_consumers.append(file_consumer)
             file_consumer.valid_changed.connect(self._consumer_valid_changed)
@@ -1006,13 +1010,9 @@ class OperationNode(FileProducerNode):
         self._cli = operation.cli
         self._produces = operation.produces
         self._file_consumers = []
-        for file_name, cli, file_structure in operation.requires:
-            file_consumer = FileConsumerNode(
-                file_structure,
-                file_name,
-                cli,
-            )
-            file_picker = FilePickerNode(file_structure)
+        for operation_input in operation.requires:
+            file_consumer = FileConsumerNode(operation_input)
+            file_picker = FilePickerNode(operation_input.file)
             file_consumer.add_producer(file_picker)
             self._file_consumers.append(file_consumer)
             file_consumer.valid_changed.connect(self._consumer_valid_changed)
