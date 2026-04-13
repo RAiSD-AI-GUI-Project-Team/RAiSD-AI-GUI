@@ -58,6 +58,7 @@ QPushButton#settings_button:pressed {
 
 /* SHARED — VIEW BACKGROUNDS */
 
+QDialog#settings_dialog,
 QWidget#page,
 QWidget#run_tab,
 QScrollArea#history_results_scroll,
@@ -145,11 +146,11 @@ QScrollArea#tree_scroll{
 
 /* STEP BUTTON BAR */
 
-QWidget#step_button_bar {
+QWidget#tab_bar {
     background-color: white;
 }
 
-QWidget#step_button_bar QPushButton {
+QWidget#tab_label {
     padding: 10px 20px;
     background-color: white;
     color: $border-gray;
@@ -157,22 +158,14 @@ QWidget#step_button_bar QPushButton {
     border-radius: 10px;
 }
 
-QWidget#step_button_bar QPushButton[step_role="active"] {
+QWidget#tab_label[step_role="active"] {
     background-color: $accent-orange;
     color: white;
 }
 
-QWidget#step_button_bar QPushButton[step_role="past_step"] {
+QWidget#tab_label[step_role="past_step"] {
     background-color: $primary-purple;
     color: white;
-}
-
-QWidget#step_button_bar QPushButton[step_role="past_step"]:hover {
-    background-color: $button-hover;
-}
-
-QWidget#step_button_bar QPushButton[step_role="past_step"]:pressed {
-    background-color: $button-pressed;
 }
 
 /* NAVIGATION BUTTONS */
@@ -234,15 +227,15 @@ QWidget#label_body{
     font-weight: 300;
 }
 
-QLabel#parameter_hint {
+QLabel#constraint {
     font-size: $font-size - 3px;
 }
 
-QLabel#parameter_hint[valid="true"] {
+QLabel#constraint[valid="true"] {
     color: $valid;
 }
 
-QLabel#parameter_hint[valid="false"] {
+QLabel#constraint[valid="false"] {
     color: $invalid;
 }
 
@@ -335,6 +328,7 @@ QWidget#process_indicator{
 QWidget#process_indicator[indicator_state="pending"] {
     qproperty-fillColor: $purplish-background;
     qproperty-borderColor: $primary-purple;
+    qproperty-textColor: $primary-purple;
 }
 
 QWidget#process_indicator[indicator_state="running"] {
@@ -360,6 +354,7 @@ QWidget#process_indicator[indicator_state="stopped"] {
 QWidget#execution_output,
 QWidget#error_output{
     font-size: $font-size - 4px;
+    font-family: monospace;
 }
 /* OP SELECTION */
 QWidget#file_consumer_node {
