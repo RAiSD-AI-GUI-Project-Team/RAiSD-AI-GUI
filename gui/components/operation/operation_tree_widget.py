@@ -410,11 +410,12 @@ class OperationNodeWidget(FileProducerNodeWidget):
         name_info = QWidget()
         name_info_layout = HBoxLayout(
             name_info,
-            spacing=constants.GAP_SMALL,
+            spacing=constants.GAP_TINY,
         )
         name = QLabel(operation_node.name)
         name.setObjectName("heading")
         name.setWordWrap(True)
+        name.setAlignment(Qt.AlignmentFlag.AlignTop)
         name_info_layout.addWidget(name)
         self._info_label = InfoLabel(self.info_label_text)
         name_info_layout.addWidget(self._info_label)
