@@ -42,8 +42,7 @@ The operation selection tab is the first step when running RAiSD-AI operations. 
 
 3. **Input Data**: This section allows you to input the data required for the selected operation. This can include files, folders, and parameters.
 
-> [!TIP]
-> The operation selection guides you through the possible combinations of operations and input types in a simple step by step manner. When choosing an operation to run, this section will ask you how you want to provide input data. That can often be either as files, or by running another operation to generate the necessary files. 
+The operation selection guides you through the possible combinations of operations and input types in a simple step by step manner. When choosing an operation to run, this section will ask you how you want to provide input data. That can often be either as files, or by running another operation to generate the necessary files. 
 
 For example, the model training operation needs a directory with two subdirectories containing formatted data. However, instead of having to run data formatting twice, and then running model training using the directory generated. You can choose to run these operations together with running model training. (See the screenshot above where running multiple operations is selected.)
 
