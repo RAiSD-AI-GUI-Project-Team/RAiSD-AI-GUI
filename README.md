@@ -113,6 +113,10 @@ When the environment is activated, run the following command:
 python -m gui.app
 ```
 
+### Using the GUI
+
+TODO: mention and link to manuals here.
+
 
 Quick Test Run
 --------
