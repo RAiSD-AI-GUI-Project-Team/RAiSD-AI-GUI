@@ -10,9 +10,9 @@ class Constraint(QObject, Generic[T]):
     enabled_changed = Signal(bool)
     valid_changed = Signal(bool)
 
-    def __init__(self) -> None:
+    def __init__(self, value: T | None = None) -> None:
         super().__init__()
-        self._value: T | None = None
+        self._value = value
 
     @property
     def hint(self) -> str:
@@ -42,6 +42,12 @@ class Constraint(QObject, Generic[T]):
 
     value = property(fset=_set_value)
 
+    def copy(self) -> "Constraint":
+        """
+        Create a copy of the constraint.
+        """
+        raise NotImplementedError()
+
 
 X = TypeVar("X", bound=float)
 
@@ -53,6 +59,7 @@ class IntervalConstraint(Constraint[X]):
             lower_bound_inclusive: bool = True,
             upper_bound: X | None = None,
             upper_bound_inclusive: bool = True,
+            value: X | None = None,
     ) -> None:
         """
         Initialize an `IntervalConstraint` object.
@@ -74,7 +81,7 @@ class IntervalConstraint(Constraint[X]):
         inclusive
         :type upper_bound_inclusive: bool
         """
-        super().__init__()
+        super().__init__(value=value)
 
         if lower_bound is None and upper_bound is None:
             raise ValueError("Both bounds None for interval constraint.")
@@ -118,6 +125,15 @@ class IntervalConstraint(Constraint[X]):
                 return False
         return True
 
+    def copy(self) -> "IntervalConstraint":
+        return IntervalConstraint(
+            lower_bound=self._lower_bound,
+            lower_bound_inclusive=self._lower_bound_inclusive,
+            upper_bound=self._upper_bound_inclusive,
+            upper_bound_inclusive=self._upper_bound_inclusive,
+            value=self._value
+        )
+
 
 class EvenConstraint(Constraint[int]):
     @property
@@ -130,10 +146,15 @@ class EvenConstraint(Constraint[int]):
             return False
         return self._value % 2 == 0
 
+    def copy(self) -> "EvenConstraint":
+        return EvenConstraint(
+            value=self._value,
+        )
+
 
 class MaxLengthConstraint(Constraint[str]):
-    def __init__(self, max_length: int) -> None:
-        super().__init__()
+    def __init__(self, max_length: int, value: str | None = None) -> None:
+        super().__init__(value=value)
         self._max_length = max_length
 
     @property
@@ -146,10 +167,21 @@ class MaxLengthConstraint(Constraint[str]):
             return False
         return len(self._value) <= self._max_length
 
+    def copy(self) -> "MaxLengthConstraint":
+        return MaxLengthConstraint(
+            max_length=self._max_length,
+            value=self._value,
+        )
+
 
 class RegexConstraint(Constraint[str]):
-    def __init__(self, pattern: Pattern, hint: str) -> None:
-        super().__init__()
+    def __init__(
+            self,
+            pattern: Pattern,
+            hint: str,
+            value: str | None = None,
+    ) -> None:
+        super().__init__(value=value)
         self._pattern = pattern
         self._hint = hint
 
@@ -162,3 +194,10 @@ class RegexConstraint(Constraint[str]):
         if self._value is None:
             return False
         return self._pattern.fullmatch(self._value) is not None
+
+    def copy(self) -> "RegexConstraint":
+        return RegexConstraint(
+            pattern=self._pattern,
+            hint=self._hint,
+            value=self._value,
+        )

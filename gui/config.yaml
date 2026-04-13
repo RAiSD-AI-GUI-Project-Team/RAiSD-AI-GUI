@@ -1124,16 +1124,26 @@ parameter_groups:
     parameters:
       "-clp":
         name: Class tests
-        description: Enter one or more label-folder pairs. # improve this
+        description: Enter two or four label-folder pairs. Choose four only if the model was generated with FASTER-NN-G and four class labels.
         cli: "-clp "
-        type: string pair list
+        type: string table
         separator: "="
-        left_pattern: "\\w+"
-        right_pattern: "\\w+"
-        min: 1
-        default:
-          - left: label
-            right: folder
+        columns:
+          - name: Labels
+            default: ""
+            constraints:
+              - type: regex
+                pattern: ".+"
+                hint: Non-empty.
+          - name: Folders
+            default: ""
+            constraints:
+              - type: regex
+                pattern: ".+"
+                hint: Non-empty.
+        rows:
+          - 2
+          - 4
   - name: RAiSD-AI sweep scan
     operations:
       - SWP-SCN

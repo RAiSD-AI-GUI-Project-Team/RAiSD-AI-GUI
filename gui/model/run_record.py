@@ -34,7 +34,7 @@ from gui.model.parameter import (
     FloatParameter,
     EnumParameter,
     StringParameter,
-    StringPairListParameter,
+    StringTableParameter,
     FileParameter,
 )
 from gui.model.parameter.condition import (
@@ -506,44 +506,95 @@ class RunRecord(QObject):
                         parameter_operations,
                         default_value,
                     )
-                case "string pair list" | "string pairs":
-                    default_value_list = obj.get("default", []) or []
-                    if not isinstance(default_value_list, list):
+                case "string table":
+                    if "columns" not in obj:
                         raise ValueError(
-                            "Invalid default value for string pair list "
-                            + f"parameter {name}: {default_value_list}. "
-                            + "Expected a list or null."
+                            "Missing list of column descriptions for string "
+                            + f"table parameter {name}."
                         )
-                    default_value = []
-                    for pair in default_value_list:
-                        if not isinstance(pair, dict):
+                    columns_list = obj["columns"]
+                    if not isinstance(columns_list, list):
+                        raise ValueError(
+                            "Invalid list of column descriptions for string "
+                            + f"table parameter {name}."
+                        )
+                    columns: list[tuple[str, str, list[Constraint[str]]]] = []
+                    for column_obj in columns_list:
+                        if not isinstance(column_obj, dict):
                             raise ValueError(
-                                "Invalid value in default list for string pair"
-                                + f" list parameter {name}: {pair}. Expected "
+                                "Invalid column description for string table "
+                                + f"parameter {name}: {column_obj}. Expected "
                                 + "an object."
                             )
 
-                        left = pair.get("left", "") or ""
-                        if not isinstance(left, str):
+                        if "name" not in column_obj:
                             raise ValueError(
-                                "Invalid left value in default list for string"
-                                + f" pair list parameter {name}: {left}. "
+                                "Missing column name for string table "
+                                + f"parameter {name}."
+                            )
+                        column_name = column_obj["name"]
+                        if not isinstance(column_name, str):
+                            raise ValueError(
+                                "Invalid column name for string table "
+                                + f"parameter {name}: {column_name}. Expected "
+                                + "a string."
+                            )
+
+                        column_default = column_obj.get("default", "") or ""
+                        if not isinstance(column_default, str):
+                            raise ValueError(
+                                "Invalid column default value for string table"
+                                + f" parameter {name}: {column_default}. "
                                 + "Expected a string or null."
                             )
 
-                        right = pair.get("right", "") or ""
-                        if not isinstance(right, str):
+                        constraints_list = column_obj.get(
+                            "constraints", []
+                        ) or []
+                        if not isinstance(constraints_list, list):
                             raise ValueError(
-                                "Invalid right value in default list for "
-                                + f"string pair list parameter {name}: {right}"
-                                + ". Expected a string or null."
+                                "Invalid constraints list for column "
+                                + f"{column_name} of string table parameter "
+                                + f"{name}: {constraints_list}. Expected a "
+                                + "list or null."
                             )
+                        column_constraints: list[Constraint[str]] = []
+                        for constraint_obj in constraints_list:
+                            if not isinstance(constraint_obj, dict):
+                                raise ValueError(
+                                    "Invalid constraint for column "
+                                    + f"{column_name} of string table "
+                                    + f"parameter {name}: {constraint_obj}. "
+                                    + "Expected an object."
+                                )
+                            column_constraints.append(
+                                parse_constraint(constraint_obj)
+                            )
+                        columns.append(
+                            (
+                                column_name,
+                                column_default,
+                                column_constraints,
+                            ),
+                        )
 
-                        default_value.append((left, right))
+                    if "rows" not in obj:
+                        raise ValueError(
+                            "Missing allowed row counts for string table "
+                            + f"parameter {name}."
+                        )
+                    allowed_row_counts = obj["rows"]
+                    for count in allowed_row_counts:
+                        if not isinstance(count, int):
+                            raise ValueError(
+                                "Invalid allowed row count for string table "
+                                + f"parameter {name}: {count}. Expected an "
+                                + "integer."
+                            )
 
                     if "separator" not in obj:
                         raise ValueError(
-                            "Missing separator for string pair list parameter "
+                            "Missing separator for string table parameter "
                             + f"{name}."
                         )
                     separator = obj["separator"]
@@ -552,50 +603,15 @@ class RunRecord(QObject):
                             "Invalid separator for string pair list parameter "
                             + f"{name}: {separator}. Expected a string."
                         )
-
-                    left_pattern = obj.get("left_pattern", None)
-                    if isinstance(left_pattern, str):
-                        compiled_left_pattern = compile(left_pattern)
-                    elif left_pattern is None:
-                        compiled_left_pattern = None
-                    else:
-                        raise ValueError(
-                            "Invalid left-side pattern for string pair list "
-                            + f"parameter {name}: {left_pattern}. Expected a "
-                            + "string or null."
-                        )
-
-                    right_pattern = obj.get("right_pattern", None)
-                    if isinstance(right_pattern, str):
-                        compiled_right_pattern = compile(right_pattern)
-                    elif right_pattern is None:
-                        compiled_right_pattern = None
-                    else:
-                        raise ValueError(
-                            "Invalid right-side pattern for string pair list "
-                            + f"parameter {name}: {right_pattern}. Expected a "
-                            + "string or null."
-                        )
-
-
-                    min_count = obj.get("min", 0) or 0
-                    if not isinstance(min_count, int):
-                        raise ValueError(
-                            "Invalid minimum count for string pair list "
-                            + f"parameter {name}: {min_count}. Expected an int"
-                            + " or null."
-                        )
         
-                    parameter = StringPairListParameter(
+                    parameter = StringTableParameter(
                         name,
                         description,
                         flag,
                         operations,
-                        default_value,
+                        columns,
+                        allowed_row_counts,
                         separator,
-                        compiled_left_pattern,
-                        compiled_right_pattern,
-                        min_count,
                     )
                 case "file":
                     accepted_formats = obj.get("formats", None)

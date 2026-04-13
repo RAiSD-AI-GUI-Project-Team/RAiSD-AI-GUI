@@ -836,13 +836,14 @@ class StringParameter(Parameter[str]):
         )
 
 
-class StringPairListParameter(Parameter[list[tuple[str, str]]]):
+class StringTableParameter(Parameter[tuple[()]]):
     """
-    A parameter for entering any number of label-value pairs of strings.
+    A parameter for entering a table of strings.
     """
 
-    value_changed = Signal(list, bool)
-    pair_valid_changed = Signal(int, bool, bool)
+    value_changed = Signal(tuple[()], bool)
+    row_count_index_changed = Signal(int)
+    row_count_changed = Signal(int)
 
     def __init__(
             self,
@@ -850,77 +851,126 @@ class StringPairListParameter(Parameter[list[tuple[str, str]]]):
             description: str,
             flag: str,
             operations: set[str],
-            default_value: list[tuple[str, str]],
+            columns: list[tuple[str, str, list[Constraint[str]]]],
+            allowed_row_counts: list[int],
             separator: str,
-            left_pattern: Pattern | None = None,
-            right_pattern: Pattern | None = None,
-            min_count: int | None = None,
     ) -> None:
         super().__init__(
             name=name,
             description=description,
             flag=flag,
             operations=operations,
-            default_value=default_value,
+            default_value=(),
         )
-        self._value = default_value.copy()
+
+        if not columns:
+            raise ValueError("Empty column list.")
+        self._column_names = [name for name, _, _ in columns]
+
+        if not allowed_row_counts:
+            raise ValueError("Empty list of allowed row counts.")
+        self._allowed_row_counts = list(allowed_row_counts)
+        self._allowed_row_counts.sort()
+        self._row_count_index = 0
+
+        max_allowed_row_count = max(allowed_row_counts)
+        self._parameters: list[list[StringParameter]] = []
+        for _ in range(max_allowed_row_count):
+            row = []
+            for _, default_value, constraints in columns:
+                parameter = StringParameter(
+                    name="",
+                    description="",
+                    flag="",
+                    operations=operations,
+                    default_value=default_value,
+                )
+                for constraint in constraints:
+                    parameter.add_constraint(constraint.copy())
+                row.append(parameter)
+            self._parameters.append(row)
+
         self._separator = separator
-        self._left_pattern = left_pattern
-        self._right_pattern = right_pattern
-        self._min_count = min_count or 0
-
-    @property
-    def min_count(self) -> int:
-        return self._min_count
-
-    def add_pair(self, pair=("", "")) -> None:
-        self.value += [pair]
-        self.value_changed.emit(self.value, self.valid)
-
-    def pair_valid(self, index: int) -> tuple[bool, bool]:
-        left_valid = (
-            self._left_pattern is None
-            or self._left_pattern.fullmatch(self.value[index][0]) is not None
-        )
-        right_valid = (
-            self._right_pattern is None
-            or self._right_pattern.fullmatch(self.value[index][1]) is not None
-        )
-        return left_valid, right_valid
-
-    def set_pair(self, index: int, pair: tuple[str, str]) -> None:
-        self.value[index] = pair
-        self.value_changed.emit(self.value, self.valid)
-        self.pair_valid_changed.emit(index, *self.pair_valid(index))
-
-    def delete_pair(self, i: int) -> None:
-        self.value = self.value[:i] + self.value[i+1:]
-        self.value_changed.emit(self.value, self.valid)
 
     def reset_value(self) -> None:
-        self.value = self.default_value.copy()
-        self.value_changed.emit(self.value, self.valid)
+        super().reset_value()
+        for row in self.parameters:
+            for parameter in row:
+                parameter.reset_value()
+
+    def to_dict(self) -> str | dict:
+        result = {"parameters": []}
+        for row in self.parameters:
+            result_row: list[str] = []
+            for parameter in row:
+                result_row.append(parameter.to_dict())
+            result["parameters"].append(result_row)
+        return result
+
+    def populate(self, value: dict | str) -> None:
+        for row_index, row in enumerate(self.parameters):
+            for column_index, parameter in enumerate(row):
+                parameter.populate(
+                    value["parameters"][row_index][column_index]
+                )
+
+    @property
+    def allowed_row_counts(self) -> list[int]:
+        return self._allowed_row_counts
+
+    @property
+    def row_count_index(self) -> int:
+        return self._row_count_index
+
+    @row_count_index.setter
+    def row_count_index(self, new_row_count_index: int) -> None:
+        old_row_count_index = self.row_count_index
+        old_row_count = self.row_count
+
+        self._row_count_index = new_row_count_index
+
+        if self.row_count_index != old_row_count_index:
+            self.row_count_index_changed.emit(self.row_count_index)
+        if self.row_count != old_row_count:
+            self.row_count_changed.emit(self.row_count)
+
+    @property
+    def row_count(self) -> int:
+        return self.allowed_row_counts[self.row_count_index]
+
+    @property
+    def column_count(self) -> int:
+        return len(self._column_names)
+
+    @property
+    def column_names(self) -> list[str]:
+        return self._column_names
+
+    @property
+    def parameters(self) -> list[list[StringParameter]]:
+        return self._parameters
 
     @property
     def valid(self) -> bool:
-        if len(self.value) < self.min_count:
-            return False
         return all(
-            left_valid and right_valid for left_valid, right_valid in
-            [self.pair_valid(i) for i in range(len(self.value))]
+            parameter.valid
+            for row in self.parameters[:self.row_count]
+            for parameter in row
         )
 
     def _to_cli(
             self,
             operation: str | None = None,
-            value: list[tuple[str, str]] | None = None,
+            value: tuple[()] | None = None,
     ) -> str:
-        if value is None:
-            value = self.value
-        result = f"{self.flag}{len(value)}"
-        for left, right in value:
-            result += f" {left}{self._separator}{right}"
-        return result
+        pieces = [f"{self.flag}{self.row_count}"]
+        for row in self.parameters[:self.row_count]:
+            pieces.append(
+                self._separator.join(
+                    parameter.value for parameter in row
+                )
+            )
+        return " ".join(pieces)
 
 
 class FileParameter(Parameter[list[str]]):
