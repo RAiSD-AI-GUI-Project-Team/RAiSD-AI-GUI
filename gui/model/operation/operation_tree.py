@@ -976,6 +976,7 @@ class OperationNode(FileProducerNode):
         def _enabled_changed(self, new_enabled: bool):
             self.value = new_enabled==self._target_value
 
+    run_id_changed = Signal(str)
     enabled_changed = Signal(bool)
 
     def __init__(self,
@@ -1112,6 +1113,9 @@ class OperationNode(FileProducerNode):
     def run_id(self) -> str:
         """
         The run ID stored in this node.
+
+        When this property is set, the node will append its operation ID
+        to the given value.
         """
         return self._run_id
 
@@ -1119,6 +1123,7 @@ class OperationNode(FileProducerNode):
     def run_id(self, new_run_id: str) -> None:
         old_file = self.file
         old_overwrite = self.overwrite
+        old_run_id = self.run_id
 
         self._run_id = f"{new_run_id}_{self.id}"
         for file_consumer in self.file_consumers:
@@ -1128,6 +1133,8 @@ class OperationNode(FileProducerNode):
             self.file_changed.emit(self.file)
         if self.overwrite != old_overwrite:
             self.overwrite_changed.emit(self.overwrite)
+        if self.run_id != old_run_id:
+            self.run_id_changed.emit(self.run_id)
 
     @property
     def base_directory_path(self) -> str:
