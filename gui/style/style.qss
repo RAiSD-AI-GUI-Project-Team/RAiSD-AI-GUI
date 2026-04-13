@@ -327,6 +327,7 @@ QWidget#process_indicator{
 QWidget#process_indicator[indicator_state="pending"] {
     qproperty-fillColor: $purplish-background;
     qproperty-borderColor: $primary-purple;
+    qproperty-textColor: $primary-purple;
 }
 
 QWidget#process_indicator[indicator_state="running"] {
@@ -352,6 +353,7 @@ QWidget#process_indicator[indicator_state="stopped"] {
 QWidget#execution_output,
 QWidget#error_output{
     font-size: $font-size - 4px;
+    font-family: monospace;
 }
 /* OP SELECTION */
 QWidget#file_consumer_node {
