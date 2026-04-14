@@ -1,12 +1,15 @@
-name: raisd-ai
+name: raisd-ai-cuda
 channels:
   - pytorch
-  - defaults
-  - conda-forge
+  - nvidia
   - bioconda
+  - conda-forge
+  - defaults
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu
+  - mkl
+  - mkl-service
   - _tflow_select=2.3.0=mkl
   - abseil-cpp=20211102.0=hd4dd3e8_0
   - absl-py=2.1.0=py38h06a4308_0
@@ -18,7 +21,7 @@ dependencies:
   - async-timeout=4.0.3=py38h06a4308_0
   - attrs=24.2.0=pyh71513ae_0
   - bcftools=1.17=h3cc50cf_1
-  - blas=1.0=openblas
+  - blas=*=mkl
   - blinker=1.6.2=py38h06a4308_0
   - brotli=1.0.9=he6710b0_2
   - brotli-python=1.1.0=py38h17151c0_1
@@ -32,6 +35,7 @@ dependencies:
   - click=8.1.7=py38h06a4308_0
   - contourpy=1.0.5=py38hdb19cb5_0
   - cryptography=41.0.3=py38h130f0dd_0
+  - cudatoolkit=11.8.0=h6a678d5_0
   - cycler=0.11.0=pyhd3eb1b0_0
   - cyrus-sasl=2.1.28=h9c0eb46_1
   - dbus=1.13.18=hb2f20db_0
@@ -81,8 +85,6 @@ dependencies:
   - kiwisolver=1.4.4=py38h6a678d5_0
   - krb5=1.20.1=hf9c8cef_0
   - ld_impl_linux-64=2.40=hf3520f5_7
-  - libblas=3.9.0=20_linux64_openblas
-  - libcblas=3.9.0=20_linux64_openblas
   - libclang=14.0.6=default_hc6dbbc7_1
   - libclang13=14.0.6=default_he11475f_1
   - libcups=2.4.2=ha637b67_0
@@ -99,11 +101,9 @@ dependencies:
   - libglib=2.78.4=hdc74915_0
   - libgomp=14.1.0=h77fa898_1
   - libiconv=1.16=h5eee18b_3
-  - liblapack=3.9.0=20_linux64_openblas
   - libllvm14=14.0.6=hecde1de_4
   - libnghttp2=1.52.0=ha637b67_1
   - libnsl=2.0.1=hd590300_0
-  - libopenblas=0.3.25=pthreads_h413a1c8_0
   - libpng=1.6.39=h5eee18b_0
   - libpq=12.15=h37d81fd_1
   - libprotobuf=3.20.3=he621ea3_0
@@ -138,7 +138,6 @@ dependencies:
   - numpy=1.24.4=py38h59b608b_0
   - oauthlib=3.2.2=py38h06a4308_0
   - olefile=0.46=pyhd3eb1b0_0
-  - openblas=0.3.25=pthreads_h7a3da1a_0
   - openssl=1.1.1w=h7f8727e_0
   - opt_einsum=3.3.0=pyhd3eb1b0_1
   - packaging=24.1=pyhd8ed1ab_0
@@ -168,6 +167,7 @@ dependencies:
   - python-tzdata=2024.1=pyhd8ed1ab_0
   - python_abi=3.8=2_cp38
   - pytorch=2.0.1
+  - pytorch-cuda=11.8
   - pytz=2024.1=pyhd8ed1ab_0
   - pyyaml=6.0.1=py38h5eee18b_0
   - qt-main=5.15.2=h5b8104b_9
@@ -199,12 +199,12 @@ dependencies:
   - termcolor=2.1.0=py38h06a4308_0
   - tk=8.6.13=noxft_h4845f30_101
   - tomli=2.0.1=py38h06a4308_0
-  - torchvision=0.15.2
-  - cpuonly
+  - torchvision=0.15.2=cuda118py38h196c800_0
   - tornado=6.4.1=py38h5eee18b_0
   - tskit=0.5.6=py38he82f83a_2
   - typing-extensions=4.11.0=py38h06a4308_0
   - typing_extensions=4.11.0=py38h06a4308_0
+  - _tflow_select=2.3.0=mkl
   - unicodedata2=15.1.0=py38h5eee18b_0
   - urllib3=2.2.2=pyhd8ed1ab_1
   - werkzeug=3.0.3=py38h06a4308_0
