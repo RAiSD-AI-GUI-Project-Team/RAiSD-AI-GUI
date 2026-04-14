@@ -114,3 +114,16 @@ class TestSettings:
         assert (settings.config_path.absolutePath() == 
                 correct_settings_obj["config_file"])
     
+    def test_yaml_incorrect_workspace_value(self, mocker, correct_settings_obj):
+        """Test from yaml with invalid workspace value."""
+        # Arrange
+        correct_settings_obj["workspace"] = 0
+        mocked_empty_file = mocker.mock_open(read_data=f"{correct_settings_obj}")
+        mocker.patch("builtins.open", mocked_empty_file)
+        settings = Settings()
+
+        # Act, Assert 
+        with pytest.raises(ValueError) as e:
+            settings.from_yaml("file path")
+        assert str(e.value) == "Incorrect type for workspace: 0, type: <class 'int'>, Expected string."
+
