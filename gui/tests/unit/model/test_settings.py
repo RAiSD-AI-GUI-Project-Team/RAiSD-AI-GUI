@@ -89,3 +89,28 @@ class TestSettings:
         assert settings.environment_name== Settings.default_environment_name
         assert settings.config_path == Settings.default_config_path
     
+    def test_yaml_correct_values(self, mocker, correct_settings_obj):
+        """Test from yaml with valid values."""
+        # Arrange
+        mocked_correct_file = mocker.mock_open(read_data=f"{correct_settings_obj}")
+        mocker.patch("builtins.open", mocked_correct_file)
+        mocker.patch("PySide6.QtCore.QDir.exists", lambda x: True)
+        mocker.patch("PySide6.QtCore.QFileInfo.exists", lambda x: True) # notwork why..?
+
+        settings = Settings()
+
+        # Act
+        settings.from_yaml("file path")
+
+        # Assert
+        assert (settings.workspace_path.absolutePath() == 
+                correct_settings_obj["workspace"])
+        assert (settings.executable_file_path.absolutePath() == 
+                correct_settings_obj["executable"])
+        assert (settings.environment_name == 
+                correct_settings_obj["environment_name"])
+        assert (settings.environment_manager_name == 
+                correct_settings_obj["environment_manager"])
+        assert (settings.config_path.absolutePath() == 
+                correct_settings_obj["config_file"])
+    
