@@ -139,7 +139,7 @@ class TestSettings:
         with pytest.raises(ValueError) as e:
             settings.from_yaml("file path")
         assert str(e.value) == "Incorrect type for executable path: 0, type: <class 'int'>, Expected string."   
-        
+
     def test_yaml_incorrect_environment_manager_value(self, mocker, correct_settings_obj):
         """Test from yaml with invalid environment_manager value."""
         # Arrange
@@ -152,7 +152,7 @@ class TestSettings:
         with pytest.raises(ValueError) as e:
             settings.from_yaml("file path")
         assert str(e.value) == "Incorrect type for environment manager: 0, type: <class 'int'>, Expected string."   
-        
+
     def test_yaml_incorrect_environment_name_value(self, mocker, correct_settings_obj):
         """Test from yaml with invalid environment_name value."""
         # Arrange
@@ -165,4 +165,16 @@ class TestSettings:
         with pytest.raises(ValueError) as e:
             settings.from_yaml("file path")
         assert str(e.value) == "Incorrect type for environment name: 0, type: <class 'int'>, Expected string."   
-        
+
+    def test_yaml_incorrect_config_file_value(self, mocker, correct_settings_obj):
+        """Test from yaml with invalid config_file value."""
+        # Arrange
+        correct_settings_obj["config_file"] = 0
+        mocked_empty_file = mocker.mock_open(read_data=f"{correct_settings_obj}")
+        mocker.patch("builtins.open", mocked_empty_file)
+        settings = Settings()
+
+        # Act, Assert 
+        with pytest.raises(ValueError) as e:
+            settings.from_yaml("file path")
+        assert str(e.value) == "Incorrect type for config file: 0, type: <class 'int'>, Expected string."   
