@@ -5,7 +5,7 @@ from PySide6.QtCore import (
     QFileInfo
 )
 
-from gui.model.settings import Settings, app_settings
+from gui.model.settings import Settings
 
 class TestSettings:
     """Tests for Settings class."""
@@ -40,3 +40,16 @@ class TestSettings:
         assert settings.environment_manager_name == environment_manger_name
         assert settings.environment_name == environment_name
         assert settings.config_path == config_path
+
+    def test_yaml_file_not_found(self, mocker):
+        # Arrange
+        load_mock = mocker.patch("load")
+        load_mock.return_value = FileNotFoundError
+        settings = Settings()
+
+        # Act
+        settings.from_yaml ("")
+
+        # Assert
+        assert settings.workspace_path == None
+        #TODO: finish
