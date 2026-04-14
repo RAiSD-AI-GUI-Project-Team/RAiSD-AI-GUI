@@ -216,4 +216,32 @@ class TestSettings:
         # Act, Assert 
         with pytest.raises(ValueError) as e:
             settings.from_yaml("file path")
-        assert str(e.value) == "Incorrect filepath for config file: '', This file does not exist."   
+        assert str(e.value) == "Incorrect filepath for config file: '', This file does not exist."
+
+    def test_workspace_setter(self, tmp_path, mocker):
+        """Test workspace setter writes to file and emits signals."""
+        # Arrange
+        settings_file = tmp_path / "settings.yaml"
+        settings_file.write_text("")
+        
+        settings = Settings()
+        workspace = QDir(str(tmp_path))
+        
+        mocker.patch.object(Settings, 'settings_file_path', str(settings_file))
+        
+        workspace_changed_spy = mocker.MagicMock()
+        settings_changed_spy = mocker.MagicMock()
+        settings.workspace_path_changed.connect(workspace_changed_spy)
+        settings.settings_changed.connect(settings_changed_spy)
+        
+        # Act
+        settings.workspace_path = workspace
+        
+        # Assert
+        assert settings.workspace_path == workspace
+        workspace_changed_spy.assert_called_once_with(workspace)
+        settings_changed_spy.assert_called_once()
+
+        assert settings_file.exists()
+        content = yaml.load(settings_file.read_text(), Loader=yaml.Loader)
+        assert content["workspace"] == str(tmp_path)
