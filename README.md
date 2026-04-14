@@ -1,4 +1,6 @@
 
+<img width="1114" height="235" alt="Full name - Copy" src="https://github.com/user-attachments/assets/3aadbd69-0222-46c3-aa89-5e96e4efccdc" />
+
 RAiSD-AI: software to train, test, and use Convolutional Neural Networks for selective sweep detection
 ===============================================
 
@@ -8,7 +10,7 @@ Authors: Nikolaos Alachiotis (n.alachiotis@gmail.com) and Pavlos Pavlidis (pavli
 
 RAiSD first release: 9/6/2017 | RAiSD-AI first release: 8/7/2024 
 
-Current version: 4.2 | Released: 30/1/2026
+Current version: 4.5 | Released: 11/4/2026
 
 RAiSD-AI code contributions by Sjoerd van den Belt and Hanqing Zhao
 
