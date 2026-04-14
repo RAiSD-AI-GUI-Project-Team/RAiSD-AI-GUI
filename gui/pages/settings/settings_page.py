@@ -186,7 +186,9 @@ class SettingsPage(Page):
 
         contact_text_label = QLabel(
             "You can request support or report a bug by opening an issue "
-            "on Github via <a href='https://github.com/VladNegara/RAiSD-AI-GUI/issues/new'>this link</a>."
+            "on Github via <a href='https://github.com/VladNegara/RAiSD-AI-GUI/issues/new'>this link</a> or by "
+            "contacting RAiSD-AI developers <a href='mailto:n.alachiotis@gmail.com'>Nikolaos Alachiotis </a>"
+            "and <a href='mailto:pavlidisp@gmail.com'>Pavlos Pavlidis</a>."
         )
         contact_text_label.setWordWrap(True)
         contact_text_label.setOpenExternalLinks(True)
