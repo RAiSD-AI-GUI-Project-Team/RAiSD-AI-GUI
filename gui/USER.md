@@ -21,7 +21,7 @@ The GUI is especially useful for users who want to avoid manual command-line inp
 
 ## Install and Run
 
-For information about installing and running the GUI see the appropriate chapters [Installing the GUI](/README.md#installing-the-gui) and [Running the GUI](/README.md#running-the-gui) in the project [README.md](../README.md)
+For information about installing and running the GUI, see the appropriate chapters [Installing the GUI](/README.md#installing-the-gui) and [Running the GUI](/README.md#running-the-gui) in the project [README file](/README.md)
 
 ## The Interface
 
