@@ -62,9 +62,7 @@ QDialog#settings_dialog,
 QWidget#page,
 QWidget#run_tab,
 QScrollArea#history_results_scroll,
-QWidget#history_list_container{
-    background-color: $purplish-background;
-}
+QWidget#history_list_container,
 QWidget#settings_inner{
     background-color: $purplish-background;
 }
