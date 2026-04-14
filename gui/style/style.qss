@@ -84,6 +84,7 @@ QScrollArea#results_scroll,
 QWidget#results_widget,
 QWidget#operation_node,
 QWidget#operation_tree,
+QScrollArea#settings_scroll,
 QWidget#tree_stacked_widget{
     background: transparent;
 }
@@ -137,6 +138,13 @@ QPushButton#file_browser_button:pressed{
 
 QWidget#container_widget{
     background-color: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+}
+
+QWidget#settings_inner{
+    background-color: $purplish-background;
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 10px;
