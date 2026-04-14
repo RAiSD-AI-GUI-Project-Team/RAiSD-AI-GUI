@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
 )
 
 from gui.style import constants
-from gui.widgets import VBoxLayout
+from gui.components import VBoxLayout
 
 
 class Settings(QObject):
@@ -35,7 +35,7 @@ class Settings(QObject):
     settings_changed = Signal()
 
     settings_file_path = "gui/settings.yaml"
-    environment_managers = ["micromamba", "conda"]
+    environment_managers = ["conda", "micromamba"]
 
     default_executable_file_path = QFileInfo("RAiSD-AI-ZLIB")
     default_environment_manager = 0
