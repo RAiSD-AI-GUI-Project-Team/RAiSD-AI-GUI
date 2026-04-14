@@ -525,7 +525,7 @@ void RSDCommandLine_load(RSDCommandLine_t * RSDCommandLine, int argc, char ** ar
 			else
 			{
 				fprintf(stderr, "\nERROR: Missing argument after %s\n\n",argv[i]);
-				exit(1):	
+				exit(1);
 			}
 
 			continue;
