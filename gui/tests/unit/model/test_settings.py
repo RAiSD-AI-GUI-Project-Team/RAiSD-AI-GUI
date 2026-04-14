@@ -26,6 +26,25 @@ class TestSettings:
         }
         return settings_obj
 
+    def test_init_empty(self):
+        """Test initialisation with no values."""
+        # Act
+        settings = Settings()
+
+        # Assert
+        with pytest.raises(RuntimeError) as e:
+            x = settings.workspace_path == None
+        with pytest.raises(RuntimeError) as e:
+            x = settings.executable_file_path == None
+        with pytest.raises(RuntimeError) as e:
+            x = settings.environment_manager == None
+        with pytest.raises(RuntimeError) as e:
+            x = settings.environment_manager_name == None
+        with pytest.raises(RuntimeError) as e:
+            x = settings.environment_name == None
+        with pytest.raises(RuntimeError) as e:
+            x = settings.config_path == None
+
     def test_init_values(self):
         """Test initialisation with values."""
         # Arrange
