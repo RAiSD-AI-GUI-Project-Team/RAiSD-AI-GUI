@@ -17,11 +17,11 @@ class TestSettings:
 
     @pytest.fixture()
     def correct_settings_obj(self) -> dict:
-        settings_obj = {
-            "config_file" : "/home/raisd/config.yml",
-            "environment_manager" : "raise",
+        settings_obj = { # TODO: Mocking QDir exists works but not for QFileInfo.
+            "config_file" : "/",
+            "environment_manager" : "conda",
             "environment_name" : "utwente",
-            "executable" : "/home/raisd/raisdai",
+            "executable" : "/",
             "workspace" : "/home/raisd/workspace"
         }
         return settings_obj
