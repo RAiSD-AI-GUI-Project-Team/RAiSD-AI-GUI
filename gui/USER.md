@@ -90,7 +90,7 @@ The command that each line of parameters will be run with is also shown separate
 
 The run tab allows you to monitor the progress of the execution. It shows the status of each command, the output, and any errors that may occur. You can also stop the execution if needed.
 
-Each command is symbolized with a circle. The color of the circle indicates the status of the command:
+Each command that will be run is symbolized with a box with it's name. The color of the box indicates the status of the command:
 - *Empty*: Not started
 - *Yellow*: Running
 - *Blue*: Completed successfully
