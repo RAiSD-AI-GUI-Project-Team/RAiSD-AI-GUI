@@ -1,6 +1,11 @@
 import pytest
+import tempfile
+from unittest.mock import PropertyMock
 from datetime import datetime
+from PySide6.QtCore import QDir
+from gui.model.settings import app_settings
 from gui.model.history_record import HistoryRecord
+import gui.model.history_record as history_record
 
 
 class TestHistoryRecord:
@@ -9,10 +14,14 @@ class TestHistoryRecord:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.name = "name"
-        self.commands = ["command1", "command2"]
+        self.command1 = "command1"
+        self.command2 = "command2"
+        self.commands = [self.command1, self.command2]
+        self.index = 0
+        self.trees = [{},{}]
         self.operations = {
-            "index": 0,
-            "trees": [{}, {}]
+            "index": self.index,
+            "trees": self.trees
         }
         self.parameters = {}
         self.time_completed = datetime.now()
@@ -32,9 +41,118 @@ class TestHistoryRecord:
         assert self.history_record.operations == self.operations
         assert self.history_record.parameters == self.parameters
         assert self.history_record.time_completed == self.time_completed
+
+    def test_from_history_file_not_found(self, mocker):
+        # Arrange
+        dict = ""
+        temp_dir = tempfile.TemporaryDirectory()
+        qdir = QDir(temp_dir.name)
+        mocker.patch.object(
+            type(history_record.app_settings), 
+            "workspace_path",
+            new_callable=PropertyMock,
+            return_value=qdir)
+        
+        # Act
+        history_records = HistoryRecord.from_history_file()
+
+        # Assert
+        assert history_records == []
     
-    def test_from_history_file(self):
-        pytest.skip()
+    def test_from_history_file_emtpy(self, mocker):
+        # Arrange
+        dict = ""
+        mocked_history_file = mocker.mock_open(read_data=f"{dict}")
+        mocker.patch("builtins.open", mocked_history_file)
+        mocker.patch.object(
+            type(history_record.app_settings), 
+            "workspace_path",
+            new_callable=PropertyMock,
+            return_value=QDir.current())
+        
+        # Act
+        history_records = HistoryRecord.from_history_file()
+
+        # Assert
+        assert history_records == []
+
+    def test_from_history_file_incorrect_format(self, mocker):
+        # Arrange
+        dict = f"""[]"""
+        mocked_history_file = mocker.mock_open(read_data=f"{dict}")
+        mocker.patch("builtins.open", mocked_history_file)
+        mocker.patch.object(
+            type(history_record.app_settings), 
+            "workspace_path",
+            new_callable=PropertyMock,
+            return_value=QDir.current())
+        
+        # Assert
+        with pytest.raises(ValueError, match=r"Incorrect format in .history.json: \[\]. Expected dict."):
+            history_records = HistoryRecord.from_history_file()
+
+    def test_from_history_file_incorrect_keys(self, mocker):
+        # Arrange
+        dict = f"""{{"hi": []}}"""
+        mocked_history_file = mocker.mock_open(read_data=f"{dict}")
+        mocker.patch("builtins.open", mocked_history_file)
+        mocker.patch.object(
+            type(history_record.app_settings), 
+            "workspace_path",
+            new_callable=PropertyMock,
+            return_value=QDir.current())
+        
+        # Assert
+        with pytest.raises(ValueError, match=r"Incorrect format in .history.json for hi: \[\]. Expected dict."):
+            history_records = HistoryRecord.from_history_file()
+    
+    def test_from_history_file_incorrect_value(self, mocker):
+        # Arrange
+        dict = f"""{{"hi": {{}}}}"""
+        mocked_history_file = mocker.mock_open(read_data=f"{dict}")
+        mocker.patch("builtins.open", mocked_history_file)
+        mocker.patch.object(
+            type(history_record.app_settings), 
+            "workspace_path",
+            new_callable=PropertyMock,
+            return_value=QDir.current())
+        
+        # Act
+        history_records = HistoryRecord.from_history_file()
+
+        # Assert
+        assert history_records == []
+            
+
+    def test_from_history_file_single_record(self, mocker):
+        # Arrange
+        dict = f"""{{"hi": {{"name": "{self.name}", 
+            "commands": ["{self.command1}","{self.command2}"], 
+            "operations": {{"index": {self.index}, 
+            "trees": {self.trees}}}, 
+            "parameters": {self.parameters},
+            "time_completed": "{str(self.time_completed)}"}}}}"""
+        mocked_history_file = mocker.mock_open(read_data=f"{dict}")
+        mocker.patch("builtins.open", mocked_history_file)
+        mocker.patch.object(
+            type(history_record.app_settings), 
+            "workspace_path",
+            new_callable=PropertyMock,
+            return_value=QDir.current())
+        
+        # Act
+        history_records = HistoryRecord.from_history_file()
+
+        # Assert
+        assert len(history_records) is 1
+        record = history_records[0]
+        assert isinstance(record, HistoryRecord)
+        assert record.name == self.name
+        assert record.commands == self.commands
+        assert record.operations == self.operations
+        assert record.parameters == self.parameters
+        assert record.time_completed == self.time_completed
+        
 
     def test_from_dict_name(self):
         """Test that the name attribute is collected correctly from a dict."""
@@ -198,7 +316,13 @@ class TestHistoryRecord:
         assert history_record.parameters == self.history_record.parameters
         assert history_record.time_completed == self.history_record.time_completed    
 
-    def test_save_to_history(self):
+    def test_save_to_history(self, mocker):
+        # arrange
+        # Mock the process to return Running state, and make terminate/waitForFinished fail
+        # mocker.patch("json.dump", lambda x: print("yeeees"))
+        # app_settings = mocker.Mock()
+        # app_settings.workspace_path = "workspace"
+        # self.history_record.save_to_history()
         pytest.skip()
 
     def test_to_dict(self):
@@ -230,7 +354,6 @@ class TestHistoryRecord:
         assert "time_completed" in dictionary
         assert isinstance(dictionary["time_completed"], str)
         assert dictionary["time_completed"] == str(self.time_completed)
-
 
     def test_to_and_from_dict(self):
         # Act
