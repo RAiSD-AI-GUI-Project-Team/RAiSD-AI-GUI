@@ -31,7 +31,7 @@ class Settings(QObject):
     executable_file_path_changed = Signal(QFileInfo)
     environment_manager_changed = Signal(int)
     environment_name_changed = Signal(str)
-    config_path_changed = Signal(str)
+    config_path_changed = Signal(QFileInfo)
     settings_changed = Signal()
 
     settings_file_path = "gui/settings.yaml"

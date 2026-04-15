@@ -245,3 +245,115 @@ class TestSettings:
         assert settings_file.exists()
         content = yaml.load(settings_file.read_text(), Loader=yaml.Loader)
         assert content["workspace"] == str(tmp_path)
+
+    def test_executable_file_path_setter(self, tmp_path, mocker):
+        """Test executable file path setter writes to file and emits signals."""
+        # Arrange
+        settings_file = tmp_path / "settings.yaml"
+        settings_file.write_text("")
+        
+        settings = Settings()
+        executable_file_path = QFileInfo(settings_file)
+        
+        mocker.patch.object(Settings, 'settings_file_path', str(settings_file))
+        
+        executable_file_path_changed_spy = mocker.MagicMock()
+        settings_changed_spy = mocker.MagicMock()
+        settings.executable_file_path_changed.connect(executable_file_path_changed_spy)
+        settings.settings_changed.connect(settings_changed_spy)
+        
+        # Act
+        settings.executable_file_path = executable_file_path
+        
+        # Assert
+        assert settings.executable_file_path == executable_file_path
+        executable_file_path_changed_spy.assert_called_once_with(executable_file_path)
+        settings_changed_spy.assert_called_once()
+
+        assert settings_file.exists()
+        content = yaml.load(settings_file.read_text(), Loader=yaml.Loader)
+        assert content["executable"] == str(settings_file)
+
+    def test_environment_manager_setter(self, tmp_path, mocker):
+        """Test environment manager setter writes to file and emits signals."""
+        # Arrange
+        settings_file = tmp_path / "settings.yaml"
+        settings_file.write_text("")
+        
+        settings = Settings()
+        environment_manager = 1
+        
+        mocker.patch.object(Settings, 'settings_file_path', str(settings_file))
+        
+        environment_manager_changed_spy = mocker.MagicMock()
+        settings_changed_spy = mocker.MagicMock()
+        settings.environment_manager_changed.connect(environment_manager_changed_spy)
+        settings.settings_changed.connect(settings_changed_spy)
+        
+        # Act
+        settings.environment_manager = environment_manager
+        
+        # Assert
+        assert settings.environment_manager == environment_manager
+        environment_manager_changed_spy.assert_called_once_with(environment_manager)
+        settings_changed_spy.assert_called_once()
+
+        assert settings_file.exists()
+        content = yaml.load(settings_file.read_text(), Loader=yaml.Loader)
+        assert content["environment_manager"] == settings.environment_managers[1]
+
+    def test_environment_name_setter(self, tmp_path, mocker):
+        """Test environment name setter writes to file and emits signals."""
+        # Arrange
+        settings_file = tmp_path / "settings.yaml"
+        settings_file.write_text("")
+        
+        settings = Settings()
+        environment_name = "raise"
+        
+        mocker.patch.object(Settings, 'settings_file_path', str(settings_file))
+        
+        environment_name_changed_spy = mocker.MagicMock()
+        settings_changed_spy = mocker.MagicMock()
+        settings.environment_name_changed.connect(environment_name_changed_spy)
+        settings.settings_changed.connect(settings_changed_spy)
+        
+        # Act
+        settings.environment_name = environment_name
+        
+        # Assert
+        assert settings.environment_name == environment_name
+        environment_name_changed_spy.assert_called_once_with(environment_name)
+        settings_changed_spy.assert_called_once()
+
+        assert settings_file.exists()
+        content = yaml.load(settings_file.read_text(), Loader=yaml.Loader)
+        assert content["environment_name"] == "raise"
+
+    def test_config_path_setter(self, tmp_path, mocker):
+        """Test config path setter writes to file and emits signals."""
+        # Arrange
+        settings_file = tmp_path / "settings.yaml"
+        settings_file.write_text("")
+        
+        settings = Settings()
+        config_path = QFileInfo(settings_file)
+        
+        mocker.patch.object(Settings, 'settings_file_path', str(settings_file))
+        
+        config_path_changed_spy = mocker.MagicMock()
+        settings_changed_spy = mocker.MagicMock()
+        settings.config_path_changed.connect(config_path_changed_spy)
+        settings.settings_changed.connect(settings_changed_spy)
+        
+        # Act
+        settings.config_path = config_path
+        
+        # Assert
+        assert settings.config_path == config_path
+        config_path_changed_spy.assert_called_once_with(config_path)
+        settings_changed_spy.assert_called_once()
+
+        assert settings_file.exists()
+        content = yaml.load(settings_file.read_text(), Loader=yaml.Loader)
+        assert content["config_file"] == str(settings_file)
