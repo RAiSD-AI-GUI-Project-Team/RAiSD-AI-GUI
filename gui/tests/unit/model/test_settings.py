@@ -32,16 +32,21 @@ class TestSettings:
         settings = Settings()
 
         # Assert
+        assert settings._workspace_path == None
         with pytest.raises(RuntimeError) as e:
             x = settings.workspace_path == None
+        assert settings._executable_file_path == None
         with pytest.raises(RuntimeError) as e:
             x = settings.executable_file_path == None
+        assert settings._environment_manager == None
         with pytest.raises(RuntimeError) as e:
             x = settings.environment_manager == None
         with pytest.raises(RuntimeError) as e:
             x = settings.environment_manager_name == None
+        assert settings._environment_name == None
         with pytest.raises(RuntimeError) as e:
             x = settings.environment_name == None
+        assert settings._config_path == None
         with pytest.raises(RuntimeError) as e:
             x = settings.config_path == None
 
@@ -533,7 +538,7 @@ class TestSettings:
         
         # Assert
         settings_changed_spy.assert_has_calls([]*5)
-        
+
         assert settings.workspace_path == workspace
         workspace_changed_spy.assert_called_once_with(workspace)
         assert settings.executable_file_path == executable_file_path
