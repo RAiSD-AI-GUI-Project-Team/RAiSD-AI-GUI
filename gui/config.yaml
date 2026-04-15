@@ -228,7 +228,7 @@ modes:
                 - .fasta
         output:
           path:
-            - RAiSD_Info.
+            - RAiSD_Report.
             - type: run id
           file:
             type: single
