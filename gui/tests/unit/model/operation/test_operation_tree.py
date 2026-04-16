@@ -154,7 +154,7 @@ class TestFileConsumerNode:
         mock_valid_changed = mocker.Mock()
         file_consumer_node_file.valid_changed.connect(mock_valid_changed)
 
-        mock_signal = MockSignal(True)
+        mock_signal = MockSignal()
         file_producer_node.valid_changed.emit = mock_signal.emit
         file_producer_node.valid_changed.connect = mock_signal.connect
         mocker.patch.object(file_producer_node, "valid", return_value = True)
@@ -657,6 +657,7 @@ class TestCommonParentDirectoryNode:
             self, 
             common_parent_directory_node: CommonParentDirectoryNode):
         """Test the file property returns None when children have no selected output."""
+        # Assert
         assert common_parent_directory_node.file is None
 
     def test_file_returns_common_parent_directory(
@@ -665,6 +666,7 @@ class TestCommonParentDirectoryNode:
             tmp_path, 
             common_parent_directory_node: CommonParentDirectoryNode):
         """Test the file property returns the shared parent directory."""
+        # Arrange
         output_dir = tmp_path / "shared"
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -681,6 +683,7 @@ class TestCommonParentDirectoryNode:
         common_parent_directory_node.file_consumers[0].add_producer(producer1)
         common_parent_directory_node.file_consumers[1].add_producer(producer2)
 
+        # Assert
         assert common_parent_directory_node.file == str(output_dir)
 
     def test_file_returns_none_when_child_outputs_differ(
@@ -689,6 +692,7 @@ class TestCommonParentDirectoryNode:
             tmp_path,
             common_parent_directory_node: CommonParentDirectoryNode):
         """Test the file property returns None when child outputs do not share the same directory."""
+        # Arrange
         first_dir = tmp_path / "one"
         first_dir.mkdir(parents=True, exist_ok=True)
         second_dir = tmp_path / "two"
@@ -707,12 +711,14 @@ class TestCommonParentDirectoryNode:
         common_parent_directory_node.file_consumers[0].add_producer(producer1)
         common_parent_directory_node.file_consumers[1].add_producer(producer2)
 
+        # Assert
         assert common_parent_directory_node.file is None
 
     def test_watched_files_no_file_selected(
             self,
             common_parent_directory_node: CommonParentDirectoryNode):
         """Test watched_files returns an empty list when no file is selected."""
+        # Assert
         assert common_parent_directory_node.watched_files == []
 
     def test_watched_files_file_selected(
@@ -721,6 +727,7 @@ class TestCommonParentDirectoryNode:
             tmp_path,
             common_parent_directory_node: CommonParentDirectoryNode):
         """Test watched_files returns the produced directory when available."""
+        # Arrange
         output_dir = tmp_path / "shared"
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -737,7 +744,73 @@ class TestCommonParentDirectoryNode:
         common_parent_directory_node.file_consumers[0].add_producer(producer1)
         common_parent_directory_node.file_consumers[1].add_producer(producer2)
 
+        # Assert
         assert common_parent_directory_node.watched_files == [str(output_dir)]
+
+    def test_overwrite_no_file_selected(
+            self,
+            common_parent_directory_node: CommonParentDirectoryNode):
+        """Test overwrite returns False when no produced directory is available."""
+        # Assert
+        assert common_parent_directory_node.overwrite is False
+
+    def test_overwrite_output_directory_exists(
+            self,
+            mocker,
+            tmp_path,
+            common_parent_directory_node: CommonParentDirectoryNode):
+        """Test overwrite returns True when the produced directory exists."""
+        # Arrange
+        output_dir = tmp_path / "shared"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        producer1 = mocker.Mock()
+        producer1.file = str(output_dir / "image1.png")
+        producer1.valid = True
+        producer1.valid_changed = mocker.Mock()
+
+        producer2 = mocker.Mock()
+        producer2.file = str(output_dir / "image2.jpg")
+        producer2.valid = True
+        producer2.valid_changed = mocker.Mock()
+
+        common_parent_directory_node.file_consumers[0].add_producer(producer1)
+        common_parent_directory_node.file_consumers[1].add_producer(producer2)
+
+        # Assert
+        assert common_parent_directory_node.overwrite is True
+
+    def test_run_id_setter(
+            self,
+            mocker,
+            tmp_path,
+            common_parent_directory_node: CommonParentDirectoryNode):
+        """Test run_id is propagated to child file consumers."""
+        # Arrange
+        file_path1 = str(tmp_path / "file1.png")
+        file_path2 = str(tmp_path / "file2.jpg")
+
+        file_producer_node1 = mocker.Mock()
+        file_producer_node1.file = file_path1
+        file_producer_node2 = mocker.Mock()
+        file_producer_node2.file = file_path2
+
+        common_parent_directory_node.file_consumers[0].add_producer(file_producer_node1)
+        common_parent_directory_node.file_consumers[1].add_producer(file_producer_node2)
+
+        file_changed_spy = mocker.Mock()
+        overwrite_changed_spy = mocker.Mock()
+        common_parent_directory_node.file_changed.connect(file_changed_spy)
+        common_parent_directory_node.overwrite_changed.connect(overwrite_changed_spy)
+
+        # Act
+        common_parent_directory_node.run_id = "new_run_id"
+
+        # Assert
+        assert file_producer_node1.run_id == "new_run_id"
+        assert file_producer_node2.run_id == "new_run_id"
+        file_changed_spy.assert_not_called()
+        overwrite_changed_spy.assert_not_called()
 
 
 class TestFilePickerNode:
