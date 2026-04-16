@@ -219,17 +219,6 @@ class TestIntParameter:
         # Assert
         slot.assert_called_once_with(15, False)
 
-    def test_to_dict(self):
-        """to_dict returns the current value."""
-        self.int_param.value = 7
-        assert self.int_param.to_dict() == 7
-
-    def test_str(self):
-        """__str__ includes name and value."""
-        result = str(self.int_param)
-        assert "testint" in result
-        assert "0" in result
-
     def test_reset_value_emits_value_reset(self, mocker):
         """reset_value emits the value_reset signal."""
         # Arrange
@@ -242,6 +231,17 @@ class TestIntParameter:
 
         # Assert
         slot.assert_called_once()
+
+    def test_to_dict(self):
+        """to_dict returns the current value."""
+        self.int_param.value = 7
+        assert self.int_param.to_dict() == 7
+
+    def test_str(self):
+        """__str__ includes name and value."""
+        result = str(self.int_param)
+        assert "testint" in result
+        assert "0" in result
 
 class TestBoolParameter:
     """Unit tests for BoolParameter class."""
@@ -384,17 +384,6 @@ class TestBoolParameter:
         # Assert
         slot.assert_called_once_with(True, True)
 
-    def test_to_dict(self):
-        """to_dict returns the current value."""
-        self.bool_param.value = True
-        assert self.bool_param.to_dict() is True
-
-    def test_str(self):
-        """__str__ includes name and value."""
-        result = str(self.bool_param)
-        assert "testbool" in result
-        assert "False" in result
-
     def test_reset_value_emits_value_reset(self, mocker):
         """reset_value emits the value_reset signal."""
         # Arrange
@@ -407,6 +396,17 @@ class TestBoolParameter:
 
         # Assert
         slot.assert_called_once()
+
+    def test_to_dict(self):
+        """to_dict returns the current value."""
+        self.bool_param.value = True
+        assert self.bool_param.to_dict() is True
+
+    def test_str(self):
+        """__str__ includes name and value."""
+        result = str(self.bool_param)
+        assert "testbool" in result
+        assert "False" in result
 
 
 class TestFloatParameter:
@@ -612,17 +612,6 @@ class TestFloatParameter:
         # Assert
         slot.assert_called_once_with(15.0, False)
 
-    def test_to_dict(self):
-        """to_dict returns the current value."""
-        self.float_param.value = 3.14
-        assert self.float_param.to_dict() == 3.14
-
-    def test_str(self):
-        """__str__ includes name and value."""
-        result = str(self.float_param)
-        assert "testfloat" in result
-        assert "0.0" in result
-
     def test_reset_value_emits_value_reset(self, mocker):
         """reset_value emits the value_reset signal."""
         # Arrange
@@ -635,6 +624,17 @@ class TestFloatParameter:
 
         # Assert
         slot.assert_called_once()
+
+    def test_to_dict(self):
+        """to_dict returns the current value."""
+        self.float_param.value = 3.14
+        assert self.float_param.to_dict() == 3.14
+
+    def test_str(self):
+        """__str__ includes name and value."""
+        result = str(self.float_param)
+        assert "testfloat" in result
+        assert "0.0" in result
 
 
 class TestStringParameter:
@@ -849,17 +849,6 @@ class TestStringParameter:
         # Assert
         slot.assert_called_once_with("invalid value", False)
 
-    def test_to_dict(self):
-        """to_dict returns the current value."""
-        self.string_param.value = "hello"
-        assert self.string_param.to_dict() == "hello"
-
-    def test_str(self):
-        """__str__ includes name and value."""
-        result = str(self.string_param)
-        assert "teststring" in result
-        assert "default" in result
-
     def test_reset_value_emits_value_reset(self, mocker):
         """reset_value emits the value_reset signal."""
         # Arrange
@@ -872,5 +861,202 @@ class TestStringParameter:
 
         # Assert
         slot.assert_called_once()
+
+    def test_to_dict(self):
+        """to_dict returns the current value."""
+        self.string_param.value = "hello"
+        assert self.string_param.to_dict() == "hello"
+
+    def test_str(self):
+        """__str__ includes name and value."""
+        result = str(self.string_param)
+        assert "teststring" in result
+        assert "default" in result
+
+
+class TestEnumParameter:
+    """Unit tests for EnumParameter class."""
+
+    @fixture(autouse=True)
+    def set_enum_param(self, mocker):
+        self.enum_param = EnumParameter(
+            name="testenum",
+            description="Test enum parameter",
+            flag="-testenum ",
+            operations={'IMG-GEN', 'MDL-GEN'},
+            options=[("discard SNP", "D"), ("input N per SNP", "I"), ("represent N through a mask", "M 2"),
+                     ("ignore allele pairs with N", "A")],
+            default_value=0,
+        )
+
+        self.mock_condition = mocker.MagicMock(spec=Condition)
+        self.mock_condition.value = True
+        self.enum_param.add_condition(self.mock_condition)
+
+    def test_init_values(self):
+        """Test EnumParameter initialization with default value."""
+        param = self.enum_param
+        assert param.name == "testenum"
+        assert param.description == "Test enum parameter"
+        assert param.flag == "-testenum "
+        assert param.operations == {'IMG-GEN', 'MDL-GEN'}
+        assert param.options[1] == "input N per SNP"
+        assert param.default_value == 0
+
+    def test_set_value(self):
+        """Test setting EnumParameter value (index)."""
+        param = self.enum_param
+        param.value = 1
+        assert param.value == 1
+
+    def test_reset_value(self):
+        """Test resetting EnumParameter value to default."""
+        param = self.enum_param
+        param.value = 1
+        param.reset_value()
+        assert param.value == 0
+
+    def test_option_return(self):
+        """'option' returns the display name for the current index
+        and None if index is out of range
+        """
+        param = self.enum_param
+        assert param.option == "discard SNP"
+        param.value = 1
+        assert param.option == "input N per SNP"
+        param.value = 99
+        assert param.option is None
+
+    def test_options_returns_display_names(self):
+        """'options' exposes only the display names, not the CLI forms."""
+        param = self.enum_param
+        assert param.options == [
+            "discard SNP",
+            "input N per SNP",
+            "represent N through a mask",
+            "ignore allele pairs with N",
+        ]
+
+    def test_enabled(self, mocker):
+        """Test EnumParameter's 'enabled' property."""
+        # Arrange
+        param = self.enum_param
+        mocker.patch.object(
+            EnumParameter,
+            "enabled",
+            new_callable=mocker.PropertyMock,
+            return_value=False,
+        )
+        # Assert
+        assert not param.enabled
+
+        # Arrange
+        mocker.patch.object(
+            EnumParameter,
+            "enabled",
+            new_callable=mocker.PropertyMock,
+            return_value=True,
+        )
+        # Assert
+        assert param.enabled
+
+    def test_enabled_signal(self, mocker):
+        """enabled_changed fires when the condition flips to True."""
+        # Arrange
+        param = self.enum_param
+        slot = mocker.MagicMock()
+        param.enabled_changed.connect(slot)
+
+        # Act
+        param._condition.changed.emit(True)
+
+        # Assert
+        slot.assert_called_once_with(True)
+
+    def test_disabled_signal(self, mocker):
+        """enabled_changed fires when the condition flips to False."""
+        # Arrange
+        param = self.enum_param
+        slot = mocker.MagicMock()
+        param.enabled_changed.connect(slot)
+
+        # Act
+        param._condition.changed.emit(False)
+
+        # Assert
+        slot.assert_called_once_with(False)
+
+    def test_to_cli(self, mocker):
+        """to_cli emits the flag followed by the CLI form of the selected option."""
+        # Arrange
+        param = self.enum_param
+
+        # Act + Assert: enabled + matching operation = flag and cli of the option
+        assert param.to_cli("IMG-GEN") == "-testenum D"
+        param.value = 3
+        assert param.to_cli("MDL-GEN") == "-testenum A"
+
+        # Act + Assert: operation not in 'operations' so empty string
+        assert param.to_cli("SWP-SCN") == ""
+
+        # Arrange: parameter disabled
+        mocker.patch.object(
+            EnumParameter,
+            "enabled",
+            new_callable=mocker.PropertyMock,
+            return_value=False,
+        )
+        # Assert: disabled so empty string
+        assert param.to_cli("IMG-GEN") == ""
+
+    def test_value_changed_signal_emitted(self, mocker):
+        """value_changed fires on value change."""
+        # Arrange
+        param = self.enum_param
+        slot = mocker.MagicMock()
+        param.value_changed.connect(slot)
+
+        # Act
+        param.value = 3
+
+        # Assert
+        slot.assert_called_once_with(3, True)
+
+    def test_invalid_value_changed_signal_emitted(self, mocker):
+        """value_changed fires with valid=False when the new index is below zero."""
+        # Arrange
+        param = self.enum_param
+        slot = mocker.MagicMock()
+        param.value_changed.connect(slot)
+
+        # Act
+        param.value = -1
+
+        # Assert
+        slot.assert_called_once_with(-1, False)
+
+    def test_reset_value_emits_value_reset(self, mocker):
+        """reset_value emits the value_reset signal."""
+        # Arrange
+        slot = mocker.MagicMock()
+        self.enum_param.value_reset.connect(slot)
+        self.enum_param.value = 2
+
+        # Act
+        self.enum_param.reset_value()
+
+        # Assert
+        slot.assert_called_once()
+
+    def test_to_dict(self):
+        """to_dict returns the current index."""
+        self.enum_param.value = 1
+        assert self.enum_param.to_dict() == 1
+
+    def test_str(self):
+        """__str__ includes name and selected option."""
+        result = str(self.enum_param)
+        assert "testenum" in result
+        assert "discard SNP" in result
 
 
