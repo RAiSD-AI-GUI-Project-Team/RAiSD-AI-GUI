@@ -28,7 +28,7 @@ class TestRunRecord:
     """Tests for ParameterGroupList class."""
 
     @fixture(autouse=True)
-    def set_parameter_group_list(self, mocker):
+    def set_run_record(self, mocker):
         self.run_id_parameter = mocker.Mock()
         self.run_id_parameter.valid = True
         self.run_id_parameter.value = "hi"
@@ -76,10 +76,15 @@ class TestRunRecord:
         
         self.operation_tree_mdl_gen = mocker.Mock()
         self.operation_tree_mdl_gen.to_cli = mocker.Mock(return_value=["cli1"])
-        # self.operation_tree_mdl_gen.valid_changed = Signal(bool)
-        self.operation_trees = [self.operation_tree_mdl_gen]
+        self.operation_tree_mdl_gen.populate_from_dict = mocker.MagicMock()
+        self.operation_tree_mdl_tst = mocker.Mock()
+        self.operation_tree_mdl_tst.to_cli = mocker.Mock(return_value=["cli2"])
+        self.operation_tree_mdl_tst.populate_from_dict = mocker.MagicMock()
+
+        self.operation_trees = [self.operation_tree_mdl_gen, self.operation_tree_mdl_tst]
         self.categorized_operation_trees = [
-            ("MDL-GEN", [self.operation_tree_mdl_gen])
+            ("MDL-GEN", [self.operation_tree_mdl_gen]),
+            ("MDL-TST", [self.operation_tree_mdl_tst])
         ]
         
         self.run_record = RunRecord(
@@ -117,6 +122,28 @@ class TestRunRecord:
         for param in run_record.parameters:
           assert param.name in history_record.parameters.keys()
     
+    def test_populate(self, mocker):
+        # Arrange
+        history_record = mocker.Mock()
+        history_record.name = "history"
+        history_record.operations = {
+            "index": 1,
+            "trees": ["bla", "blo"]
+        }
+        history_record.parameters = {}
+        run_record = self.run_record
+
+        # Act
+        run_record.populate(history_record)
+
+        # Assert
+        assert run_record.run_id == "history"
+        assert run_record.run_id_parameter.value == "history"
+        assert run_record.selected_operation_tree_index == 1
+        assert run_record.selected_operation_tree == self.operation_trees[1]
+        self.operation_tree_mdl_gen.populate_from_dict.assert_called_once()
+        self.operation_tree_mdl_tst.populate_from_dict.assert_called_once()
+
     def test_valid(self):
         list = self.parameter_group_list
         assert list.valid
