@@ -1,41 +1,37 @@
-from typing import Callable, overload
+from typing import Callable, Any
 
-from PySide6.QtCore import Signal, SignalInstance, QObject
+from PySide6.QtCore import QMetaObject, Qt
+from PySide6.QtCore import SignalInstance
 
 
 class MockSignal:
-    def __init__(self, values: tuple) -> None:
-        self.values: tuple = values
+    def __init__(self, *args: Any) -> None:
+        self.args = args
         self.slots: list = []
 
 
-    def connect(self, slot: SignalInstance | Callable) -> None:
+    def connect(self, slot: object, /, type: Qt.ConnectionType = Qt.ConnectionType.AutoConnection) -> QMetaObject.Connection:
         self.slots.append(slot)
+        return QMetaObject.Connection()
 
-    def emit(self) -> None:
+    def emit(self, *args: Any) -> None:
         for slot in self.slots:
             if isinstance(slot, SignalInstance):
-                slot.emit(True)
+                slot.emit(self.args)
             elif isinstance(slot, Callable):
-                slot(*self.values)
+                slot(self.args)
         self.slots.clear()
 
-# testing:
-# Should output:
-# True
-# True
+"""
 
-# class mcok(QObject):
-#     signa = Signal(bool)
-#     def __init__(self):
-#         super().__init__()
-#         self.signa.connect(lambda x: print(x))
+INSTRUCTION:
 
+# Assert
+mock_signal = MockSignal(True)
+mocked_object.signal.emit = mock_signal.emit
+mocked_object.signal.connect = mock_signal.connect
 
-# sig = MockSignal(tuple([True]))
-# mco = mcok()
+# Act
+mocked_object.signal.emit(True)
 
-# sig.connect(lambda x: print(x))
-# sig.connect(mco.signa)
-
-# sig.emit()
+"""
