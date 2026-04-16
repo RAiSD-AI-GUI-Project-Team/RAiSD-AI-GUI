@@ -425,6 +425,7 @@ class FileConsumerNode(QObject):
 
     @Slot(bool)
     def _producer_valid_changed(self, new_valid: bool) -> None:
+        print(new_valid)
         self.valid_changed.emit(self.valid)
 
 

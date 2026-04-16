@@ -1,7 +1,13 @@
 import pytest
 
+from PySide6.QtCore import (
+    QObject,
+    Signal,
+)
+
 from gui.model.operation import (
     FileConsumerNode,
+    FileProducerNode,
 )
 from gui.model.operation import Operation
 from gui.model.operation.file_structure import SingleFile, Directory
@@ -9,10 +15,6 @@ from gui.model.operation.file_structure import SingleFile, Directory
 
 class TestFileConsumerNode:
     """Tests for FileProducerNode class."""
-
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        pass
 
     @pytest.fixture()
     def operation_input_file(self) -> Operation.Input:
@@ -31,6 +33,27 @@ class TestFileConsumerNode:
         file = Directory([])
         operation_input_directory =  Operation.Input(name, description, cli, file)
         return operation_input_directory
+    
+    @pytest.fixture()
+    def file_consumer_node_file(self, operation_input_file) -> FileConsumerNode:
+        required_file: Operation.Input = operation_input_file
+        file_consumer_node = FileConsumerNode(
+            required_file=required_file,
+        )
+        return file_consumer_node
+    
+    @pytest.fixture()
+    def file_consumer_node_directory(self, operation_input_directory) -> FileConsumerNode:
+        required_file: Operation.Input = operation_input_directory
+        file_consumer_node = FileConsumerNode(
+            required_file=required_file,
+        )
+        return file_consumer_node
+    
+    @pytest.fixture()
+    def file_producer_node(self, mocker) -> FileProducerNode:
+        mock_file_producer_node = mocker.MagicMock()
+        return mock_file_producer_node
 
     def test_init_values_file(self, operation_input_file):
         """Test FileConsumerNode initialization with a file."""
@@ -78,12 +101,10 @@ class TestFileConsumerNode:
         """Test the requires method with a file"""
         # Arrange
         required_file: Operation.Input = operation_input_file
-        enabled = True
 
         # Act
         file_consumer_node = FileConsumerNode(
             required_file=required_file,
-            enabled=enabled,
         )
 
         # Assert
@@ -93,16 +114,52 @@ class TestFileConsumerNode:
         """Test the requires method with a directory"""
         # Arrange
         required_file: Operation.Input = operation_input_directory
-        enabled = True
 
         # Act
         file_consumer_node = FileConsumerNode(
             required_file=required_file,
-            enabled=enabled,
         )
 
         # Assert
         assert file_consumer_node.requires == required_file.file
+
+    def test_add_producer(self, 
+                          file_consumer_node_file:FileConsumerNode, 
+                          file_producer_node:FileProducerNode):
+        """Test the add_producer method with an arbitrary file_producer_node."""
+        # Act
+        file_consumer_node_file.add_producer(file_producer_node)
+
+        # Assert
+        assert file_consumer_node_file.producers == [file_producer_node]
+
+        # Act
+        file_consumer_node_file.add_producer(file_producer_node)
+
+        # Assert
+        assert file_consumer_node_file.producers == [file_producer_node, file_producer_node]
+
+    def test_producer_valid_changed(self,
+                                    mocker,
+                                    file_consumer_node_file:FileConsumerNode, 
+                                    file_producer_node:FileProducerNode):
+        """Test the connection between valid changed of producer and consumer."""
+        # Arrange
+        mock_valid_changed = mocker.Mock()
+        file_consumer_node_file.valid_changed.connect(mock_valid_changed)
+        file_consumer_node_file.add_producer(file_producer_node)
+
+        file_producer_node.valid_changed = mock_signal
+
+        mocker.patch.object(file_producer_node, "valid", return_value = True)
+    
+        # Act
+        file_producer_node.valid_changed.connect(lambda x: print("ASHTJ"))
+        file_producer_node.valid_changed.emit(True)
+
+        # Assert
+        mock_valid_changed.assert_called_once_with(True)
+
 
 class TestCommonParentDirectoryNode:
     """Tests for CommonParentDirectoryNode class."""
