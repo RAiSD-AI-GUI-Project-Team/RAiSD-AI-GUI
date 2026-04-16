@@ -147,24 +147,26 @@ class TestParameterStructures:
             categorized_operation_trees=self.categorized_operation_trees,
             parameter_groups=self.parameter_groups,
         )
-    
-    def test_init_values(self):
-        # arrange
-        run_id_parameter = self.run_id_parameter
-        list = self.parameter_group_list
-        groups = self.parameter_groups
 
-        # assert
-        assert list.run_id_parameter == run_id_parameter
-        assert list.categorized_operation_trees == self.categorized_operation_trees
-        assert list.operation_trees == self.operation_trees
-        assert list.parameter_groups == groups
+    def test_valid_based_on_params(self):
+        """Test whether the validity of parameters is passed along from 
+        Parameter to ParameterGroup to RunRecord correctly."""
+        # Arrange
+        record = self.run_record
 
-    def test_valid(self):
-        list = self.parameter_group_list
-        assert list.valid
-        list.parameter_groups[1].parameters[0].value = "invalid value"
-        assert not list.valid
+        # Act and Assert
+        assert record.valid
+        self.string_parameter.value = "HI"
+        assert not record.valid
+        self.string_parameter.reset_value()
+
+        self.optional_parameter.parameter.value = 0
+        assert not record.valid
+        self.optional_parameter.parameter.reset_value()
+
+        self.run_id_parameter.value = "!"
+        assert not record.valid
+        self.run_id_parameter.reset_value()
         
     def test_to_cli(self):
         # arrange
