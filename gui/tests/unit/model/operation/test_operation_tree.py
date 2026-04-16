@@ -72,7 +72,9 @@ class TestFileConsumerNode:
         assert file_consumer_node.producers == []
         assert file_consumer_node.selected_index == 0
         assert file_consumer_node._name == required_file.name
+        assert file_consumer_node.name == required_file.name
         assert file_consumer_node._description == required_file.description
+        assert file_consumer_node.description == required_file.description
         assert file_consumer_node._cli == required_file.cli
         assert file_consumer_node._requires == required_file.file
         assert file_consumer_node._enabled == enabled
@@ -161,6 +163,17 @@ class TestFileConsumerNode:
 
         # Assert
         mock_valid_changed.assert_called_once_with(True)
+
+    def test_cli_parameter(self, file_consumer_node_file: FileConsumerNode):
+        """Test cli parameter returning the right flag and file."""
+        # Arrange
+        required_file_path = file_consumer_node_file.file
+        cli = "-f "
+        file_consumer_node_file._cli = cli
+        cli_parameter = f"{cli}{required_file_path}"
+
+        # Assert
+        assert file_consumer_node_file.cli_parameter == cli_parameter
 
 
 class TestCommonParentDirectoryNode:
