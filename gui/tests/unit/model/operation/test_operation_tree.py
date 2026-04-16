@@ -74,6 +74,36 @@ class TestFileConsumerNode:
         assert file_consumer_node._requires == required_file.file
         assert file_consumer_node._enabled == enabled
 
+    def test_requires_file(self, operation_input_file):
+        """Test the requires method with a file"""
+        # Arrange
+        required_file: Operation.Input = operation_input_file
+        enabled = True
+
+        # Act
+        file_consumer_node = FileConsumerNode(
+            required_file=required_file,
+            enabled=enabled,
+        )
+
+        # Assert
+        assert file_consumer_node.requires == required_file.file
+
+    def test_requires_directory(self, operation_input_directory):
+        """Test the requires method with a directory"""
+        # Arrange
+        required_file: Operation.Input = operation_input_directory
+        enabled = True
+
+        # Act
+        file_consumer_node = FileConsumerNode(
+            required_file=required_file,
+            enabled=enabled,
+        )
+
+        # Assert
+        assert file_consumer_node.requires == required_file.file
+
 class TestCommonParentDirectoryNode:
     """Tests for CommonParentDirectoryNode class."""
 
