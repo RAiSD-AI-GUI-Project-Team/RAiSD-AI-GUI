@@ -3,15 +3,20 @@ The FileStructure classes are dataclasses,
 therefore we won't test apart from their methods. 
 However, in case this changes, these tests must be adjusted!
 """
+import pytest
 
 from gui.model.operation import (
+    FileStructure,
     SingleFile, 
     Directory,
 )
 
+
 class TestFileStructure:
     def test_file_structure(self):
-        assert True
+        file_structure = FileStructure()
+        with pytest.raises(NotImplementedError):
+            file_structure.matches("")
 
 class TestSingleFile:
     def test_single_file_not_existing(self, mocker):
