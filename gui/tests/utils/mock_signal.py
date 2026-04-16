@@ -1,27 +1,3 @@
-from typing import Callable, Any
-
-from PySide6.QtCore import QMetaObject, Qt
-from PySide6.QtCore import SignalInstance
-
-
-class MockSignal:
-    def __init__(self, *args: Any) -> None:
-        self.args = args
-        self.slots: list = []
-
-
-    def connect(self, slot: object, /, type: Qt.ConnectionType = Qt.ConnectionType.AutoConnection) -> QMetaObject.Connection:
-        self.slots.append(slot)
-        return QMetaObject.Connection()
-
-    def emit(self, *args: Any) -> None:
-        for slot in self.slots:
-            if isinstance(slot, SignalInstance):
-                slot.emit(self.args)
-            elif isinstance(slot, Callable):
-                slot(self.args)
-        self.slots.clear()
-
 """
 
 INSTRUCTION:
@@ -35,3 +11,26 @@ mocked_object.signal.connect = mock_signal.connect
 mocked_object.signal.emit(True)
 
 """
+
+from typing import Callable, Any
+
+from PySide6.QtCore import QMetaObject, Qt
+from PySide6.QtCore import SignalInstance
+
+
+class MockSignal:
+    def __init__(self, *args: Any) -> None:
+        self.slots: list = []
+
+
+    def connect(self, slot: object, /, type: Qt.ConnectionType = Qt.ConnectionType.AutoConnection) -> QMetaObject.Connection:
+        self.slots.append(slot)
+        return QMetaObject.Connection()
+
+    def emit(self, *args: Any) -> None:
+        for slot in self.slots:
+            if isinstance(slot, SignalInstance):
+                slot.emit(*args)
+            elif isinstance(slot, Callable):
+                slot(*args)
+        self.slots.clear()
