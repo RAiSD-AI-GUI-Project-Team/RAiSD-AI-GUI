@@ -91,15 +91,15 @@ class TestRunRecord:
     def test_init_values(self):
         # Arrange
         run_id_parameter = self.run_id_parameter
-        list = self.parameter_group_list
+        record = self.run_record
         groups = self.parameter_groups
 
-        # assert
-        assert list.run_id_parameter == run_id_parameter
-        assert list.categorized_operation_trees == self.categorized_operation_trees
-        assert list.operation_trees == self.operation_trees
-        assert list.parameter_groups == groups
-
+        # Assert
+        assert record.run_id_parameter == run_id_parameter
+        assert record.categorized_operation_trees == self.categorized_operation_trees
+        assert record.operation_trees == self.operation_trees
+        assert record.parameter_groups == groups
+        assert record.parameters == self.parameters
     def test_valid(self):
         list = self.parameter_group_list
         assert list.valid
