@@ -30,7 +30,7 @@ from gui.model.parameter import (
     EnumParameter,
     StringParameter,
     FileParameter,
-    Parameter
+    Parameter,
 )
 
 class TestConditions:
@@ -164,26 +164,27 @@ class TestConditions:
             options=[("name1", "1"),("name2","2")],
             default_value=0,
         )
+        self.int_parameter = IntParameter(
+            name='int',
+            description='description',
+            flag='-i ',
+            operations={'MDL-GEN'},
+            default_value=3,
+            constraints=[
+                IntervalConstraint(
+                    lower_bound=2,
+                    lower_bound_inclusive=False,
+                    upper_bound=7,
+                    upper_bound_inclusive=False,
+                ),
+            ]
+        )
         self.optional_parameter = OptionalParameter(
             name='optional',
             description='This is optional',
             operations={'MDL-GEN'},
             default_value=False,
-            parameter=IntParameter(
-              name='int',
-              description='description',
-              flag='-i ',
-              operations={'MDL-GEN'},
-              default_value=3,
-              constraints=[
-                  IntervalConstraint(
-                      lower_bound=2,
-                      lower_bound_inclusive=False,
-                      upper_bound=7,
-                      upper_bound_inclusive=False,
-                  ),
-              ],
-          )
+            parameter=self.int_parameter
         )
         self.file_parameter = FileParameter (
             name="file",
@@ -271,7 +272,23 @@ class TestConditions:
     def test_enabled_condition(self, parameter_groups):
         """Test an enabled condition"""
         # Arrange
-        skip()
+        self.enum_parameter.add_condition(
+            condition=Parameter.EnabledCondition(
+                self.int_parameter,
+                False,
+            )
+        )
+
+        # Assert
+        assert self.enum_parameter.enabled
+        assert not self.int_parameter.enabled
+
+        # Act
+        self.optional_parameter.value = True
+
+        # Assert
+        assert self.int_parameter.enabled
+        assert not self.enum_parameter.enabled
 
     def test_operation_conditions(self, set_operation_conditions, run_record):
         """Test that selecting different operations correctly enables and
