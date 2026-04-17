@@ -1,7 +1,6 @@
-from pytest import approx, fixture, raises
+from pytest import approx, fixture
 from unittest.mock import PropertyMock
-import re
-
+from gui.tests.utils.mock_signal import MockSignal
 from PySide6.QtCore import QDir
 
 from gui.model.run_record import RunRecord
