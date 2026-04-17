@@ -16,7 +16,6 @@ from gui.model.parameter.constraint import Constraint
 from gui.model.parameter.condition import Condition
 from gui.tests.utils.mock_signal import MockSignal
 
-
 def _patched_add_constraint(self, constraint, hidden=False):
     """
     Replacement for Parameter.add_constraint that uses MockSignal
