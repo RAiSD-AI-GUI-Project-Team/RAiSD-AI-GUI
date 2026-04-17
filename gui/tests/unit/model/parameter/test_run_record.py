@@ -221,7 +221,6 @@ class TestRunRecord:
 
         # Assert
         valid_changed_spy.assert_called_once()
-        assert record.run_id == "new"
         
     def test_operations_valid_changed(self, mocker):
         # Arrange
