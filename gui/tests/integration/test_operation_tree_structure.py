@@ -8,6 +8,8 @@ from collections.abc import Sequence
 from gui.model.operation import (
     Operation, 
     OperationTree,
+    FilePickerNode,
+    OperationNode,
 )
 
 from PySide6.QtCore import QDir
@@ -119,6 +121,10 @@ class TestOperationTreeStructures:
         self.categorized_operation_trees = [
             ('Operations', self.trees),
         ]
+
+        print(self.trees)
+        for tree in self.trees:
+            print(tree.to_dict())
     
     @fixture()
     def run_record(self, mocker, operation_trees):
@@ -217,12 +223,38 @@ class TestOperationTreeStructures:
             return_value=QDir.current()
         )
 
-    def test_operation_trees_structure(self, run_record):
+    def test_operation_trees_structure(self, operation_trees):
         """Test OperationTree initialization."""
         # Arrange
-        record = self.record
-
-        # Act
+        trees = self.trees
 
         # Assert
-        skip()
+        assert len(trees) == 2      # img-gen and mdl-gen
+
+        img_gen_tree = trees[0]
+        assert img_gen_tree.get_operation_ids() == ["Image generation"]
+        assert img_gen_tree.root.id == "IMG-GEN"
+        assert img_gen_tree.root.valid == False # File consumer is not valid
+        assert "Image." in img_gen_tree.root.overwrite_file
+        assert len(img_gen_tree.root.file_consumers) == 1
+        consumer = img_gen_tree.root.file_consumers[0]
+        assert len(consumer.producers) == 1 
+        assert isinstance(consumer.producers[0], FilePickerNode)
+
+        mdl_gen_tree = trees[1]
+        assert mdl_gen_tree.get_operation_ids() == ["Model training"]
+        assert mdl_gen_tree.root.id == "MDL-GEN"
+        assert mdl_gen_tree.root.valid == False
+        assert "Model." in mdl_gen_tree.root.overwrite_file
+        assert len(mdl_gen_tree.root.file_consumers) == 1
+        consumer = mdl_gen_tree.root.file_consumers[0]
+        assert len(consumer.producers) == 2
+        assert isinstance(consumer.producers[0], FilePickerNode)
+        assert isinstance(consumer.producers[1], OperationNode)
+        
+        sub_tree = consumer.producers[1]
+        assert sub_tree.get_operation_ids() == ["Image generation"]
+        assert len(sub_tree.file_consumers) == 1
+        consumer = sub_tree.file_consumers[0]
+        assert len(consumer.producers) == 1 
+        assert isinstance(consumer.producers[0], FilePickerNode)
