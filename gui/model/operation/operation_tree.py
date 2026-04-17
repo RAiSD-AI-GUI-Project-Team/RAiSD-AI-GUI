@@ -553,6 +553,7 @@ class CommonParentDirectoryNode(FileProducerNode):
     def _set_run_id(self, new_run_id: str) -> None:
         old_file = self.file
         old_overwrite = self.overwrite
+        old_valid = self.valid
 
         for file_consumer in self.file_consumers:
             file_consumer.run_id = new_run_id
@@ -561,12 +562,15 @@ class CommonParentDirectoryNode(FileProducerNode):
             self.file_changed.emit(self.file)
         if self.overwrite != old_overwrite:
             self.overwrite_changed.emit(self.overwrite)
+        if self.valid != old_valid:
+            self.valid_changed.emit(self.valid)
 
     run_id = property(fset=_set_run_id)
 
     def _set_base_directory_path(self, new_base_directory_path: str) -> None:
         old_file = self.file
         old_overwrite = self.overwrite
+        old_valid = self.valid
 
         for file_consumer in self.file_consumers:
             file_consumer.base_directory_path = new_base_directory_path
@@ -575,6 +579,8 @@ class CommonParentDirectoryNode(FileProducerNode):
             self.file_changed.emit(self.file)
         if self.overwrite != old_overwrite:
             self.overwrite_changed.emit(self.overwrite)
+        if self.valid != old_valid:
+            self.valid_changed.emit(self.valid)
 
     base_directory_path = property(fset=_set_base_directory_path)
 
@@ -1148,6 +1154,7 @@ class OperationNode(FileProducerNode):
     def run_id(self, new_run_id: str) -> None:
         old_file = self.file
         old_overwrite = self.overwrite
+        old_valid = self.valid
         old_run_id = self.run_id
 
         self._run_id = f"{new_run_id}_{self.id}"
@@ -1158,6 +1165,8 @@ class OperationNode(FileProducerNode):
             self.file_changed.emit(self.file)
         if self.overwrite != old_overwrite:
             self.overwrite_changed.emit(self.overwrite)
+        if self.valid != old_valid:
+            self.valid_changed.emit(self.valid)
         if self.run_id != old_run_id:
             self.run_id_changed.emit(self.run_id)
 
@@ -1169,6 +1178,7 @@ class OperationNode(FileProducerNode):
     def base_directory_path(self, new_base_directory_path: str) -> None:
         old_file = self.file
         old_overwrite = self.overwrite
+        old_valid = self.valid
 
         self._base_directory_path = new_base_directory_path
         for file_consumer in self.file_consumers:
@@ -1178,6 +1188,8 @@ class OperationNode(FileProducerNode):
             self.file_changed.emit(self.file)
         if self.overwrite != old_overwrite:
             self.overwrite_changed.emit(self.overwrite)
+        if self.valid != old_valid:
+            self.valid_changed.emit(self.valid)
 
     @property
     def enabled(self) -> bool:
