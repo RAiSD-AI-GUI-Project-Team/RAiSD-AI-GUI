@@ -2023,8 +2023,7 @@ class TestOperationTree:
         pass
 
     @pytest.fixture()
-    def operation_node(self, mocker):
-        # Arrange
+    def operation(self, mocker):
         const_path_fragment = mocker.Mock(spec=Operation.ConstPathFragment)
         const_path_fragment.value = "const_path_fragment"
         run_id_path_fragment = mocker.Mock(spec=Operation.RunIdPathFragment)
@@ -2073,7 +2072,109 @@ class TestOperationTree:
                 "parameter2": mocker.Mock(return_value=bool_parameter_mock)
             },
         )
+        return operation
 
+    @pytest.fixture()
+    def operation_a(self, mocker):
+        const_path_fragment = mocker.Mock(spec=Operation.ConstPathFragment)
+        const_path_fragment.value = "pictures"
+        run_id_path_fragment = mocker.Mock(spec=Operation.RunIdPathFragment)
+        slash_path_fragment = mocker.Mock(spec=Operation.SlashPathFragment)
+
+        bool_parameter_mock = mocker.Mock(spec=BoolParameter)
+        bool_parameter_mock.value = True
+        bool_parameter_mock.to_cli = mocker.Mock(return_value=["--bool-flag"])     
+        bool_parameter_mock.reset_value = mocker.Mock()   
+
+        int_parameter_mock = mocker.Mock(spec=IntParameter)
+        int_parameter_mock.value = 1659
+        int_parameter_mock.to_cli = mocker.Mock(return_value=["--int-param", "1659"])
+        int_parameter_mock.reset_value = mocker.Mock()
+
+        operation_a = Operation(
+            id="operation_a",
+            name="Test Operation A",
+            description="This is the first test operation. Output is used for operation b.",
+            cli="-o ",
+            requires=[
+                Operation.Input(
+                    name="input1",
+                    description="raw input",
+                    cli="-i ",
+                    file=SingleFile([".ms"])
+                ),
+            ],
+            produces=Directory([SingleFile([".png"])]),
+            output_path=[
+                const_path_fragment,
+                slash_path_fragment,
+                run_id_path_fragment,
+            ],
+            overwrite_parameter_builder=mocker.Mock(return_value=mocker.Mock(spec=BoolParameter)),
+            overwrite_path=[
+                const_path_fragment,
+                slash_path_fragment,
+                run_id_path_fragment
+            ],
+            parameter_builders={
+                "parameter1": mocker.Mock(return_value=int_parameter_mock),
+                "parameter2": mocker.Mock(return_value=bool_parameter_mock)
+            },
+        )
+        return operation_a
+    
+    @pytest.fixture()
+    def operation_b(self, mocker):
+        const_path_fragment = mocker.Mock(spec=Operation.ConstPathFragment)
+        const_path_fragment.value = ".report"
+        run_id_path_fragment = mocker.Mock(spec=Operation.RunIdPathFragment)
+
+        bool_parameter_mock = mocker.Mock(spec=BoolParameter)
+        bool_parameter_mock.value = True
+        bool_parameter_mock.to_cli = mocker.Mock(return_value=["--bool-flag"])     
+        bool_parameter_mock.reset_value = mocker.Mock()   
+
+        int_parameter_mock = mocker.Mock(spec=IntParameter)
+        int_parameter_mock.value = 1659
+        int_parameter_mock.to_cli = mocker.Mock(return_value=["--int-param", "1659"])
+        int_parameter_mock.reset_value = mocker.Mock()
+
+        operation_b = Operation(
+            id="operation_b",
+            name="Test Operation B",
+            description="This is the second test operation.",
+            cli="-o ",
+            requires=[
+                Operation.Input(
+                    name="input1b",
+                    description="Input from A",
+                    cli="-i ",
+                    file=Directory([SingleFile([".png"])])
+                ),
+            ],
+            produces=SingleFile([".report"]),
+            output_path=[
+                run_id_path_fragment,
+                const_path_fragment
+            ],
+            overwrite_parameter_builder=mocker.Mock(return_value=mocker.Mock(spec=BoolParameter)),
+            overwrite_path=[
+                run_id_path_fragment,
+                const_path_fragment
+            ],
+            parameter_builders={
+                "parameter1": mocker.Mock(return_value=int_parameter_mock),
+                "parameter2": mocker.Mock(return_value=bool_parameter_mock)
+            },
+        )
+        return operation_b
+    
+    @pytest.fixture()
+    def operation_node(
+            self, 
+            operation: Operation
+        ):
+        # Arrange
         operation_node = OperationNode(
             operation=operation,
             run_id="test_run_id1",
@@ -2182,18 +2283,51 @@ class TestOperationTree:
     def test_build_trees(
             self,
             mocker,
-            operation_node: OperationNode
+            tmp_path,
+            operation_a: Operation,
+            operation_b: Operation
         ):
         """Test build_trees method."""
         # Arrange
-        
+        operations = {
+            "test_operation_a": operation_a,
+            "test_operation_b": operation_b
+        }
+
+        overwrite_parameter_mock = mocker.Mock(spec=BoolParameter)
+        overwrite_parameter_mock.value = True
+        overwrite_parameter_mock.to_cli = mocker.Mock(return_value=["--overwrite"])
+        overwrite_parameter_mock.reset_value = mocker.Mock()
 
         # Act
-        operation_tree = OperationTree.build_trees()
+        operation_trees, operation_conditions = OperationTree.build_trees(
+            operations=operations,
+            overwrite_parameter_builder=mocker.Mock(return_value=overwrite_parameter_mock),
+            run_id="test_run_id",
+            base_directory_path=str(tmp_path / "base_directory"),
+        )
 
         # Assert
-        assert operation_tree._operation_nodes == [operation_node]
-    
+        assert operation_trees
+        assert operation_conditions
+        assert len(operation_trees) == 2
+        assert len(operation_conditions) == 2
+        operation_tree = operation_trees[0]
+        assert operation_tree.root.id == "operation_a"
+        operation_tree = operation_trees[1]
+        assert operation_tree.root.id == "operation_b"
+
+        assert len(operation_trees[0].root.file_consumers) == 1
+        assert len(operation_trees[0].root.file_consumers[0].producers) == 1
+        assert isinstance(operation_trees[0].root.file_consumers[0].producers[0], FilePickerNode)
+
+
+        assert len(operation_trees[1].root.file_consumers) == 1
+        assert len(operation_trees[1].root.file_consumers[0].producers) == 2
+        assert operation_trees[1].root.file_consumers[0].producers[0].produces == operation_a.produces
+
+
+
     def test_reset(
             self,
             mocker,
