@@ -305,5 +305,30 @@ class TestOperationTreeStructures:
 
         # Assert
         assert retrieved_trees == self.trees
-        
+    
+    def test_selected_operation_tree_index(self, run_record, mocker):
+        # Arrange 
+        record = self.record
+        index_spy = mocker.MagicMock()
+        record.selected_operation_tree_index_changed.connect(index_spy)
+        valid_spy = mocker.MagicMock()
+        record.operations_valid_changed.connect(valid_spy)
+
+        # Assert
+        assert record.operation_trees[0].enabled
+        assert record.selected_operation_tree_index == 0
+        assert not record.operations_valid
+
+        # Act
+        record.selected_operation_tree_index = 1
+
+        # Assert
+        assert not record.operation_trees[0].enabled
+        assert record.operation_trees[1].enabled
+        assert record.selected_operation_tree_index == 1
+        index_spy.assert_called_once_with(1)
+        valid_spy.assert_called_once_with(False)
+
+    
+
 
