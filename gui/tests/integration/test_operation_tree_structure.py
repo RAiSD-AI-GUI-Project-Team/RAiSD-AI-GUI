@@ -329,6 +329,42 @@ class TestOperationTreeStructures:
         index_spy.assert_called_once_with(1)
         valid_spy.assert_called_once_with(False)
 
+    def test_tree_to_dict(self, operation_trees, tmp_path):
+        # Arrange
+        trees = self.trees
+        file = tmp_path / "file"
+        file.write_text("")
+        producer_node = trees[0].root.file_consumers[0].producers[0]
+        assert isinstance(producer_node, FilePickerNode)
+        producer_node.file = tmp_path / "file"
+        trees[1].root.file_consumers[0].selected_index = 1
+
+        # Act
+        dict1 = trees[0].to_dict()
+        dict2 = trees[1].to_dict()
+
+        # Assert
+        assert "file_consumers" in dict1
+        assert len(dict1["file_consumers"]) == 1
+        consumer = dict1["file_consumers"][0]
+        assert "selected" in consumer
+        assert consumer["selected"] == 0
+        assert "file_producers" in consumer
+        assert len(consumer["file_producers"]) == 1
+        producer = consumer["file_producers"][0]
+        assert "file_path" in producer
+        assert producer["file_path"] == tmp_path / "file"
+
+        assert "file_consumers" in dict2
+        assert len(dict2["file_consumers"]) == 1
+        consumer = dict2["file_consumers"][0]
+        assert "selected" in consumer
+        assert consumer["selected"] == 1
+        assert "file_producers" in consumer
+        assert len(consumer["file_producers"]) == 2
+        producer = consumer["file_producers"][1]
+        assert "file_consumers" in producer
+
     
 
 
