@@ -424,7 +424,7 @@ class TestFileConsumerNode:
         file_producer_node1.get_operation_ids = mocker.Mock(return_value=operation_ids)
 
         # Assert
-        assert file_consumer_node_file.get_operation_ids() is None
+        assert file_consumer_node_file.get_operation_ids() == []
 
         # Arrange
         file_consumer_node_file.add_producer(file_producer_node1)

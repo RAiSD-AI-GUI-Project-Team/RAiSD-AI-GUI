@@ -371,9 +371,9 @@ class FileConsumerNode(QObject):
         for producer in self.producers:
             producer.reset()
 
-    def get_operation_ids(self) -> list[str] | None:
+    def get_operation_ids(self) -> list[str]:
         if self.selected_producer is None:
-            return None
+            return []
         return self.selected_producer.get_operation_ids()
 
     def to_cli(
@@ -623,9 +623,7 @@ class CommonParentDirectoryNode(FileProducerNode):
         operation_ids = []
 
         for file_consumer in self.file_consumers:
-            file_operation_ids = file_consumer.get_operation_ids()
-            if file_operation_ids:
-                operation_ids.extend(file_operation_ids)
+            operation_ids.extend(file_consumer.get_operation_ids())
 
         return operation_ids
 
@@ -1250,9 +1248,7 @@ class OperationNode(FileProducerNode):
         operation_ids = []
 
         for file_consumer in self.file_consumers:
-            file_operation_ids = file_consumer.get_operation_ids()
-            if file_operation_ids:
-                operation_ids.extend(file_operation_ids)
+            operation_ids.extend(file_consumer.get_operation_ids())
 
         operation_ids.append(self.name)
         return operation_ids
