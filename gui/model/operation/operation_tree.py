@@ -1238,7 +1238,6 @@ class OperationNode(FileProducerNode):
             parameter.reset_value()
 
     def get_operation_ids(self) -> list[str]:
-        print(self.name)
         operation_ids = []
 
         for file_consumer in self.file_consumers:
