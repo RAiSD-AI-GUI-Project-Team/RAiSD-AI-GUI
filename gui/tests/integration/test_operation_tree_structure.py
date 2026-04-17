@@ -1,6 +1,5 @@
-from pytest import approx, fixture, raises, skip
+from pytest import fixture
 from unittest.mock import PropertyMock
-from gui.tests.utils.mock_signal import MockSignal
 import posixpath
 import re
 
@@ -19,16 +18,11 @@ from gui.model.operation.file_structure import SingleFile
 from gui.model.run_record import RunRecord
 import gui.model.run_record as rrecord
 from gui.model.parameter import (
-    IntervalConstraint,
     RegexConstraint,
     ParameterGroup,
-    OptionalParameter,
-    MultiParameter,
     BoolParameter,
-    IntParameter,
     EnumParameter,
     StringParameter,
-    FileParameter,
     Parameter
 )
 
