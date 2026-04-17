@@ -276,3 +276,24 @@ class TestOperationTreeStructures:
         assert not record.operations_valid
         assert record.valid # Not dependent on operations valid
 
+    def test_reset(self, run_record, tmp_path):
+        # Arrange
+        record = self.record
+        trees = record.operation_trees
+        file = tmp_path / "file"
+        file.write_text("")
+        producer = trees[0].root.file_consumers[0].producers[0]
+        assert isinstance(producer, FilePickerNode)
+        producer.file = tmp_path / "file"
+        record.selected_operation_tree_index = 1
+        trees[1].root.file_consumers[0].selected_index = 1
+
+        # Act
+        record.reset()
+
+        # Assert
+        assert producer.file == None
+        assert record.selected_operation_tree_index == 0
+        assert trees[1].root.file_consumers[0].selected_index == 0
+        
+
