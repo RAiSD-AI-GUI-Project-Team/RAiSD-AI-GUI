@@ -11,10 +11,6 @@ from gui.model.settings import Settings
 class TestSettings:
     """Tests for Settings class."""
 
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        pass
-
     @pytest.fixture()
     def correct_settings_obj(self) -> dict:
         settings_obj = { # TODO: Mocking QDir exists works but not for QFileInfo.
@@ -33,8 +29,6 @@ class TestSettings:
 
         # Assert
         assert settings._workspace_path == None
-        with pytest.raises(RuntimeError) as e:
-            x = settings.workspace_path == None
         assert settings._executable_file_path == None
         with pytest.raises(RuntimeError) as e:
             x = settings.executable_file_path == None
@@ -55,8 +49,8 @@ class TestSettings:
         # Arrange
         workspace_path = QDir("/home/raisd")
         executable_file_path = QFileInfo("/home/raisd/raisdai")
-        environment_manger = 0
-        environment_manger_name = Settings.environment_managers[environment_manger]
+        environment_manager = 0
+        environment_manager_name = Settings.environment_managers[environment_manager]
         environment_name = "raisdai"
         config_path = QFileInfo("/home/raisd/config.yml")
 
@@ -64,7 +58,7 @@ class TestSettings:
         settings = Settings(
             workspace_path=workspace_path,
             executable_file_path=executable_file_path,
-            environment_manager=environment_manger,
+            environment_manager=environment_manager,
             environment_name=environment_name,
             config_path=config_path,
         )
@@ -73,7 +67,7 @@ class TestSettings:
         assert settings.workspace_path == workspace_path
         assert settings.executable_file_path == executable_file_path
         assert settings.environment_manager == environment_manager
-        assert settings.environment_manager_name == environment_manger_name
+        assert settings.environment_manager_name == environment_manager_name
         assert settings.environment_name == environment_name
         assert settings.config_path == config_path
 
