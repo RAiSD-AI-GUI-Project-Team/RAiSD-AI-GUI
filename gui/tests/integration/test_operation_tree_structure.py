@@ -295,5 +295,15 @@ class TestOperationTreeStructures:
         assert producer.file == None
         assert record.selected_operation_tree_index == 0
         assert trees[1].root.file_consumers[0].selected_index == 0
+
+    def test_trees_getter(self, run_record):
+        # Arrange
+        record = self.record
+
+        # Act
+        retrieved_trees = record.operation_trees
+
+        # Assert
+        assert retrieved_trees == self.trees
         
 
