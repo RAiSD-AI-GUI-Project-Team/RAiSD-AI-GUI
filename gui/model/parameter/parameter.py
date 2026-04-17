@@ -449,7 +449,7 @@ class MultiParameter(Parameter[tuple[()]]):
     A multi-value parameter in the GUI.
     """
 
-    value_changed = Signal(tuple[()], bool)
+    value_changed = Signal(tuple, bool)
 
     def __init__(
             self,
@@ -506,7 +506,7 @@ class MultiParameter(Parameter[tuple[()]]):
     def _to_cli(
             self,
             operation: str | None = None,
-            value: tuple[()] | None = None,
+            value: tuple | None = None,
     ) -> str:
         cli_params = [p.to_cli(operation) for p in self.parameters]
         nonempty_params = [p for p in cli_params if p]
@@ -522,8 +522,8 @@ class CountedMultiParameter(MultiParameter):
     def _to_cli(
             self,
             operation: str | None = None,
-            value: tuple[()] | None = None,
-        ) -> str:
+            value: tuple | None = None,
+    ) -> str:
         inner_parameters = [p.to_cli(operation) for p in self.parameters]
         nonempty_inner_parameters = [p for p in inner_parameters if p]
         if not nonempty_inner_parameters:
@@ -843,7 +843,7 @@ class StringTableParameter(Parameter[tuple[()]]):
     A parameter for entering a table of strings.
     """
 
-    value_changed = Signal(tuple[()], bool)
+    value_changed = Signal(tuple, bool)
     row_count_index_changed = Signal(int)
     row_count_changed = Signal(int)
 
@@ -895,8 +895,8 @@ class StringTableParameter(Parameter[tuple[()]]):
 
         self._separator = separator
 
-    @Slot()
-    def _inner_value_changed(self) -> None:
+    @Slot(str, bool)
+    def _inner_value_changed(self, _value: str, _valid: bool) -> None:
         self.value_changed.emit(self.value, self.valid)
 
     def reset_value(self) -> None:
@@ -970,7 +970,7 @@ class StringTableParameter(Parameter[tuple[()]]):
     def _to_cli(
             self,
             operation: str | None = None,
-            value: tuple[()] | None = None,
+            value: tuple | None = None,
     ) -> str:
         pieces = [f"{self.flag}{self.row_count}"]
         for row in self.parameters[:self.row_count]:
