@@ -72,7 +72,7 @@ class TestSettings:
         # Assert
         assert settings.workspace_path == workspace_path
         assert settings.executable_file_path == executable_file_path
-        assert settings.environment_manager == settings.environment_manager
+        assert settings.environment_manager == environment_manager
         assert settings.environment_manager_name == environment_manger_name
         assert settings.environment_name == environment_name
         assert settings.config_path == config_path
