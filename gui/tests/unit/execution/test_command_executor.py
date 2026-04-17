@@ -1,6 +1,4 @@
 import pytest
-import pytestqt
-import tempfile
 import re
 
 from PySide6.QtCore import (
@@ -10,7 +8,7 @@ from PySide6.QtCore import (
     QFileInfo
 )
 
-from gui.model.settings import app_settings
+from gui.model.settings import Settings, app_settings
 from gui.execution.command_executor import CommandExecutor, default_command_builder
 
 
@@ -38,12 +36,20 @@ def test_default_command_builder(mocker):
 
     # Apply mock
     mocker.patch.object(
-        type(app_settings), 
+        Settings, 
         'environment_manager_name', 
         environment_manager_name_mock
     )
-    type(app_settings).environment_name = environment_name_mock
-    type(app_settings).executable_file_path = executable_file_path_mock
+    mocker.patch.object(
+        Settings,
+        'environment_name',
+        environment_name_mock
+    )
+    mocker.patch.object(
+        Settings,
+        'executable_file_path',
+        executable_file_path_mock
+    )
 
     # Act
     command = default_command_builder(parameters=parameters)
@@ -56,14 +62,13 @@ class TestCommandExecutor:
     """Tests for CommandExecutor class."""
 
     @pytest.fixture(autouse=True)
-    def set_command_executor(self, qtbot, mocker):
+    def set_command_executor(self, tmp_path, qtbot, mocker):
         # Create a real temp dir
-        temp_dir = tempfile.TemporaryDirectory()
-        qdir = QDir(temp_dir.name)
+        qdir = QDir(str(tmp_path))
 
         # Patch app_settings.workspace_path to return the real QDir        
         workspace_path_mock = mocker.PropertyMock(return_value=qdir)
-        type(app_settings).workspace_path = workspace_path_mock
+        mocker.patch.object(Settings, 'workspace_path', workspace_path_mock)
 
         mock_run_record = mocker.Mock()
         mock_run_record.run_id = "test-command-executor"
@@ -95,7 +100,6 @@ class TestCommandExecutor:
         yield   # everything after this will be run after the test methods.
 
         print("teardown")
-        temp_dir.cleanup()
         self.command_executor.stop_execution()
         self.command_executor._process.waitForFinished(3000)
 
