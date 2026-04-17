@@ -11,13 +11,16 @@ from PySide6.QtCore import (
 from gui.model.operation import (
     FileConsumerNode,
     FileProducerNode,
+    CommonParentDirectoryNode,
+    FilePickerNode,
+    OperationNode,
+    OperationTree,
+    Operation,
 )
-from gui.model.operation import Operation
 from gui.model.operation.file_structure import SingleFile, Directory
-
-from gui.model.operation.operation_tree import CommonParentDirectoryNode
-from gui.model.parameter.parameter import BoolParameter
+from gui.model.parameter.parameter import BoolParameter, IntParameter
 from gui.tests.utils.mock_signal import MockSignal
+
 
 class TestFileConsumerNode:
     """Tests for FileProducerNode class."""
@@ -686,10 +689,10 @@ class TestCommonParentDirectoryNode:
         common_parent_directory_node.valid_changed.connect(mock_valid_changed)
 
         # Act
-        common_parent_directory_node.file_consumers[0].valid_changed.emit(True)
+        common_parent_directory_node.file_consumers[0].valid_changed.emit(False)
 
         # Assert
-        mock_valid_changed.assert_called_once_with(True)
+        mock_valid_changed.assert_called_once_with(False)
 
     def test_enabled_setter_disables_child_consumers(
             self, 
@@ -1394,41 +1397,622 @@ class TestCommonParentDirectoryNode:
             common_parent_directory_node.populate_from_dict(dict_data)
 
 
-
 class TestFilePickerNode:
     """Tests for FilePickerNode class."""
 
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        pass
+    @pytest.fixture()
+    def file_picker_node(self):
+        file_structure = SingleFile([".png"])
+        return FilePickerNode(
+            produces=file_structure,
+            enabled=True,
+        )
 
-    def test_init_values(self):
+    def test_init_values(self, mocker):
         """Test FilePickerNode initialization."""
-        # TODO: Implement this testing class
         # Arrange
+        file_structure = SingleFile([".png"])
+        produces = Directory([file_structure])
+        enabled = True
 
         # Act
+        file_picker_node = FilePickerNode(
+            produces=produces,
+            enabled=enabled,
+        )
 
         # Assert
-        pytest.skip()
+
+        assert file_picker_node.produces == produces
+        assert file_picker_node.enabled is enabled
+        assert file_picker_node.file is None
+
+    def test_file_setter(
+            self, 
+            mocker,
+            tmp_path,
+            file_picker_node: FilePickerNode
+        ):
+        """Test the file property setter."""
+        # Arrange
+        new_file = tmp_path / "file.png"
+        new_file.write_text("test content")
+        file_changed_spy = mocker.Mock()
+        valid_changed_spy = mocker.Mock()
+
+        file_picker_node.file_changed.connect(file_changed_spy)
+        file_picker_node.valid_changed.connect(valid_changed_spy)
+
+        # Act
+        file_picker_node.file = str(new_file)
+
+        # Assert
+        assert file_picker_node.file == str(new_file)
+        file_changed_spy.assert_called_once_with(str(new_file))
+        valid_changed_spy.assert_called_once_with(True)
+
+    def test_run_id_setter(self, file_picker_node: FilePickerNode):
+        """Test run_id setter."""
+        # Act
+        file_picker_node.run_id = "test_run_id"
+    
+    def test_base_directory_path_setter(self, file_picker_node: FilePickerNode):
+        """Test base_directory_path setter."""
+        # Act
+        file_picker_node.base_directory_path = "/path/to/base/directory"
+
+    def test_enabled_setter(self, file_picker_node: FilePickerNode):
+        """Test enabled setter."""
+        # Act
+        file_picker_node.enabled = False
+        assert file_picker_node.enabled is False
+
+        # Act
+        file_picker_node.enabled = True
+        assert file_picker_node.enabled is True
+
+    def test_valid(self, tmp_path, file_picker_node: FilePickerNode):
+        """Test valid property."""
+        # Assert
+        assert file_picker_node.valid is False
+
+        # Arrange
+        new_file = tmp_path / "file.png"
+        new_file.write_text("test content")
+        file_picker_node._file = str(new_file)
+
+        # Assert
+        assert file_picker_node.valid is True
+
+    def test_reset(self, mocker, file_picker_node: FilePickerNode):
+        """Test reset method."""
+        # Arrange
+        file_picker_node.file = "/path/to/file.png"
+        assert file_picker_node.file == "/path/to/file.png"
+
+        # Act
+        file_picker_node.reset()
+
+        # Assert
+        assert file_picker_node.file is None
+
+    def test_get_operation_ids(self, file_picker_node: FilePickerNode):
+        """Test get_operation_ids method."""
+        # Assert
+        assert file_picker_node.get_operation_ids() == []
+
+    def test_to_cli(self, mocker, file_picker_node: FilePickerNode):
+        """Test to_cli method."""
+        # Arrange
+        run_id_parameter = mocker.Mock()
+        parameters = [mocker.Mock()]
+
+        # Act
+        result = file_picker_node.to_cli(run_id_parameter, parameters)
+
+        # Assert
+        assert result == []
+    
+    def test_to_dict(self, file_picker_node: FilePickerNode):
+        """Test to_dict method."""
+        # Arrange
+        file_picker_node.file = "/path/to/file.png"
+
+        # Act
+        result = file_picker_node.to_dict()
+
+        # Assert
+        assert result == {
+            "file_path": "/path/to/file.png"
+        }
+
+    def test_populate_from_dict(self, mocker, file_picker_node: FilePickerNode):
+        """Test populate_from_dict method."""
+        # Arrange
+        dict_data = {
+            "file_path": "/path/to/file.png"
+        }
+
+        # Act
+        file_picker_node.populate_from_dict(dict_data)
+
+        # Assert
+        assert file_picker_node.file == "/path/to/file.png"
+
+    def test_populate_from_dict_missing_file_path(
+            self, 
+            file_picker_node: FilePickerNode
+        ):
+        """Test populate_from_dict raises with missing file_path."""
+        # Arrange
+        dict_data = {}
+
+        # Act / Assert
+        with pytest.raises(ValueError, match="Missing 'file_path' key in dict."):
+            file_picker_node.populate_from_dict(dict_data)
+
+    def test_populate_from_dict_file_path_null(
+            self,
+            file_picker_node: FilePickerNode
+        ):
+        """Test populate_from_dict raises with invalid file_path type."""
+        # Arrange
+        dict_data = {
+            "file_path": None
+        }
+
+        # Act
+        file_picker_node.populate_from_dict(dict_data)
+
+        # Assert
+        assert file_picker_node.file is None
+
+    def test_populate_from_dict_invalid_file_path_type(
+            self,
+            file_picker_node: FilePickerNode
+        ):
+        """Test populate_from_dict raises with invalid file_path type."""
+        # Arrange
+        dict_data = {
+            "file_path": 123
+        }
+
+        # Act / Assert
+        with pytest.raises(
+            ValueError, 
+            match="Invalid 'file_path' in dict: 123. Expected a string or null."
+            ):
+            file_picker_node.populate_from_dict(dict_data)
 
 
 class TestOperationNode:
     """Tests for OperationNode class."""
 
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        pass
-
-    def test_init_values(self):
-        """Test OperationNode initialization."""
-        # TODO: Implement this testing class
+    @pytest.fixture()
+    def operation_node(self, mocker):
         # Arrange
+        const_path_fragment = mocker.Mock(spec=Operation.ConstPathFragment)
+        const_path_fragment.value = "const_path_fragment"
+        run_id_path_fragment = mocker.Mock(spec=Operation.RunIdPathFragment)
+        slash_path_fragment = mocker.Mock(spec=Operation.SlashPathFragment)
+        parameter_value_path_fragment = mocker.Mock(spec=Operation.ParameterValuePathFragment)
+        parameter_value_path_fragment.parameter_id = "parameter1"
+
+        bool_parameter_mock = mocker.Mock(spec=BoolParameter)
+        bool_parameter_mock.value = True
+        bool_parameter_mock.to_cli = mocker.Mock(return_value=["--bool-flag"])     
+        bool_parameter_mock.reset_value = mocker.Mock()   
+
+        int_parameter_mock = mocker.Mock(spec=IntParameter)
+        int_parameter_mock.value = 1659
+        int_parameter_mock.to_cli = mocker.Mock(return_value=["--int-param", "1659"])
+        int_parameter_mock.reset_value = mocker.Mock()
+
+        operation = Operation(
+            id="test_operation",
+            name="Test Operation",
+            description="This is a test operation.",
+            cli="-o ",
+            requires=[
+                Operation.Input(
+                    name="input1",
+                    description="First input",
+                    cli="-i ",
+                    file=Directory([SingleFile([".png"])])
+                ),
+            ],
+            produces=SingleFile([".png"]),
+            output_path=[
+                const_path_fragment,
+                slash_path_fragment,
+                run_id_path_fragment,
+                parameter_value_path_fragment
+            ],
+            overwrite_parameter_builder=mocker.Mock(return_value=mocker.Mock(spec=BoolParameter)),
+            overwrite_path=[
+                const_path_fragment,
+                slash_path_fragment,
+                run_id_path_fragment
+            ],
+            parameter_builders={
+                "parameter1": mocker.Mock(return_value=int_parameter_mock),
+                "parameter2": mocker.Mock(return_value=bool_parameter_mock)
+            },
+        )
+
+        operation_node = OperationNode(
+            operation=operation,
+            run_id="test_run_id1",
+            base_directory_path="/path/to/directory",
+            enabled=True,
+        )
+
+        return operation_node
+
+    def test_init_values(self, mocker):
+        """Test OperationNode initialization."""
+        # Arrange
+        const_path_fragment = mocker.Mock(spec=Operation.ConstPathFragment)
+        const_path_fragment.value = "const_path"
+        run_id_path_fragment = mocker.Mock(spec=Operation.RunIdPathFragment)
+        slash_path_fragment = mocker.Mock(spec=Operation.SlashPathFragment)
+        parameter_value_path_fragment = mocker.Mock(spec=Operation.ParameterValuePathFragment)
+        parameter_value_path_fragment.parameter_id = "param2"
+
+        operation = Operation(
+            id="test_operation",
+            name="Test Operation",
+            description="This is a test operation.",
+            cli="-o ",
+            requires=[
+                Operation.Input(
+                    name="input1",
+                    description="First input",
+                    cli="-i ",
+                    file=Directory([SingleFile([".png"])])
+                ),
+            ],
+            produces=SingleFile([".png"]),
+            output_path=[
+                const_path_fragment,
+                slash_path_fragment,
+                run_id_path_fragment,
+                parameter_value_path_fragment
+            ],
+            overwrite_parameter_builder=mocker.Mock(return_value=mocker.Mock(spec=BoolParameter)),
+            overwrite_path=[
+                const_path_fragment,
+                slash_path_fragment,
+                run_id_path_fragment
+            ],
+            parameter_builders={
+                "param1": mocker.Mock(return_value=mocker.Mock(spec=BoolParameter)),
+                "param2": mocker.Mock(return_value=mocker.Mock(spec=IntParameter))
+            },
+        )
 
         # Act
+        operation_node = OperationNode(
+            operation=operation,
+            run_id="test_run_id",
+            base_directory_path="/path/to/base/directory",
+            enabled=True,
+        )
 
         # Assert
-        pytest.skip()
+        assert operation_node._id == "test_operation"
+        assert operation_node.id == "test_operation"
+        assert operation_node.name == "Test Operation"
+        assert operation_node.description == "This is a test operation."
+        assert operation_node._cli == "-o "
+        assert len(operation_node.file_consumers) == 1
+        assert operation_node.file_consumers[0].name == "input1"
+        assert operation_node.produces == SingleFile([".png"])
+        assert isinstance(operation_node._output_path[0], OperationNode.ConstPathFragmentGenerator)
+        assert isinstance(operation_node._output_path[1], OperationNode.SlashPathFragmentGenerator)
+        assert isinstance(operation_node._output_path[2], OperationNode.RunIdPathFragmentGenerator)
+        assert isinstance(operation_node._output_path[3], OperationNode.ParameterValuePathFragmentGenerator)
+
+    def test_init_raises_invalid_overwrite_parameter_builder(self, mocker):
+        """Test OperationNode initialization raises with invalid overwrite_parameter_builder."""
+        # Arrange
+        const_path_fragment = mocker.Mock(spec=Operation.ConstPathFragment)
+        const_path_fragment.value = "const_path"
+        run_id_path_fragment = mocker.Mock(spec=Operation.RunIdPathFragment)
+        slash_path_fragment = mocker.Mock(spec=Operation.SlashPathFragment)
+        parameter_value_path_fragment = mocker.Mock(spec=Operation.ParameterValuePathFragment)
+        parameter_value_path_fragment.parameter_id = "param2"
+
+        operation = Operation(
+            id="test_operation",
+            name="Test Operation",
+            description="This is a test operation.",
+            cli="-o ",
+            requires=[],
+            produces=SingleFile([".png"]),
+            output_path=[],
+            overwrite_parameter_builder=mocker.Mock(return_value="not-a-parameter"),
+            overwrite_path=[],
+            parameter_builders={},
+        )
+
+        # Act / Assert
+        with pytest.raises(
+            ValueError, 
+            match="Invalid overwrite parameter for operation 'Test Operation': " \
+                  "not-a-parameter. Expected a BoolParameter Instance."
+            ):
+            OperationNode(
+                operation=operation,
+                run_id="test_run_id",
+                base_directory_path="/path/to/base/directory",
+                enabled=True,
+            )
+
+    def test_path_fragment_generators(self, mocker):
+        """Test OperationNode initialization."""
+        # Arrange
+        const_path_fragment = mocker.Mock(spec=Operation.ConstPathFragment)
+        const_path_fragment.value = "const_path"
+        run_id_path_fragment = mocker.Mock(spec=Operation.RunIdPathFragment)
+        slash_path_fragment = mocker.Mock(spec=Operation.SlashPathFragment)
+        parameter_value_path_fragment = mocker.Mock(spec=Operation.ParameterValuePathFragment)
+        parameter_value_path_fragment.parameter_id = "param2"
+
+        bool_parameter_mock = mocker.Mock(spec=BoolParameter)
+        bool_parameter_mock.value = True
+
+        int_parameter_mock = mocker.Mock(spec=IntParameter)
+        int_parameter_mock.value = 1659
+
+
+        operation = Operation(
+            id="test_operation",
+            name="Test Operation",
+            description="This is a test operation.",
+            cli="-o ",
+            requires=[
+                Operation.Input(
+                    name="input1",
+                    description="First input",
+                    cli="-i ",
+                    file=Directory([SingleFile([".png"])])
+                ),
+            ],
+            produces=SingleFile([".png"]),
+            output_path=[
+                const_path_fragment,
+                slash_path_fragment,
+                run_id_path_fragment,
+                parameter_value_path_fragment
+            ],
+            overwrite_parameter_builder=mocker.Mock(return_value=mocker.Mock(spec=BoolParameter)),
+            overwrite_path=[
+                const_path_fragment,
+                slash_path_fragment,
+                run_id_path_fragment
+            ],
+            parameter_builders={
+                "param1": mocker.Mock(return_value=bool_parameter_mock),
+                "param2": mocker.Mock(return_value=int_parameter_mock)
+            },
+        )
+
+        # Act
+        operation_node = OperationNode(
+            operation=operation,
+            run_id="test_run_id",
+            base_directory_path="/path/to/base/directory",
+            enabled=True,
+        )
+
+        # Assert
+        assert isinstance(operation_node._output_path[0], OperationNode.ConstPathFragmentGenerator)
+        assert operation_node._output_path[0].value == "const_path"
+        assert isinstance(operation_node._output_path[1], OperationNode.SlashPathFragmentGenerator)
+        assert isinstance(operation_node._output_path[2], OperationNode.RunIdPathFragmentGenerator)
+        assert operation_node._output_path[2]._operation_node == operation_node
+        assert isinstance(operation_node._output_path[3], OperationNode.ParameterValuePathFragmentGenerator)
+        assert isinstance(operation_node._output_path[3]._parameter, IntParameter)
+        assert operation_node._output_path[3].value == str(1659)
+
+    def test_from_path_fragment_raises_unknown_fragment_type(
+            self, 
+            mocker, 
+            operation_node: OperationNode
+        ):
+        """Test from_path_fragment raises with unknown fragment type."""
+        # Arrange
+        unknown_path_fragment = mocker.Mock()
+
+        # Act / Assert
+        with pytest.raises(NotImplementedError, match="Unknown path fragment type!"):
+            OperationNode.PathFragmentGenerator.from_path_fragment(
+                path_fragment=unknown_path_fragment,
+                operation_node=operation_node
+            )
+
+    def test_path_fragment_generator_value_raises(
+            self,
+            mocker,
+            operation_node: OperationNode
+        ):
+        """Test from_path_fragment with ConstPathFragment."""
+        # Arrange
+
+        # Assert
+        with pytest.raises(NotImplementedError):
+            OperationNode.PathFragmentGenerator().value
+        
+    def test_enabled_condition(self, mocker, operation_node: OperationNode):
+        """Test enabled_condition method."""
+        # Arrange
+        operation_node.enabled = False
+
+        # Act
+        condition = OperationNode.EnabledCondition(
+            operation_node=operation_node,
+        )
+
+        # Assert
+        assert condition.value is False
+
+        # Act
+        operation_node.enabled = True
+
+        # Assert
+        assert condition.value is True
+
+    def test_overwrite_parameter(
+        self,
+        mocker,
+        operation_node: OperationNode
+        ):
+        """Test overwrite_parameter property."""
+        # Arrange
+        overwrite_parameter = operation_node.overwrite_parameter
+
+        # Assert
+        assert isinstance(overwrite_parameter, BoolParameter)
+
+    def test_run_id_setter(
+            self,
+            mocker,
+            tmp_path,
+            operation_node: OperationNode
+        ):
+        """Test run_id is propagated to child file consumers."""
+        # Arrange
+        operation_node.file_consumers[0].add_producer(mocker.Mock())
+        operation_node.file_consumers[0].selected_index = 1
+
+        file_changed_spy = mocker.Mock()
+        overwrite_changed_spy = mocker.Mock()
+        run_id_changed_spy = mocker.Mock()
+        operation_node.file_changed.connect(file_changed_spy)
+        operation_node.overwrite_changed.connect(overwrite_changed_spy)
+        operation_node.run_id_changed.connect(run_id_changed_spy)
+
+        # Act
+        operation_node.run_id = "new_run_id"
+
+        # Assert
+        assert operation_node.run_id == "new_run_id_test_operation"
+        assert operation_node.file_consumers[0].producers[1].run_id == "new_run_id_test_operation"
+        file_changed_spy.assert_called_once_with(operation_node.file)
+        overwrite_changed_spy.assert_not_called()
+        run_id_changed_spy.assert_called_once_with("new_run_id_test_operation")
+
+    def test_set_run_id_emits_overwrite_changed(
+            self,
+        ):
+        pytest.skip("This test still has to be implemented")
+
+    def test_base_directory_path_setter(
+            self,
+            mocker,
+            tmp_path,
+            operation_node: OperationNode
+        ):
+        """Test base_directory_path is propagated to child file consumers."""
+        # Arrange
+        operation_node.file_consumers[0].add_producer(mocker.Mock())
+        operation_node.file_consumers[0].selected_index = 1
+
+        file_changed_spy = mocker.Mock()
+        overwrite_changed_spy = mocker.Mock()
+        operation_node.file_changed.connect(file_changed_spy)
+        operation_node.overwrite_changed.connect(overwrite_changed_spy)
+
+        # Act
+        operation_node.base_directory_path = str(tmp_path / "new_base_directory")
+
+        # Assert
+        assert operation_node.base_directory_path == str(tmp_path / "new_base_directory")
+        assert operation_node.file_consumers[0].producers[1].base_directory_path == str(tmp_path / "new_base_directory")
+        file_changed_spy.assert_called_once_with(operation_node.file)
+        overwrite_changed_spy.assert_not_called()
+
+    def test_set_base_directory_path_emits_overwrite_changed(
+            self,
+        ):
+        pytest.skip("This test still has to be implemented")
+
+    def test_valid(
+            self,
+            mocker,
+            tmp_path,
+            operation_node: OperationNode
+        ):
+        """Test valid property."""
+        pytest.skip("This test still has to be implemented")
+        # # Assert
+        # assert operation_node.valid is False
+
+        # # Arrange
+        # mocker.patch.object(operation_node.overwrite_parameter, "value", False)
+        # mocker.patch.object(operation_node.file_consumers[0], "valid", True)
+        # mocker.patch.object(operation_node, "overwrite", False)
+        # mocker.patch.object(
+        #     type(operation_node.file_consumers[0]),
+        #     "valid",
+        #     new_callable=mocker.PropertyMock,
+        #     return_value=True,
+        # )
+        # mocker.patch.object(
+        #     type(operation_node),
+        #     "overwrite",
+        #     new_callable=mocker.PropertyMock,
+        #     return_value=True,
+        # )
+        # # Assert
+        # assert operation_node.valid is True
+
+    def test_reset(
+            self,
+            mocker,
+            operation_node: OperationNode
+        ):
+        """Test reset method."""
+        # Arrange
+        file_consumer = operation_node.file_consumers[0]
+        file_producer = mocker.Mock()
+        file_producer.reset = mocker.Mock()
+        file_consumer.add_producer(file_producer)
+
+        operation_node.parameters["parameter1"].value = 123
+        operation_node.parameters["parameter2"].value = True
+
+        # Act
+        operation_node.reset()
+
+        # Assert
+        file_producer.reset.assert_called_once()
+        operation_node.parameters["parameter1"].reset_value.assert_called_once() # type: ignore
+        operation_node.parameters["parameter2"].reset_value.assert_called_once() # type: ignore
+
+    def test_to_cli(
+            self,
+            mocker,
+            operation_node: OperationNode
+        ):
+        """Test to_cli method."""
+        pytest.skip("This test still has to be implemented")
+        # # Arrange
+        # run_id_parameter = mocker.Mock()
+        # parameters = [mocker.Mock()]
+        
+        # operation_node.file_consumers[0].to_cli
+        # operation_node.file_consumers[0].add_producer(mocker.Mock())
+        # operation_node.file_consumers[0].selected_index = 1
+
+        # # Act
+        # result = operation_node.to_cli(run_id_parameter, parameters)
+
+        # # Assert
+        # assert result == ["-o  --bool-flag --int-param 1659"]
+
+    # TODO: Implement the remaining tests.
 
 
 class TestOperationTree:
@@ -1438,12 +2022,270 @@ class TestOperationTree:
     def setup(self):
         pass
 
-    def test_init_values(self):
-        """Test OperationTree initialization."""
-        # TODO: Implement this testing class
+    @pytest.fixture()
+    def operation_node(self, mocker):
         # Arrange
+        const_path_fragment = mocker.Mock(spec=Operation.ConstPathFragment)
+        const_path_fragment.value = "const_path_fragment"
+        run_id_path_fragment = mocker.Mock(spec=Operation.RunIdPathFragment)
+        slash_path_fragment = mocker.Mock(spec=Operation.SlashPathFragment)
+        parameter_value_path_fragment = mocker.Mock(spec=Operation.ParameterValuePathFragment)
+        parameter_value_path_fragment.parameter_id = "parameter1"
 
+        bool_parameter_mock = mocker.Mock(spec=BoolParameter)
+        bool_parameter_mock.value = True
+        bool_parameter_mock.to_cli = mocker.Mock(return_value=["--bool-flag"])     
+        bool_parameter_mock.reset_value = mocker.Mock()   
+
+        int_parameter_mock = mocker.Mock(spec=IntParameter)
+        int_parameter_mock.value = 1659
+        int_parameter_mock.to_cli = mocker.Mock(return_value=["--int-param", "1659"])
+        int_parameter_mock.reset_value = mocker.Mock()
+
+        operation = Operation(
+            id="test_operation",
+            name="Test Operation",
+            description="This is a test operation.",
+            cli="-o ",
+            requires=[
+                Operation.Input(
+                    name="input1",
+                    description="First input",
+                    cli="-i ",
+                    file=Directory([SingleFile([".png"])])
+                ),
+            ],
+            produces=SingleFile([".png"]),
+            output_path=[
+                const_path_fragment,
+                slash_path_fragment,
+                run_id_path_fragment,
+                parameter_value_path_fragment
+            ],
+            overwrite_parameter_builder=mocker.Mock(return_value=mocker.Mock(spec=BoolParameter)),
+            overwrite_path=[
+                const_path_fragment,
+                slash_path_fragment,
+                run_id_path_fragment
+            ],
+            parameter_builders={
+                "parameter1": mocker.Mock(return_value=int_parameter_mock),
+                "parameter2": mocker.Mock(return_value=bool_parameter_mock)
+            },
+        )
+
+        operation_node = OperationNode(
+            operation=operation,
+            run_id="test_run_id1",
+            base_directory_path="/path/to/directory",
+            enabled=True,
+        )
+
+        return operation_node
+
+    @pytest.fixture()
+    def operation_tree(
+            self,
+            operation_node: OperationNode
+        ):
+        return OperationTree(
+            root=operation_node,
+            enabled=True,
+        )
+
+    def test_init_values(
+            self,
+            operation_node: OperationNode
+        ):
+        """Test OperationTree initialization."""
         # Act
+        operation_tree = OperationTree(
+            root=operation_node,
+            enabled=True,
+        )
 
         # Assert
-        pytest.skip()
+        assert operation_tree.root == operation_node
+        assert operation_node.enabled is True
+        assert operation_tree.enabled is True
+
+    def test_run_id_setter(
+            self,
+            mocker,
+            operation_node: OperationNode
+        ):
+        """Test run_id setter."""
+        # Arrange
+        operation_tree = OperationTree(
+            root=operation_node,
+            enabled=True,
+        )
+
+        # Act
+        operation_tree.run_id = "new_run_id"
+
+        # Assert
+        assert operation_node.run_id == "new_run_id_test_operation"
+
+    def test_base_directory_path_setter(
+            self,
+            mocker,
+            operation_node: OperationNode
+        ):
+        """Test base_directory_path setter."""
+        # Arrange
+        operation_tree = OperationTree(
+            root=operation_node,
+            enabled=True,
+        )
+
+        # Act
+        operation_tree.base_directory_path = "/new/base/directory"
+
+        # Assert
+        assert operation_node.base_directory_path == "/new/base/directory"
+    
+    def test_enabled_setter(
+            self,
+            operation_node: OperationNode
+        ):
+        """Test enabled setter."""
+        # Arrange
+        operation_node.enabled = False
+        operation_tree = OperationTree(
+            root=operation_node,
+            enabled=False,
+        )
+
+        # Act
+        operation_tree.enabled = True
+
+        # Assert
+        assert operation_tree.enabled is True
+        assert operation_node.enabled is True
+
+    def test_valid(
+            self, 
+            mocker,
+            operation_node: OperationNode
+        ):
+        """Test valid property."""
+        # Arrange
+        mocker.patch.object(OperationNode, "valid", new_callable=mocker.PropertyMock, return_value=False)
+        operation_tree = OperationTree(
+            root=operation_node,
+            enabled=True,
+        )
+        # Assert
+        assert operation_tree.valid is False
+
+    def test_build_trees(
+            self,
+            mocker,
+            operation_node: OperationNode
+        ):
+        """Test build_trees method."""
+        # Arrange
+        
+
+        # Act
+        operation_tree = OperationTree.build_trees()
+
+        # Assert
+        assert operation_tree._operation_nodes == [operation_node]
+    
+    def test_reset(
+            self,
+            mocker,
+            operation_node: OperationNode
+        ):
+        """Test reset method."""
+        # Arrange
+        operation_node.reset = mocker.Mock()
+        operation_tree = OperationTree(
+            root=operation_node,
+            enabled=True,
+        )
+
+        # Act
+        operation_tree.reset()
+
+        # Assert
+        operation_node.reset.assert_called_once() # type: ignore
+
+    def test_get_operation_ids(
+            self,
+            mocker,
+            operation_node: OperationNode
+        ):
+        """Test get_operation_ids method."""
+        # Arrange
+        operation_node.get_operation_ids = mocker.Mock(return_value=["op1", "op2"])
+        operation_tree = OperationTree(
+            root=operation_node,
+            enabled=True,
+        )
+
+        # Act
+        operation_tree.get_operation_ids()
+
+        # Assert
+        operation_node.get_operation_ids.assert_called_once() # type: ignore
+
+    def test_to_cli(
+            self,
+            mocker,
+            operation_node: OperationNode
+        ):
+        """Test to_cli method."""
+        # Arrange
+        operation_node.to_cli = mocker.Mock(return_value=["op1", "op2"])
+        operation_tree = OperationTree(
+            root=operation_node,
+            enabled=True,
+        )
+
+        # Act
+        operation_tree.to_cli(mocker.Mock(), [mocker.Mock()])
+
+        # Assert
+        operation_node.to_cli.assert_called_once() # type: ignore
+
+    def test_to_dict(
+            self,
+            mocker,
+            operation_node: OperationNode
+        ):
+        """Test to_dict method."""
+        # Arrange
+        operation_node.to_dict = mocker.Mock(return_value={"op1": "value1", "op2": "value2"})
+        operation_tree = OperationTree(
+            root=operation_node,
+            enabled=True,
+        )
+
+        # Act
+        operation_tree.to_dict()
+
+        # Assert
+        operation_node.to_dict.assert_called_once() # type: ignore
+
+    def test_populate_from_dict(
+            self,
+            mocker,
+            operation_node: OperationNode
+        ):
+        """Test populate_from_dict method."""
+        # Arrange
+        operation_node.populate_from_dict = mocker.Mock()
+        operation_tree = OperationTree(
+            root=operation_node,
+            enabled=True,
+        )
+        dictio = {"op1": "value1", "op2": "value2"}
+
+        # Act
+        operation_tree.populate_from_dict(dictio)
+
+        # Assert
+        operation_node.populate_from_dict.assert_called_once_with(dictio) # type: ignore

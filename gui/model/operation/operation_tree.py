@@ -697,7 +697,6 @@ class CommonParentDirectoryNode(FileProducerNode):
 
     @Slot(bool)
     def _consumer_valid_changed(self, new_valid: bool) -> None:
-        print(new_valid)
         self.valid_changed.emit(self.valid)
 
 
@@ -814,11 +813,11 @@ class FilePickerNode(FileProducerNode):
 
     def populate_from_dict(self, values: dict) -> None:
         if "file_path" not in values:
-            raise ValueError("Missing file path in dict.")
+            raise ValueError("Missing 'file_path' key in dict.")
         file_path = values["file_path"]
         if file_path is not None and not isinstance(file_path, str):
             raise ValueError(
-                f"Invalid file path in dict: {file_path}. Expected a string "
+                f"Invalid 'file_path' in dict: {file_path}. Expected a string "
                 + "or null."
             )
         self.file = file_path
@@ -1047,8 +1046,8 @@ class OperationNode(FileProducerNode):
         overwrite_parameter = operation.overwrite_parameter_builder()
         if not isinstance(overwrite_parameter, BoolParameter):
             raise ValueError(
-                f"Invalid overwrite parameter for operation {self._name}: "
-                + f"{overwrite_parameter}. Expected a bool parameter."
+                f"Invalid overwrite parameter for operation '{self._name}': "
+                + f"{overwrite_parameter}. Expected a BoolParameter Instance."
             )
         # Assigned in a roundabout way for type checker purposes.
         self._overwrite_parameter = overwrite_parameter
