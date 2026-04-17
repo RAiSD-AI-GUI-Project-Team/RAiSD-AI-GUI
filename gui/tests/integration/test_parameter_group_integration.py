@@ -74,7 +74,7 @@ class TestParameterGroupIntegration:
         self.string_param_condition.value = False
 
         # assert
-        assert group.valid is True
+        assert group.valid
 
     def test_add_parameter_connects_enabled_changed(self):
         """Test that add_parameter correctly connects the enabled_changed signal."""
@@ -181,6 +181,17 @@ class TestParameterGroupIntegration:
 
         #assert
         assert self.signal_emitted_counter == 0
+
+    def test_to_cli(self):
+        """Test that parameters are included in CLI output."""
+        # arrange
+        group = self.parameter_group
+
+        # act
+        result = group.to_cli('MDL-GEN')
+
+        # assert
+        assert result == "-flag_string default -flag_bool"
 
     def test_to_cli_disabled_parameter(self):
         """Test that disabled parameters are excluded from CLI output."""
