@@ -33,7 +33,8 @@ from gui.model.parameter import (
 )
 
 class TestConditions:
-    """Tests for FileProducerNode class."""
+    """Tests for conditions between parameters, and between parameters
+    and operations."""
 
     @fixture()
     def operation_trees(self):
@@ -127,8 +128,8 @@ class TestConditions:
             print(tree.to_dict())
     
     @fixture()
-    def run_record(self, mocker, operation_trees):
-        # Parameters
+    def parameter_groups(self):
+         # Parameters
         self.run_id_parameter = StringParameter(
             name='name',
             description='description',
@@ -193,7 +194,7 @@ class TestConditions:
             self.enum_parameter,
             self.optional_parameter
         ]
-        self.parameter_groups = [
+        self.groups = [
             ParameterGroup(
                 name='img',
                 parameters=self.parameters_group1 # type: ignore
@@ -204,11 +205,14 @@ class TestConditions:
             ),
         ]
 
+    @fixture()
+    def run_record(self, mocker, operation_trees, parameter_groups):
+
         # RunRecord
         self.record = RunRecord(
             run_id_parameter=self.run_id_parameter,
             categorized_operation_trees=self.categorized_operation_trees,
-            parameter_groups=self.parameter_groups,
+            parameter_groups=self.groups,
         )
 
         print(self.record.operation_trees)
@@ -223,14 +227,30 @@ class TestConditions:
             return_value=QDir.current()
         )
 
-    def test_init_values(self):
-        """Test FileProducerNode initialization."""
-        # TODO: Implement this testing class
+    def test_enum_condition(self, parameter_groups):
+        """Test an enumcondition."""
         # Arrange
+        self.optional_parameter.add_condition(
+            condition=EnumParameter.Condition(
+                self.enum_parameter,
+                [1]
+            )
+        )
 
-        # Act
+        # Act and assert
+        assert not self.optional_parameter.enabled  
+        assert not self.optional_parameter.parameter.enabled
 
-        # Assert
-        skip()
+        self.enum_parameter.value = 1
 
+        assert self.optional_parameter.enabled
+        assert not self.optional_parameter.parameter.enabled
 
+        self.optional_parameter.value = True
+
+        assert self.optional_parameter.parameter.enabled
+
+        self.enum_parameter.value = 0
+
+        assert not self.optional_parameter.enabled  
+        assert not self.optional_parameter.parameter.enabled
