@@ -367,7 +367,7 @@ class TestOperationTreeStructures:
         trees[0].populate_from_dict(dict1)
         trees[1].populate_from_dict(dict2)
 
-        # Arrange
+        # Assert
         assert trees[0].root.file_consumers[0].producers[0].file
         assert trees[1].root.file_consumers[0].selected_index == 1
 
